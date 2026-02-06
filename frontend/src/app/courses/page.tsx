@@ -15,17 +15,23 @@ import { formatDate } from '@/lib/utils';
 import { Plus, BookOpen, FileQuestion, Loader2, X } from 'lucide-react';
 
 export default function CoursesPage() {
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newCourse, setNewCourse] = useState({ name: '', description: '' });
   const [error, setError] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const canCreate = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
 
   const fetchCourses = async () => {
+    if (authLoading) return;
     try {
       const res = await api.get('/courses');
       setCourses(res.data);
@@ -38,7 +44,7 @@ export default function CoursesPage() {
 
   useEffect(() => {
     fetchCourses();
-  }, []);
+  }, [authLoading, user]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,6 +63,8 @@ export default function CoursesPage() {
       setCreating(false);
     }
   };
+
+  if (!isMounted) return null;
 
   return (
     <DashboardLayout>

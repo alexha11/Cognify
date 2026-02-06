@@ -11,7 +11,9 @@ import {
   Users,
   Sparkles,
   LogOut,
-  CreditCard
+  CreditCard,
+  Lock,
+  UserCircle
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
@@ -53,6 +55,8 @@ export function Sidebar() {
   const items = user ? (navItems[user.role] || navItems.STUDENT) : [
     { href: '/', label: 'Home', icon: LayoutDashboard },
     { href: '/courses', label: 'Browse Courses', icon: BookOpen },
+    { href: '/progress', label: 'My Progress', icon: BarChart3, gated: true },
+    { href: '/ai-generate', label: 'AI Generate', icon: Sparkles, gated: true },
   ];
 
   return (
@@ -73,20 +77,24 @@ export function Sidebar() {
           {items.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
+            const isGated = !user && (item as any).gated;
             
             return (
               <Link
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
+                  'flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all',
                   isActive
                     ? 'bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-700 dark:text-indigo-400'
                     : 'text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800'
                 )}
               >
-                <Icon className={cn('h-5 w-5', isActive && 'text-indigo-600')} />
-                {item.label}
+                <div className="flex items-center gap-3">
+                    <Icon className={cn('h-5 w-5', isActive && 'text-indigo-600')} />
+                    {item.label}
+                </div>
+                {isGated && <Lock className="h-3.5 w-3.5 text-gray-400" />}
               </Link>
             );
           })}
@@ -118,13 +126,26 @@ export function Sidebar() {
               </button>
             </div>
           ) : (
-            <div className="space-y-2 px-2">
-              <Button asChild className="w-full" variant="outline">
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button asChild className="w-full">
-                <Link href="/register">Sign Up</Link>
-              </Button>
+            <div className="space-y-4">
+              <div className="rounded-xl bg-indigo-50/50 dark:bg-indigo-900/10 p-4 border border-indigo-100/50 dark:border-indigo-800/50">
+                <div className="flex items-center gap-3 mb-3">
+                    <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600">
+                        <UserCircle className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <p className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">Guest Mode</p>
+                        <p className="text-[10px] text-indigo-600 dark:text-indigo-400">Limited access</p>
+                    </div>
+                </div>
+                <div className="space-y-2">
+                    <Button asChild className="w-full h-8 text-xs bg-indigo-600 hover:bg-indigo-700">
+                        <Link href="/register">Sign Up Free</Link>
+                    </Button>
+                    <Link href="/login" className="block text-center text-[11px] font-medium text-indigo-600 hover:text-indigo-700 underline underline-offset-4">
+                        Already have an account? Sign in
+                    </Link>
+                </div>
+              </div>
             </div>
           )}
         </div>

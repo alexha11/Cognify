@@ -1,6 +1,9 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
+const isServer = typeof window === 'undefined';
+const API_URL = isServer 
+  ? (process.env.INTERNAL_API_URL || 'http://backend:3001/api')
+  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api');
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -32,7 +35,16 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
-        window.location.href = '/login';
+        
+        // Only redirect if we are NOT on a public route
+        const publicRoutes = ['/', '/login', '/register', '/courses'];
+        const isPublicRoute = publicRoutes.some(route => 
+          window.location.pathname === route || window.location.pathname.startsWith('/courses/')
+        );
+        
+        if (!isPublicRoute) {
+          window.location.href = '/login';
+        }
       }
     }
     return Promise.reject(error);

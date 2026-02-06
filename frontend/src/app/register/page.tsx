@@ -99,7 +99,7 @@ export default function RegisterPage() {
                 <Label htmlFor="organizationName">Organization name</Label>
                 <Input
                   id="organizationName"
-                  placeholder="Acme University"
+                  placeholder="Aalto University"
                   {...register('organizationName')}
                   className={errors.organizationName ? 'border-red-500' : ''}
                 />

@@ -22,22 +22,31 @@ import {
   Check, 
   X, 
   Loader2,
-  Play
+  Play,
+  Lock,
+  ArrowRight
 } from 'lucide-react';
+import { FeatureGate, AuthPromptModal } from '@/components/ui';
 
 export default function CourseDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const [course, setCourse] = useState<Course | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   const canEdit = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
   const isStudent = user?.role === 'STUDENT';
 
   const fetchCourse = async () => {
+    if (authLoading) return;
     try {
       const [courseRes, questionsRes, materialsRes] = await Promise.all([
         api.get(`/courses/${params.id}`),
@@ -57,7 +66,7 @@ export default function CourseDetailPage() {
 
   useEffect(() => {
     fetchCourse();
-  }, [params.id]);
+  }, [params.id, authLoading, user]);
 
   const handleApprove = async (questionId: string) => {
     try {
@@ -67,6 +76,8 @@ export default function CourseDetailPage() {
       console.error('Failed to approve question', error);
     }
   };
+
+  if (!isMounted) return null;
 
   if (isLoading) {
     return (
@@ -105,11 +116,11 @@ export default function CourseDetailPage() {
               </p>
             </div>
             <div className="flex gap-3">
-              {isStudent && approvedQuestions.length > 0 && (
+              {(!user || isStudent) && approvedQuestions.length > 0 && (
                 <Link href={`/quiz/${course.id}`}>
-                  <Button>
-                    <Play className="h-4 w-4" />
-                    Start Quiz
+                  <Button className="bg-indigo-600 hover:bg-indigo-700">
+                    <Play className="h-4 w-4 mr-2" />
+                    {user ? 'Start Quiz' : 'Try Demo Quiz'}
                   </Button>
                 </Link>
               )}
@@ -213,13 +224,13 @@ export default function CourseDetailPage() {
           </CardHeader>
           <CardContent>
             {approvedQuestions.length === 0 ? (
-              <div className="py-8 text-center">
+              <div className="py-8 text-center text-gray-500">
                 <FileQuestion className="mx-auto h-12 w-12 text-gray-300" />
-                <p className="mt-4 text-gray-500">No questions yet</p>
+                <p className="mt-4">No questions yet</p>
                 {canEdit && (
                   <Link href={`/ai-generate?courseId=${course.id}`}>
                     <Button className="mt-4">
-                      <Sparkles className="h-4 w-4" />
+                      <Sparkles className="h-4 w-4 mr-2" />
                       Generate with AI
                     </Button>
                   </Link>
@@ -227,24 +238,33 @@ export default function CourseDetailPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {approvedQuestions.slice(0, 5).map((question, index) => (
-                  <div key={question.id} className="rounded-lg border p-4">
+                {(user ? approvedQuestions : approvedQuestions.slice(0, 5)).map((question, index) => (
+                  <div key={question.id} className={`${!user && index >= 3 ? 'opacity-50 blur-[0.5px]' : ''} rounded-lg border p-4`}>
                     <p className="font-medium">
                       {index + 1}. {question.content}
                     </p>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
+                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {question.answers.map((answer, i) => (
-                        <div key={answer.id} className={`text-sm rounded px-2 py-1 ${answer.isCorrect ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                        <div key={answer.id} className={`text-sm rounded px-3 py-2 ${answer.isCorrect ? 'bg-green-100 text-green-700 dark:bg-green-900/30' : 'bg-gray-100 text-gray-600 dark:bg-gray-800'}`}>
                           {String.fromCharCode(65 + i)}. {answer.content}
                         </div>
                       ))}
                     </div>
                   </div>
                 ))}
-                {approvedQuestions.length > 5 && (
-                  <p className="text-center text-sm text-gray-500">
-                    +{approvedQuestions.length - 5} more questions
-                  </p>
+                
+                {!user && (
+                    <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 border border-indigo-100 dark:border-indigo-800 text-center">
+                        <Lock className="h-8 w-8 text-indigo-500 mx-auto mb-3" />
+                        <h4 className="font-bold text-gray-900 dark:text-white">Unlock {approvedQuestions.length} Questions</h4>
+                        <p className="text-sm text-gray-500 mt-1 mb-4">You&apos;re viewing a limited preview. Sign in to access all questions and start tracking your progress.</p>
+                        <FeatureGate variant="prompt" title="Full Question Access" description="Get unlimited access to all course questions, detailed explanations, and progress tracking.">
+                            <Button size="sm" className="bg-indigo-600">
+                                Sign Up to See More
+                                <ArrowRight className="h-4 w-4 ml-2" />
+                            </Button>
+                        </FeatureGate>
+                    </div>
                 )}
               </div>
             )}
@@ -275,11 +295,15 @@ export default function CourseDetailPage() {
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={material.fileUrl} target="_blank" rel="noopener noreferrer">
-                        View
-                      </a>
-                    </Button>
+                    <FeatureGate 
+                        variant="prompt" 
+                        title="Download Materials" 
+                        description="Sign in to download and view study materials for this course."
+                    >
+                        <Button variant="outline" size="sm">
+                            View
+                        </Button>
+                    </FeatureGate>
                   </div>
                 ))}
               </div>

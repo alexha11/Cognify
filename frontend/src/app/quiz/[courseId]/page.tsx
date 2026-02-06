@@ -8,14 +8,17 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import api from '@/lib/api';
+import { useAuth } from '@/lib/auth';
 import { Question, AttemptResult, CourseProgress } from '@/types';
-import { ArrowLeft, Check, X, Lightbulb, ArrowRight, Trophy, Loader2 } from 'lucide-react';
+import { AuthPromptModal } from '@/components/ui';
+import { ArrowLeft, Check, X, Lightbulb, ArrowRight, Trophy, Loader2, Sparkles } from 'lucide-react';
 
 export default function QuizPage() {
   const params = useParams();
   const router = useRouter();
   const courseId = params.courseId as string;
   
+  const { user, isLoading: authLoading } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
@@ -24,30 +27,41 @@ export default function QuizPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [progress, setProgress] = useState<CourseProgress | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [demoStats, setDemoStats] = useState({ correct: 0, total: 0 });
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const isDemoMode = !authLoading && !user;
 
   useEffect(() => {
     const fetchData = async () => {
+      if (authLoading) return;
+      
       try {
-        const [questionsRes, progressRes] = await Promise.all([
-          api.get(`/questions/course/${courseId}`),
-          api.get(`/attempts/course/${courseId}`),
-        ]);
-        
+        const questionsRes = await api.get(`/questions/course/${courseId}`);
         const allQuestions = questionsRes.data as Question[];
-        const courseProgress = progressRes.data as CourseProgress;
-        
-        // Filter out already answered questions
-        const attemptedIds = new Set<string>();
-        const attemptsRes = await api.get('/attempts/me');
-        (attemptsRes.data as { question: Question }[]).forEach((a) => attemptedIds.add(a.question.id));
-        
-        const unanswered = allQuestions.filter(q => !attemptedIds.has(q.id));
-        
-        setQuestions(unanswered);
-        setProgress(courseProgress);
-        
-        if (unanswered.length === 0) {
-          setCompleted(true);
+
+        if (isDemoMode) {
+          // In demo mode, just take first 3 questions
+          setQuestions(allQuestions.slice(0, 3));
+        } else {
+          // For auth users, get progress and filter answered
+          const [progressRes, attemptsRes] = await Promise.all([
+            api.get(`/attempts/course/${courseId}`),
+            api.get('/attempts/me'),
+          ]);
+          
+          const attemptedIds = new Set<string>();
+          (attemptsRes.data as { question: Question }[]).forEach((a) => {
+            if (a.question) attemptedIds.add(a.question.id);
+          });
+          
+          const unanswered = allQuestions.filter(q => !attemptedIds.has(q.id));
+          setQuestions(unanswered);
+          setProgress(progressRes.data);
+          
+          if (unanswered.length === 0) {
+            setCompleted(true);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch questions', error);
@@ -58,24 +72,39 @@ export default function QuizPage() {
     };
     
     fetchData();
-  }, [courseId, router]);
+  }, [courseId, router, authLoading, isDemoMode]);
 
   const currentQuestion = questions[currentIndex];
 
   const handleSubmit = async () => {
     if (!selectedAnswer || !currentQuestion) return;
     
-    setIsSubmitting(true);
-    try {
-      const res = await api.post('/attempts', {
-        questionId: currentQuestion.id,
-        selectedAnswerId: selectedAnswer,
-      });
-      setResult(res.data);
-    } catch (error) {
-      console.error('Failed to submit answer', error);
-    } finally {
-      setIsSubmitting(false);
+    if (isDemoMode) {
+      // Simulate result for guest
+      const selected = currentQuestion.answers.find(a => a.id === selectedAnswer);
+      const guestResult = {
+        isCorrect: selected?.isCorrect || false,
+        selectedAnswer: selected!,
+        hint: currentQuestion.hint,
+      };
+      setResult(guestResult as AttemptResult);
+      setDemoStats(prev => ({
+        correct: prev.correct + (guestResult.isCorrect ? 1 : 0),
+        total: prev.total + 1
+      }));
+    } else {
+      setIsSubmitting(true);
+      try {
+        const res = await api.post('/attempts', {
+          questionId: currentQuestion.id,
+          selectedAnswerId: selectedAnswer,
+        });
+        setResult(res.data);
+      } catch (error) {
+        console.error('Failed to submit answer', error);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -107,29 +136,69 @@ export default function QuizPage() {
             <Trophy className="h-10 w-10 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            Quiz Complete!
+            {isDemoMode ? 'Demo Quiz Complete!' : 'Quiz Complete!'}
           </h1>
           <p className="mt-4 text-gray-500">
-            You&apos;ve answered all available questions for this course.
+            {isDemoMode 
+              ? "You've finished the guest preview. Sign up to unlock all questions!"
+              : "You've answered all available questions for this course."
+            }
           </p>
-          {progress && (
-            <div className="mt-6 p-6 bg-gray-50 rounded-xl dark:bg-gray-900">
-              <p className="text-sm text-gray-500">Your Score</p>
-              <p className="text-4xl font-bold text-indigo-600">{progress.percentage}%</p>
-              <p className="text-sm text-gray-500 mt-2">
-                {progress.correct} out of {progress.totalQuestions} correct
+          
+          {(progress || isDemoMode) && (
+            <div className="mt-6 p-8 bg-white dark:bg-gray-900 rounded-2xl border-2 border-indigo-50 dark:border-indigo-900/50 shadow-sm relative overflow-hidden">
+              {isDemoMode && (
+                <div className="absolute top-0 right-0 p-2">
+                  <Badge className="bg-indigo-500">GUEST MODE</Badge>
+                </div>
+              )}
+              <p className="text-sm text-gray-500 font-medium uppercase tracking-wider">Final Score</p>
+              <p className="text-5xl font-black text-indigo-600 mt-2">
+                {isDemoMode 
+                  ? `${Math.round((demoStats.correct / demoStats.total) * 100)}%`
+                  : `${progress?.percentage}%`
+                }
+              </p>
+              <p className="text-gray-500 mt-4 font-medium italic">
+                {isDemoMode 
+                  ? `${demoStats.correct} out of ${demoStats.total} correct`
+                  : `${progress?.correct} out of ${progress?.totalQuestions} correct`
+                }
               </p>
             </div>
           )}
-          <div className="mt-8 flex justify-center gap-4">
-            <Link href="/progress">
-              <Button>View Progress</Button>
-            </Link>
-            <Link href="/courses">
-              <Button variant="outline">Back to Courses</Button>
-            </Link>
+
+          <div className="mt-10 flex flex-col sm:flex-row justify-center gap-4">
+            {isDemoMode ? (
+              <>
+                <Button size="lg" className="px-8 bg-indigo-600 hover:bg-indigo-700 font-bold" onClick={() => setShowAuthModal(true)}>
+                  <Sparkles className="mr-2 h-5 w-5" />
+                  Save Progress & Continue
+                </Button>
+                <Link href="/courses">
+                  <Button size="lg" variant="outline" className="px-8 font-semibold">
+                    Explore Other Courses
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link href="/progress">
+                  <Button size="lg" className="px-8 font-bold">View Progress</Button>
+                </Link>
+                <Link href="/courses">
+                  <Button size="lg" variant="outline" className="px-8 font-semibold">Back to Courses</Button>
+                </Link>
+              </>
+            )}
           </div>
         </div>
+        <AuthPromptModal 
+          isOpen={showAuthModal} 
+          onClose={() => setShowAuthModal(false)}
+          title="Don't Lose Your Progress!"
+          description={`You just answered ${demoStats.correct} questions correctly! Create a free account now to save your results and continue mastering this course.`}
+        />
       </DashboardLayout>
     );
   }
