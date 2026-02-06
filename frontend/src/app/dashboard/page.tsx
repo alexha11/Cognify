@@ -29,24 +29,36 @@ export default function DashboardPage() {
   const [limits, setLimits] = useState<PlanLimits | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useEffect(() => {
     const fetchData = async () => {
-      if (authLoading || !user) {
-        return;
-      }
+      if (authLoading) return;
+      
       try {
-        const [orgRes, coursesRes, limitsRes] = await Promise.all([
-          api.get('/organizations/me'),
-          api.get('/courses'),
-          api.get('/organizations/limits'),
-        ]);
-        setOrganization(orgRes.data);
-        setCourses(coursesRes.data);
-        setLimits(limitsRes.data);
+        const promises = [api.get('/courses')];
+        
+        if (user) {
+          promises.push(api.get('/organizations/me'));
+          promises.push(api.get('/organizations/limits'));
+          if (user.role === 'STUDENT') {
+            promises.push(api.get('/attempts/stats'));
+          }
+        }
 
-        if (user?.role === 'STUDENT') {
-          const statsRes = await api.get('/attempts/stats');
-          setStats(statsRes.data);
+        const results = await Promise.all(promises);
+        setCourses(results[0].data);
+        
+        if (user) {
+          setOrganization(results[1].data);
+          setLimits(results[2].data);
+          if (user.role === 'STUDENT' && results[3]) {
+            setStats(results[3].data);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch dashboard data', error);
@@ -57,6 +69,8 @@ export default function DashboardPage() {
 
     fetchData();
   }, [user, authLoading]);
+
+  if (!isMounted) return null;
 
 
   const isAdmin = user?.role === 'ADMIN';

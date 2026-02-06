@@ -30,13 +30,18 @@ export default function HomePage() {
             Cognify
           </span>
           </div>
-          <div className="flex items-center gap-4">
-            <Link href="/login">
-              <Button variant="ghost">Login</Button>
+          <div className="flex items-center gap-6">
+            <Link href="/courses" className="text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
+              Browse Courses
             </Link>
-            <Link href="/register">
-              <Button>Get Started</Button>
-            </Link>
+            <div className="flex items-center gap-4">
+              <Link href="/login">
+                <Button variant="ghost">Login</Button>
+              </Link>
+              <Link href="/register">
+                <Button>Get Started</Button>
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -61,9 +66,9 @@ export default function HomePage() {
                   Start Free Trial
                 </Button>
               </Link>
-              <Link href="#features">
-                <Button size="lg" variant="outline">
-                  Learn More
+              <Link href="/courses">
+                <Button size="lg" variant="outline" className="px-8">
+                  Browse Courses
                 </Button>
               </Link>
             </div>

@@ -29,6 +29,11 @@ export default function QuizPage() {
   const [completed, setCompleted] = useState(false);
   const [demoStats, setDemoStats] = useState({ correct: 0, total: 0 });
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const isDemoMode = !authLoading && !user;
 
@@ -117,6 +122,8 @@ export default function QuizPage() {
       setCompleted(true);
     }
   };
+
+  if (!isMounted) return null;
 
   if (isLoading) {
     return (
