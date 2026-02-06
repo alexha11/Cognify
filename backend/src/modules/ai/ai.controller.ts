@@ -3,7 +3,7 @@ import { AiService } from './ai.service';
 import { GenerateQuestionsDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
-import { AuthenticatedUser } from '../auth/interfaces';
+import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
 
 @Controller('ai')

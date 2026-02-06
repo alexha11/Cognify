@@ -124,4 +124,11 @@ export class OrganizationsService {
 
     return true;
   }
+
+  /**
+   * Alias for findOne (backwards compatibility)
+   */
+  async getMyOrganization(organizationId: string): Promise<any> {
+    return this.findOne(organizationId);
+  }
 }

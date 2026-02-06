@@ -33,6 +33,8 @@ RUN npm ci --only=production
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
+COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
 
 # Set ownership
 RUN chown -R nestjs:nodejs /app
@@ -47,4 +49,4 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:3001/api/health || exit 1
 
 # Start
-CMD ["node", "dist/main"]
+CMD ["node", "dist/src/main"]

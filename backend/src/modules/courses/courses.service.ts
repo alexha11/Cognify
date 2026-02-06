@@ -174,7 +174,7 @@ export class CoursesService {
    * Delete course
    * Only admin can delete
    */
-  async remove(id: string, organizationId: string) {
+  async remove(id: string, organizationId: string): Promise<{ message: string }> {
     const course = await this.prisma.course.findFirst({
       where: { id, organizationId },
     });
@@ -183,8 +183,10 @@ export class CoursesService {
       throw new NotFoundException('Course not found');
     }
 
-    return this.prisma.course.delete({
+    await this.prisma.course.delete({
       where: { id },
     });
+
+    return { message: 'Course deleted successfully' };
   }
 }

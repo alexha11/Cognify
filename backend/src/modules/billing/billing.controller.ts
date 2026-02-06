@@ -6,8 +6,8 @@ import {
   Req,
   Headers,
   UseGuards,
-  RawBodyRequest,
 } from '@nestjs/common';
+import type { RawBodyRequest } from '@nestjs/common';
 import { Request } from 'express';
 import { BillingService } from './billing.service';
 import { CreateCheckoutDto, CreatePortalDto } from './dto';

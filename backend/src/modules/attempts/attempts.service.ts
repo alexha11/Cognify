@@ -96,7 +96,7 @@ export class AttemptsService {
   /**
    * Get attempt statistics for user
    */
-  async getOverallStats(userId: string): Promise<any> {
+  async getOverallStats(userId: string, organizationId: string): Promise<any> {
     const attempts = await this.prisma.attempt.findMany({
       where: {
         userId,
@@ -147,8 +147,8 @@ export class AttemptsService {
    * Get course progress for user
    */
   async getCourseProgress(
-    userId: string,
     courseId: string,
+    userId: string,
     organizationId: string,
   ) {
     // Verify course belongs to organization

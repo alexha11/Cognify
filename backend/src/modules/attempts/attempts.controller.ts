@@ -4,7 +4,6 @@ import { CreateAttemptDto } from './dto';
 import { JwtAuthGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
-import { Role } from '@prisma/client';
 
 @Controller('attempts')
 @UseGuards(JwtAuthGuard)
@@ -38,7 +37,7 @@ export class AttemptsController {
    */
   @Get('stats')
   async getStats(@CurrentUser() user: AuthenticatedUser): Promise<any> {
-    return this.attemptsService.getOverallStats(user.userId);
+    return this.attemptsService.getOverallStats(user.userId, user.organizationId);
   }
 
   /**

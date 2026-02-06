@@ -21,7 +21,7 @@ export class BillingService {
   ) {
     const stripeKey = this.configService.get('app.stripeSecretKey', { infer: true });
     if (stripeKey) {
-      this.stripe = new Stripe(stripeKey, { apiVersion: '2024-12-18.acacia' });
+      this.stripe = new Stripe(stripeKey);
     } else {
       this.logger.warn('Stripe secret key not configured');
       this.stripe = null as unknown as Stripe;
@@ -176,15 +176,15 @@ export class BillingService {
         stripeSubscriptionId: subscription.id,
         stripePriceId: priceId || '',
         status,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        currentPeriodStart: new Date((subscription.items.data[0]?.current_period_start ?? Math.floor(Date.now() / 1000)) * 1000),
+        currentPeriodEnd: new Date((subscription.items.data[0]?.current_period_end ?? Math.floor(Date.now() / 1000)) * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         organizationId: organization.id,
       },
       update: {
         status,
-        currentPeriodStart: new Date(subscription.current_period_start * 1000),
-        currentPeriodEnd: new Date(subscription.current_period_end * 1000),
+        currentPeriodStart: new Date((subscription.items.data[0]?.current_period_start ?? Math.floor(Date.now() / 1000)) * 1000),
+        currentPeriodEnd: new Date((subscription.items.data[0]?.current_period_end ?? Math.floor(Date.now() / 1000)) * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       },
     });

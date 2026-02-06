@@ -225,9 +225,11 @@ export class QuestionsService {
       throw new NotFoundException('Question not found');
     }
 
-    return this.prisma.question.delete({
+    await this.prisma.question.delete({
       where: { id },
     });
+
+    return { message: 'Question deleted successfully' };
   }
 
   /**

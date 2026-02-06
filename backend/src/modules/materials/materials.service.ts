@@ -21,10 +21,10 @@ export class MaterialsService {
 
     return this.prisma.material.create({
       data: {
-        title: dto.title,
-        content: dto.content,
-        type: dto.type,
-        url: dto.url,
+        fileName: dto.fileName,
+        fileUrl: dto.fileUrl,
+        fileType: dto.fileType,
+        fileSize: dto.fileSize,
         courseId: dto.courseId,
         uploadedById: userId,
       },
@@ -73,23 +73,5 @@ export class MaterialsService {
     });
 
     return { message: 'Material deleted successfully' };
-  }
-
-  /**
-   * Get material content
-   */
-  async getMaterialContent(materialId: string, organizationId: string): Promise<string> {
-    const material = await this.prisma.material.findFirst({
-      where: {
-        id: materialId,
-        course: { organizationId },
-      },
-    });
-
-    if (!material) {
-      throw new NotFoundException('Material not found');
-    }
-
-    return material.content;
   }
 }
