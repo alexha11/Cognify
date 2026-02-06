@@ -193,7 +193,7 @@ export default function ProgressPage() {
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {attempts.slice(0, 10).map((attempt) => (
+                    {(attempts || []).slice(0, 10).map((attempt) => (
                       <div key={attempt.id} className="flex items-center gap-4 rounded-xl border border-gray-50 dark:border-gray-900 p-4 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors">
                         <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
                           attempt.isCorrect 

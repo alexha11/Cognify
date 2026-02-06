@@ -47,7 +47,7 @@ export default function QuizPage() {
 
         if (isDemoMode) {
           // In demo mode, just take first 3 questions
-          setQuestions(allQuestions.slice(0, 3));
+          setQuestions((allQuestions || []).slice(0, 3));
         } else {
           // For auth users, get progress and filter answered
           const [progressRes, attemptsRes] = await Promise.all([

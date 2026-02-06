@@ -284,7 +284,7 @@ export default function DashboardPage() {
             </Card>
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {courses.slice(0, 6).map((course) => (
+              {(courses || []).slice(0, 6).map((course) => (
                 <Link key={course.id} href={`/courses/${course.id}`}>
                   <Card className="group h-full border-0 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
                     <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-600" />
