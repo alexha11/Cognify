@@ -1,20 +1,19 @@
-version: "3.8"
 
 services:
   # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
-    container_name: examai-db
+    container_name: cognify-db
     environment:
-      POSTGRES_DB: examai
-      POSTGRES_USER: examai
-      POSTGRES_PASSWORD: examai_local_password
+      POSTGRES_DB: cognify
+      POSTGRES_USER: cognify
+      POSTGRES_PASSWORD: cognify_local_password
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U examai -d examai"]
+      test: ["CMD-SHELL", "pg_isready -U cognify -d cognify"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -29,14 +28,11 @@ services:
       DATABASE_URL: postgresql://cognify:cognify_local_password@postgres:5432/cognify
       JWT_SECRET: local-development-secret-change-in-production
       JWT_EXPIRES_IN: 7d
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}
       OPENROUTER_MODEL: google/gemini-2.0-flash
-      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
-      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
-      STRIPE_PRICE_ID_PRO: ${STRIPE_PRICE_ID_PRO}
-      STRIPE_PRICE_ID_ENTERPRISE: ${STRIPE_PRICE_ID_ENTERPRISE}
       PORT: 3001
       NODE_ENV: development
+    env_file:
+      - ./backend/.env
     ports:
       - "3001:3001"
     depends_on:
@@ -50,10 +46,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.dev
-    container_name: examai-frontend
+    container_name: cognify-frontend
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001/api
-      NEXT_PUBLIC_APP_NAME: ExamAI
+      NEXT_PUBLIC_APP_NAME: Cognify
     ports:
       - "3000:3000"
     depends_on:
