@@ -1,18 +1,18 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/lib/auth';
-import api from '@/lib/api';
-import { Course } from '@/types';
-import { formatDate } from '@/lib/utils';
-import { Plus, BookOpen, FileQuestion, Loader2, X } from 'lucide-react';
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { DashboardLayout } from "@/components/layout";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/auth";
+import api from "@/lib/api";
+import { Course } from "@/types";
+import { formatDate } from "@/lib/utils";
+import { Plus, BookOpen, FileQuestion, Loader2, X } from "lucide-react";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -20,23 +20,23 @@ export default function CoursesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newCourse, setNewCourse] = useState({ name: '', description: '' });
-  const [error, setError] = useState('');
+  const [newCourse, setNewCourse] = useState({ name: "", description: "" });
+  const [error, setError] = useState("");
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  const canCreate = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
+  const canCreate = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
   const fetchCourses = async () => {
     if (authLoading) return;
     try {
-      const res = await api.get('/courses');
-      setCourses(res.data);
+      const res = await api.get("/courses");
+      setCourses(res.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch courses', error);
+      console.error("Failed to fetch courses", error);
       setCourses([]);
     } finally {
       setIsLoading(false);
@@ -50,16 +50,16 @@ export default function CoursesPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
-    setError('');
+    setError("");
 
     try {
-      await api.post('/courses', newCourse);
-      setNewCourse({ name: '', description: '' });
+      await api.post("/courses", newCourse);
+      setNewCourse({ name: "", description: "" });
       setShowCreate(false);
-      fetchCourses();
+      await fetchCourses(); // Add await for consistency
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || 'Failed to create course');
+      setError(error.response?.data?.message || "Failed to create course");
     } finally {
       setCreating(false);
     }
@@ -73,9 +73,11 @@ export default function CoursesPage() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Courses</h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+              Courses
+            </h1>
             <p className="mt-1 text-gray-500">
-              {canCreate ? 'Manage your courses' : 'Browse available courses'}
+              {canCreate ? "Manage your courses" : "Browse available courses"}
             </p>
           </div>
           {canCreate && (
@@ -91,7 +93,11 @@ export default function CoursesPage() {
           <Card className="border-indigo-200 dark:border-indigo-800">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Create New Course</CardTitle>
-              <Button variant="ghost" size="icon" onClick={() => setShowCreate(false)}>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowCreate(false)}
+              >
                 <X className="h-4 w-4" />
               </Button>
             </CardHeader>
@@ -108,7 +114,9 @@ export default function CoursesPage() {
                     id="name"
                     placeholder="Introduction to Machine Learning"
                     value={newCourse.name}
-                    onChange={(e) => setNewCourse({ ...newCourse, name: e.target.value })}
+                    onChange={(e) =>
+                      setNewCourse({ ...newCourse, name: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -118,7 +126,12 @@ export default function CoursesPage() {
                     id="description"
                     placeholder="Learn the fundamentals of ML..."
                     value={newCourse.description}
-                    onChange={(e) => setNewCourse({ ...newCourse, description: e.target.value })}
+                    onChange={(e) =>
+                      setNewCourse({
+                        ...newCourse,
+                        description: e.target.value,
+                      })
+                    }
                   />
                 </div>
                 <div className="flex gap-3">
@@ -129,10 +142,14 @@ export default function CoursesPage() {
                         Creating...
                       </>
                     ) : (
-                      'Create Course'
+                      "Create Course"
                     )}
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setShowCreate(false)}>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowCreate(false)}
+                  >
                     Cancel
                   </Button>
                 </div>
@@ -149,9 +166,13 @@ export default function CoursesPage() {
         ) : courses.length === 0 ? (
           <div className="py-16 text-center">
             <BookOpen className="mx-auto h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">No courses yet</h3>
+            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
+              No courses yet
+            </h3>
             <p className="mt-2 text-gray-500">
-              {canCreate ? 'Create your first course to get started.' : 'No courses are available yet.'}
+              {canCreate
+                ? "Create your first course to get started."
+                : "No courses are available yet."}
             </p>
             {canCreate && (
               <Button className="mt-6" onClick={() => setShowCreate(true)}>
@@ -170,14 +191,16 @@ export default function CoursesPage() {
                       <CardTitle className="group-hover:text-indigo-600">
                         {course.name}
                       </CardTitle>
-                      <Badge variant={course.isPublished ? 'success' : 'secondary'}>
-                        {course.isPublished ? 'Published' : 'Draft'}
+                      <Badge
+                        variant={course.isPublished ? "success" : "secondary"}
+                      >
+                        {course.isPublished ? "Published" : "Draft"}
                       </Badge>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem]">
-                      {course.description || 'No description'}
+                      {course.description || "No description"}
                     </p>
                     <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
                       <span className="flex items-center gap-1">
@@ -188,7 +211,8 @@ export default function CoursesPage() {
                     </div>
                     <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
                       <p className="text-xs text-gray-400">
-                        Created {formatDate(course.createdAt)} by {course.createdBy.firstName}
+                        Created {formatDate(course.createdAt)} by{" "}
+                        {course.createdBy.firstName}
                       </p>
                     </div>
                   </CardContent>
