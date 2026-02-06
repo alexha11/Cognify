@@ -12,7 +12,7 @@ import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost } from "@/lib/api";
 import { Course } from "@/types";
 import { formatDate } from "@/lib/utils";
-import { Plus, BookOpen, FileQuestion, Loader2, X } from "lucide-react";
+import { Plus, BookOpen, FileQuestion, Loader2, X, Play } from "lucide-react";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -184,40 +184,57 @@ export default function CoursesPage() {
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {courses.map((course) => (
-              <Link key={course.id} href={`/courses/${course.id}`}>
-                <Card className="group h-full cursor-pointer transition-all hover:border-indigo-200 hover:shadow-xl dark:hover:border-indigo-800">
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <CardTitle className="group-hover:text-indigo-600">
+              <Card
+                key={course.id}
+                className="group h-full transition-all hover:border-indigo-200 hover:shadow-xl dark:hover:border-indigo-800"
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <Link href={`/courses/${course.id}`} className="flex-1">
+                      <CardTitle className="group-hover:text-indigo-600 cursor-pointer">
                         {course.name}
                       </CardTitle>
-                      <Badge
-                        variant={course.isPublished ? "success" : "secondary"}
-                      >
-                        {course.isPublished ? "Published" : "Draft"}
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem]">
+                    </Link>
+                    <Badge
+                      variant={course.isPublished ? "success" : "secondary"}
+                    >
+                      {course.isPublished ? "Published" : "Draft"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Link href={`/courses/${course.id}`}>
+                    <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-gray-700">
                       {course.description || "No description"}
                     </p>
-                    <div className="mt-4 flex items-center gap-4 text-sm text-gray-500">
-                      <span className="flex items-center gap-1">
-                        <FileQuestion className="h-4 w-4" />
-                        {course._count.questions} questions
-                      </span>
-                      <span>{course._count.materials} materials</span>
-                    </div>
-                    <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-                      <p className="text-xs text-gray-400">
-                        Created {formatDate(course.createdAt)} by{" "}
-                        {course.createdBy.firstName}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
+                  </Link>
+                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <FileQuestion className="h-4 w-4" />
+                      {course._count.questions} questions
+                    </span>
+                    <span>{course._count.materials} materials</span>
+                  </div>
+
+                  {/* Start Quiz Button */}
+                  <Link href={`/quiz/${course.id}`} className="block">
+                    <Button
+                      className="w-full bg-indigo-600 hover:bg-indigo-700 font-semibold"
+                      size="lg"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Start Quiz
+                    </Button>
+                  </Link>
+
+                  <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
+                    <p className="text-xs text-gray-400">
+                      Created {formatDate(course.createdAt)} by{" "}
+                      {course.createdBy.firstName}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
