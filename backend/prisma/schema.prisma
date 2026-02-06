@@ -1,4 +1,4 @@
-// Prisma schema for ExamAI - Multi-tenant SaaS Platform
+// Prisma schema for Cognify - Multi-tenant SaaS Platform
 // All tables include organizationId for tenant isolation
 
 generator client {

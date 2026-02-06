@@ -26,9 +26,9 @@ export default function HomePage() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-              ExamAI
-            </span>
+            <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            Cognify
+          </span>
           </div>
           <div className="flex items-center gap-4">
             <Link href="/login">
@@ -45,10 +45,10 @@ export default function HomePage() {
       <main className="pt-32 pb-20">
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center">
-            <h1 className="text-5xl font-bold tracking-tight text-gray-900 sm:text-6xl lg:text-7xl dark:text-white">
-              AI-Powered
-              <span className="block bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Exam Training
+            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl dark:text-white">
+              Master Any Subject with{' '}
+              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                Cognify
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400">

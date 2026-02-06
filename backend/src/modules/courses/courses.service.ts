@@ -65,10 +65,10 @@ export class CoursesService {
    * Get all courses for organization
    * Students only see published courses
    */
-  async findAll(organizationId: string, userRole: Role) {
+  async findAll(organizationId?: string, userRole?: Role) {
     const whereClause = {
-      organizationId,
-      ...(userRole === Role.STUDENT && { isPublished: true }),
+      ...(organizationId && { organizationId }),
+      ...(userRole === Role.STUDENT || !userRole ? { isPublished: true } : {}),
     };
 
     return this.prisma.course.findMany({
@@ -96,12 +96,12 @@ export class CoursesService {
    * Get single course by ID
    * Enforces organization isolation
    */
-  async findOne(id: string, organizationId: string, userRole: Role) {
+  async findOne(id: string, organizationId?: string, userRole?: Role) {
     const course = await this.prisma.course.findFirst({
       where: {
         id,
-        organizationId,
-        ...(userRole === Role.STUDENT && { isPublished: true }),
+        ...(organizationId && { organizationId }),
+        ...(userRole === Role.STUDENT || !userRole ? { isPublished: true } : {}),
       },
       include: {
         createdBy: {
@@ -115,7 +115,7 @@ export class CoursesService {
           orderBy: { createdAt: 'desc' },
         },
         questions: {
-          where: userRole === Role.STUDENT ? { approved: true } : {},
+          where: (userRole === Role.STUDENT || !userRole) ? { approved: true } : {},
           include: {
             answers: true,
           },

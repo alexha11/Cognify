@@ -16,7 +16,6 @@ import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
 
 @Controller('questions')
-@UseGuards(JwtAuthGuard)
 export class QuestionsController {
   constructor(private readonly questionsService: QuestionsService) {}
 
@@ -25,7 +24,7 @@ export class QuestionsController {
    * POST /questions
    */
   @Post()
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async create(
     @Body() dto: CreateQuestionDto,
@@ -41,9 +40,9 @@ export class QuestionsController {
   @Get('course/:courseId')
   async findByCourse(
     @Param('courseId') courseId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any[]> {
-    return this.questionsService.findByCourse(courseId, user.organizationId, user.role);
+    return this.questionsService.findByCourse(courseId, user?.organizationId, user?.role);
   }
 
   /**
@@ -51,7 +50,7 @@ export class QuestionsController {
    * GET /questions/pending
    */
   @Get('pending')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async getPendingApproval(@CurrentUser('organizationId') organizationId: string) {
     return this.questionsService.getPendingApproval(organizationId);
@@ -64,7 +63,7 @@ export class QuestionsController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @CurrentUser('organizationId') organizationId: string,
+    @CurrentUser('organizationId') organizationId?: string,
   ) {
     return this.questionsService.findOne(id, organizationId);
   }
@@ -74,7 +73,7 @@ export class QuestionsController {
    * PUT /questions/:id
    */
   @Put(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async update(
     @Param('id') id: string,
@@ -89,7 +88,7 @@ export class QuestionsController {
    * POST /questions/:id/approve
    */
   @Post(':id/approve')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async approve(
     @Param('id') id: string,
@@ -103,7 +102,7 @@ export class QuestionsController {
    * DELETE /questions/:id
    */
   @Delete(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async remove(
     @Param('id') id: string,

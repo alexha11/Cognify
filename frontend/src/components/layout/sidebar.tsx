@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { 
   LayoutDashboard, 
   BookOpen, 
@@ -17,6 +17,7 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/lib/auth';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { getInitials } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 const navItems = {
   ADMIN: [
@@ -47,10 +48,12 @@ const navItems = {
 export function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const router = useRouter();
 
-  if (!user) return null;
-
-  const items = navItems[user.role] || navItems.STUDENT;
+  const items = user ? (navItems[user.role] || navItems.STUDENT) : [
+    { href: '/', label: 'Home', icon: LayoutDashboard },
+    { href: '/courses', label: 'Browse Courses', icon: BookOpen },
+  ];
 
   return (
     <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
@@ -61,7 +64,7 @@ export function Sidebar() {
             <Sparkles className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            ExamAI
+            Cognify
           </span>
         </div>
 
@@ -91,28 +94,39 @@ export function Sidebar() {
 
         {/* User section */}
         <div className="border-t border-gray-200 p-4 dark:border-gray-800">
-          <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
-            <Avatar className="h-9 w-9">
-              <AvatarFallback>
-                {getInitials(user.firstName, user.lastName)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
-                {user.firstName} {user.lastName}
-              </p>
-              <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                {user.role.toLowerCase()}
-              </p>
+          {user ? (
+            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
+              <Avatar className="h-9 w-9">
+                <AvatarFallback>
+                  {getInitials(user.firstName, user.lastName)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                  {user.firstName} {user.lastName}
+                </p>
+                <p className="text-xs text-gray-500 truncate dark:text-gray-400">
+                  {user.role.toLowerCase()}
+                </p>
+              </div>
+              <button
+                onClick={logout}
+                className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800"
+                title="Logout"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
             </div>
-            <button
-              onClick={logout}
-              className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800"
-              title="Logout"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
-          </div>
+          ) : (
+            <div className="space-y-2 px-2">
+              <Button asChild className="w-full" variant="outline">
+                <Link href="/login">Sign In</Link>
+              </Button>
+              <Button asChild className="w-full">
+                <Link href="/register">Sign Up</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </aside>

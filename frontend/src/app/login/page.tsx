@@ -50,7 +50,7 @@ export default function LoginPage() {
             <Sparkles className="h-7 w-7 text-white" />
           </div>
           <span className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            ExamAI
+            Cognify
           </span>
         </div>
 

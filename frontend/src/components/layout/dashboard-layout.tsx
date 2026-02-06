@@ -23,9 +23,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  if (!user) {
-    return null; // Will redirect via auth context
-  }
+  // No longer redirecting if user is null, to allow public browsing
+  // if (!user) {
+  //   return null; // Will redirect via auth context
+  // }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-950 dark:to-gray-900">

@@ -32,7 +32,7 @@ export class AttemptsService {
     }
 
     // Verify answer belongs to question
-    const answer = question.answers.find((a) => a.id === dto.selectedAnswerId);
+    const answer = question.answers.find((a: any) => a.id === dto.selectedAnswerId);
     if (!answer) {
       throw new ForbiddenException('Invalid answer for this question');
     }
@@ -70,7 +70,7 @@ export class AttemptsService {
       id: attempt.id,
       isCorrect: attempt.isCorrect,
       selectedAnswer: attempt.selectedAnswer,
-      correctAnswer: question.answers.find((a) => a.isCorrect),
+      correctAnswer: question.answers.find((a: any) => a.isCorrect),
       hint: question.hint,
       question: {
         id: question.id,
@@ -119,7 +119,7 @@ export class AttemptsService {
 
     // Group by course
     const byCourse = attempts.reduce(
-      (acc, attempt) => {
+      (acc: any, attempt: any) => {
         const courseId = attempt.question.courseId;
         if (!acc[courseId]) {
           acc[courseId] = { total: 0, correct: 0 };
@@ -170,7 +170,7 @@ export class AttemptsService {
     const attempts = await this.prisma.attempt.findMany({
       where: {
         userId,
-        questionId: { in: course.questions.map((q) => q.id) },
+        questionId: { in: course.questions.map((q: any) => q.id) },
       },
     });
 

@@ -16,7 +16,6 @@ import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
 
 @Controller('courses')
-@UseGuards(JwtAuthGuard)
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
@@ -25,7 +24,7 @@ export class CoursesController {
    * POST /courses
    */
   @Post()
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async create(
     @Body() dto: CreateCourseDto,
@@ -39,8 +38,8 @@ export class CoursesController {
    * GET /courses
    */
   @Get()
-  async findAll(@CurrentUser() user: AuthenticatedUser): Promise<any[]> {
-    return this.coursesService.findAll(user.organizationId, user.role);
+  async findAll(@CurrentUser() user?: AuthenticatedUser): Promise<any[]> {
+    return this.coursesService.findAll(user?.organizationId, user?.role);
   }
 
   /**
@@ -50,9 +49,9 @@ export class CoursesController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any> {
-    return this.coursesService.findOne(id, user.organizationId, user.role);
+    return this.coursesService.findOne(id, user?.organizationId, user?.role);
   }
 
   /**
@@ -60,7 +59,7 @@ export class CoursesController {
    * PUT /courses/:id
    */
   @Put(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async update(
     @Param('id') id: string,
@@ -81,7 +80,7 @@ export class CoursesController {
    * DELETE /courses/:id
    */
   @Delete(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
   async remove(
     @Param('id') id: string,

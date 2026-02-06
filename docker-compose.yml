@@ -24,9 +24,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: examai-backend
+    container_name: cognify-backend
     environment:
-      DATABASE_URL: postgresql://examai:examai_local_password@postgres:5432/examai
+      DATABASE_URL: postgresql://cognify:cognify_local_password@postgres:5432/cognify
       JWT_SECRET: local-development-secret-change-in-production
       JWT_EXPIRES_IN: 7d
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY}

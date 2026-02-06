@@ -104,20 +104,12 @@ export class QuestionsService {
    * Get questions for a course
    * Students only see approved questions
    */
-  async findByCourse(courseId: string, organizationId: string, userRole: Role): Promise<any[]> {
-    // Verify course belongs to organization
-    const course = await this.prisma.course.findFirst({
-      where: { id: courseId, organizationId },
-    });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
+  async findByCourse(courseId: string, organizationId?: string, userRole?: Role) {
     return this.prisma.question.findMany({
       where: {
         courseId,
-        ...(userRole === Role.STUDENT && { approved: true }),
+        ...(organizationId && { organizationId }),
+        ...((userRole === Role.STUDENT || !userRole) ? { approved: true } : {}),
       },
       include: {
         answers: true,
@@ -136,11 +128,11 @@ export class QuestionsService {
   /**
    * Get single question
    */
-  async findOne(id: string, organizationId: string) {
+  async findOne(id: string, organizationId?: string) {
     const question = await this.prisma.question.findFirst({
       where: {
         id,
-        course: { organizationId },
+        ...(organizationId && { organizationId }),
       },
       include: {
         answers: true,

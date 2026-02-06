@@ -34,11 +34,11 @@ export class MaterialsService {
   /**
    * Get materials for a course
    */
-  async findByCourse(courseId: string, organizationId: string): Promise<any[]> {
+  async findByCourse(courseId: string, organizationId?: string): Promise<any[]> {
     return this.prisma.material.findMany({
       where: {
         courseId,
-        course: { organizationId },
+        ...(organizationId && { organizationId }),
       },
       include: {
         uploadedBy: {

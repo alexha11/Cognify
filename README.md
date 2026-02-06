@@ -1,6 +1,6 @@
-# ExamAI - AI-Powered Exam Training Platform
+# Cognify - AI-Powered Study Platform
 
-A production-ready, multi-tenant SaaS platform for AI-powered exam training. Create courses, generate questions with AI, and track student progress.
+A production-ready, multi-tenant SaaS platform for Cognify is a modern, full-stack application designed to help students master any subject through AI-generated questions and study materials.
 
 ## Tech Stack
 

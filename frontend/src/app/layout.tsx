@@ -6,8 +6,8 @@ import { AuthProvider } from "@/lib/auth";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ExamAI - AI-Powered Exam Training Platform",
-  description: "Create courses, generate AI questions, and track student progress with ExamAI.",
+  title: "Cognify - AI-Powered Study Platform",
+  description: "Create courses, generate AI questions, and track student progress with Cognify.",
 };
 
 export default function RootLayout({

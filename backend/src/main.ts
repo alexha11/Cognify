@@ -36,7 +36,7 @@ async function bootstrap() {
 
   app.enableCors({
     origin: nodeEnv === 'production' 
-      ? ['https://examai.app', 'https://www.examai.app']
+      ? ['https://cognify.app', 'https://www.cognify.app']
       : ['http://localhost:3000', 'http://127.0.0.1:3000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -49,7 +49,7 @@ async function bootstrap() {
   const port = configService.get('app.port', { infer: true }) || 3001;
 
   await app.listen(port);
-  logger.log(`🚀 ExamAI Backend running on http://localhost:${port}/api`);
+  logger.log(`🚀 Cognify Backend running on http://localhost:${port}/api`);
 }
 
 bootstrap();

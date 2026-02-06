@@ -15,7 +15,6 @@ import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
 
 @Controller('materials')
-@UseGuards(JwtAuthGuard)
 export class MaterialsController {
   constructor(private readonly materialsService: MaterialsService) {}
 
@@ -23,7 +22,7 @@ export class MaterialsController {
    * Create new study material
    */
   @Post()
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async create(
     @Body() dto: CreateMaterialDto,
@@ -38,16 +37,16 @@ export class MaterialsController {
   @Get('course/:courseId')
   async findByCourse(
     @Param('courseId') courseId: string,
-    @CurrentUser() user: AuthenticatedUser,
+    @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any[]> {
-    return this.materialsService.findByCourse(courseId, user.organizationId);
+    return this.materialsService.findByCourse(courseId, user?.organizationId);
   }
 
   /**
    * Delete material
    */
   @Delete(':id')
-  @UseGuards(RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async remove(
     @Param('id') id: string,
