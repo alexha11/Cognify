@@ -51,4 +51,14 @@ api.interceptors.response.use(
   }
 );
 
+export const apiGet = async <T>(url: string): Promise<T> => {
+  const response = await api.get(url);
+  return response.data.data;
+};
+
+export const apiPost = async <T>(url: string, data?: any): Promise<T> => {
+  const response = await api.post(url, data);
+  return response.data.data;
+};
+
 export default api;

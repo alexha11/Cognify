@@ -1,32 +1,38 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { DashboardLayout } from '@/components/layout';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useAuth } from '@/lib/auth';
-import api from '@/lib/api';
-import { Course, Question, Material } from '@/types';
-import { formatDate, formatFileSize } from '@/lib/utils';
-import { 
-  ArrowLeft, 
-  FileQuestion, 
-  FileText, 
-  Upload, 
-  Sparkles, 
-  Check, 
-  X, 
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { DashboardLayout } from "@/components/layout";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuth } from "@/lib/auth";
+import { apiGet, apiPost } from "@/lib/api";
+import { Course, Question, Material } from "@/types";
+import { formatDate, formatFileSize } from "@/lib/utils";
+import {
+  ArrowLeft,
+  FileQuestion,
+  FileText,
+  Upload,
+  Sparkles,
+  Check,
+  X,
   Loader2,
   Play,
   Lock,
-  ArrowRight
-} from 'lucide-react';
-import { FeatureGate, AuthPromptModal } from '@/components/ui';
+  ArrowRight,
+} from "lucide-react";
+import { FeatureGate, AuthPromptModal } from "@/components/ui";
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -41,24 +47,24 @@ export default function CourseDetailPage() {
   useEffect(() => {
     setIsMounted(true);
   }, []);
-  
-  const canEdit = user?.role === 'ADMIN' || user?.role === 'INSTRUCTOR';
-  const isStudent = user?.role === 'STUDENT';
+
+  const canEdit = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
+  const isStudent = user?.role === "STUDENT";
 
   const fetchCourse = async () => {
     if (authLoading) return;
     try {
-      const [courseRes, questionsRes, materialsRes] = await Promise.all([
-        api.get(`/courses/${params.id}`),
-        api.get(`/questions/course/${params.id}`),
-        api.get(`/materials/course/${params.id}`),
+      const [courseData, questionsData, materialsData] = await Promise.all([
+        apiGet<Course>(`/courses/${params.id}`),
+        apiGet<Question[]>(`/questions/course/${params.id}`),
+        apiGet<Material[]>(`/materials/course/${params.id}`),
       ]);
-      setCourse(courseRes.data);
-      setQuestions(questionsRes.data);
-      setMaterials(materialsRes.data);
+      setCourse(courseData);
+      setQuestions(questionsData || []);
+      setMaterials(materialsData || []);
     } catch (error) {
-      console.error('Failed to fetch course', error);
-      router.push('/courses');
+      console.error("Failed to fetch course", error);
+      router.push("/courses");
     } finally {
       setIsLoading(false);
     }
@@ -70,10 +76,10 @@ export default function CourseDetailPage() {
 
   const handleApprove = async (questionId: string) => {
     try {
-      await api.post(`/questions/${questionId}/approve`);
+      await apiPost(`/questions/${questionId}/approve`);
       fetchCourse();
     } catch (error) {
-      console.error('Failed to approve question', error);
+      console.error("Failed to approve question", error);
     }
   };
 
@@ -91,15 +97,18 @@ export default function CourseDetailPage() {
 
   if (!course) return null;
 
-  const pendingQuestions = questions.filter(q => !q.approved);
-  const approvedQuestions = questions.filter(q => q.approved);
+  const pendingQuestions = questions.filter((q) => !q.approved);
+  const approvedQuestions = questions.filter((q) => q.approved);
 
   return (
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <Link href="/courses" className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4">
+          <Link
+            href="/courses"
+            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
+          >
             <ArrowLeft className="h-4 w-4" />
             Back to courses
           </Link>
@@ -107,12 +116,12 @@ export default function CourseDetailPage() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
                 {course.name}
-                <Badge variant={course.isPublished ? 'success' : 'secondary'}>
-                  {course.isPublished ? 'Published' : 'Draft'}
+                <Badge variant={course.isPublished ? "success" : "secondary"}>
+                  {course.isPublished ? "Published" : "Draft"}
                 </Badge>
               </h1>
               <p className="mt-2 text-gray-500">
-                {course.description || 'No description'}
+                {course.description || "No description"}
               </p>
             </div>
             <div className="flex gap-3">
@@ -120,7 +129,7 @@ export default function CourseDetailPage() {
                 <Link href={`/quiz/${course.id}`}>
                   <Button className="bg-indigo-600 hover:bg-indigo-700">
                     <Play className="h-4 w-4 mr-2" />
-                    {user ? 'Start Quiz' : 'Try Demo Quiz'}
+                    {user ? "Start Quiz" : "Try Demo Quiz"}
                   </Button>
                 </Link>
               )}
@@ -143,7 +152,9 @@ export default function CourseDetailPage() {
               <div className="flex items-center gap-3">
                 <FileQuestion className="h-8 w-8 text-indigo-600" />
                 <div>
-                  <p className="text-2xl font-bold">{approvedQuestions.length}</p>
+                  <p className="text-2xl font-bold">
+                    {approvedQuestions.length}
+                  </p>
                   <p className="text-sm text-gray-500">Questions</p>
                 </div>
               </div>
@@ -166,8 +177,12 @@ export default function CourseDetailPage() {
                 <div className="flex items-center gap-3">
                   <Sparkles className="h-8 w-8 text-yellow-600" />
                   <div>
-                    <p className="text-2xl font-bold">{pendingQuestions.length}</p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400">Pending Approval</p>
+                    <p className="text-2xl font-bold">
+                      {pendingQuestions.length}
+                    </p>
+                    <p className="text-sm text-yellow-700 dark:text-yellow-400">
+                      Pending Approval
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -183,16 +198,27 @@ export default function CourseDetailPage() {
                 <Sparkles className="h-5 w-5 text-yellow-500" />
                 AI Questions - Pending Approval
               </CardTitle>
-              <CardDescription>Review and approve AI-generated questions</CardDescription>
+              <CardDescription>
+                Review and approve AI-generated questions
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               {pendingQuestions.map((question) => (
-                <div key={question.id} className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-4 dark:border-yellow-800 dark:bg-yellow-900/10">
-                  <p className="font-medium text-gray-900 dark:text-white">{question.content}</p>
+                <div
+                  key={question.id}
+                  className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-4 dark:border-yellow-800 dark:bg-yellow-900/10"
+                >
+                  <p className="font-medium text-gray-900 dark:text-white">
+                    {question.content}
+                  </p>
                   <div className="mt-3 space-y-1">
                     {question.answers.map((answer, i) => (
-                      <div key={answer.id} className={`text-sm ${answer.isCorrect ? 'text-green-600 font-medium' : 'text-gray-600'}`}>
-                        {String.fromCharCode(65 + i)}. {answer.content} {answer.isCorrect && '✓'}
+                      <div
+                        key={answer.id}
+                        className={`text-sm ${answer.isCorrect ? "text-green-600 font-medium" : "text-gray-600"}`}
+                      >
+                        {String.fromCharCode(65 + i)}. {answer.content}{" "}
+                        {answer.isCorrect && "✓"}
                       </div>
                     ))}
                   </div>
@@ -202,7 +228,10 @@ export default function CourseDetailPage() {
                     </p>
                   )}
                   <div className="mt-4 flex gap-2">
-                    <Button size="sm" onClick={() => handleApprove(question.id)}>
+                    <Button
+                      size="sm"
+                      onClick={() => handleApprove(question.id)}
+                    >
                       <Check className="h-4 w-4" />
                       Approve
                     </Button>
@@ -238,33 +267,50 @@ export default function CourseDetailPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                {(user ? approvedQuestions : approvedQuestions.slice(0, 5)).map((question, index) => (
-                  <div key={question.id} className={`${!user && index >= 3 ? 'opacity-50 blur-[0.5px]' : ''} rounded-lg border p-4`}>
-                    <p className="font-medium">
-                      {index + 1}. {question.content}
-                    </p>
-                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                      {question.answers.map((answer, i) => (
-                        <div key={answer.id} className={`text-sm rounded px-3 py-2 ${answer.isCorrect ? 'bg-green-100 text-green-700 dark:bg-green-900/30' : 'bg-gray-100 text-gray-600 dark:bg-gray-800'}`}>
-                          {String.fromCharCode(65 + i)}. {answer.content}
-                        </div>
-                      ))}
+                {(user ? approvedQuestions : approvedQuestions.slice(0, 5)).map(
+                  (question, index) => (
+                    <div
+                      key={question.id}
+                      className={`${!user && index >= 3 ? "opacity-50 blur-[0.5px]" : ""} rounded-lg border p-4`}
+                    >
+                      <p className="font-medium">
+                        {index + 1}. {question.content}
+                      </p>
+                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {question.answers.map((answer, i) => (
+                          <div
+                            key={answer.id}
+                            className={`text-sm rounded px-3 py-2 ${answer.isCorrect ? "bg-green-100 text-green-700 dark:bg-green-900/30" : "bg-gray-100 text-gray-600 dark:bg-gray-800"}`}
+                          >
+                            {String.fromCharCode(65 + i)}. {answer.content}
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
-                
+                  ),
+                )}
+
                 {!user && (
-                    <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 border border-indigo-100 dark:border-indigo-800 text-center">
-                        <Lock className="h-8 w-8 text-indigo-500 mx-auto mb-3" />
-                        <h4 className="font-bold text-gray-900 dark:text-white">Unlock {approvedQuestions.length} Questions</h4>
-                        <p className="text-sm text-gray-500 mt-1 mb-4">You&apos;re viewing a limited preview. Sign in to access all questions and start tracking your progress.</p>
-                        <FeatureGate variant="prompt" title="Full Question Access" description="Get unlimited access to all course questions, detailed explanations, and progress tracking.">
-                            <Button size="sm" className="bg-indigo-600">
-                                Sign Up to See More
-                                <ArrowRight className="h-4 w-4 ml-2" />
-                            </Button>
-                        </FeatureGate>
-                    </div>
+                  <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 border border-indigo-100 dark:border-indigo-800 text-center">
+                    <Lock className="h-8 w-8 text-indigo-500 mx-auto mb-3" />
+                    <h4 className="font-bold text-gray-900 dark:text-white">
+                      Unlock {approvedQuestions.length} Questions
+                    </h4>
+                    <p className="text-sm text-gray-500 mt-1 mb-4">
+                      You&apos;re viewing a limited preview. Sign in to access
+                      all questions and start tracking your progress.
+                    </p>
+                    <FeatureGate
+                      variant="prompt"
+                      title="Full Question Access"
+                      description="Get unlimited access to all course questions, detailed explanations, and progress tracking."
+                    >
+                      <Button size="sm" className="bg-indigo-600">
+                        Sign Up to See More
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    </FeatureGate>
+                  </div>
                 )}
               </div>
             )}
@@ -285,24 +331,28 @@ export default function CourseDetailPage() {
             ) : (
               <div className="space-y-2">
                 {materials.map((material) => (
-                  <div key={material.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div
+                    key={material.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div className="flex items-center gap-3">
                       <FileText className="h-5 w-5 text-gray-400" />
                       <div>
                         <p className="font-medium">{material.fileName}</p>
                         <p className="text-xs text-gray-500">
-                          {formatFileSize(material.fileSize)} • {formatDate(material.createdAt)}
+                          {formatFileSize(material.fileSize)} •{" "}
+                          {formatDate(material.createdAt)}
                         </p>
                       </div>
                     </div>
-                    <FeatureGate 
-                        variant="prompt" 
-                        title="Download Materials" 
-                        description="Sign in to download and view study materials for this course."
+                    <FeatureGate
+                      variant="prompt"
+                      title="Download Materials"
+                      description="Sign in to download and view study materials for this course."
                     >
-                        <Button variant="outline" size="sm">
-                            View
-                        </Button>
+                      <Button variant="outline" size="sm">
+                        View
+                      </Button>
                     </FeatureGate>
                   </div>
                 ))}

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import api from "@/lib/api";
+import { apiGet, apiPost } from "@/lib/api";
 import { Course } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { Plus, BookOpen, FileQuestion, Loader2, X } from "lucide-react";
@@ -33,8 +33,8 @@ export default function CoursesPage() {
   const fetchCourses = async () => {
     if (authLoading) return;
     try {
-      const res = await api.get("/courses");
-      setCourses(res.data.data || []);
+      const data = await apiGet<Course[]>("/courses");
+      setCourses(data || []);
     } catch (error) {
       console.error("Failed to fetch courses", error);
       setCourses([]);
@@ -53,10 +53,10 @@ export default function CoursesPage() {
     setError("");
 
     try {
-      await api.post("/courses", newCourse);
+      await apiPost("/courses", newCourse);
       setNewCourse({ name: "", description: "" });
       setShowCreate(false);
-      await fetchCourses(); // Add await for consistency
+      await fetchCourses();
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || "Failed to create course");
