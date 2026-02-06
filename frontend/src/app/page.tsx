@@ -113,7 +113,7 @@ export default function HomePage() {
       {/* Footer */}
       <footer className="border-t border-gray-200 py-12 dark:border-gray-800">
         <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-500">
-          © 2024 ExamAI. All rights reserved.
+          © 2026 Cognify. All rights reserved.
         </div>
       </footer>
     </div>
