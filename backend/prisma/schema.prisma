@@ -1,0 +1,231 @@
+// Prisma schema for ExamAI - Multi-tenant SaaS Platform
+// All tables include organizationId for tenant isolation
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Role {
+  ADMIN
+  INSTRUCTOR
+  STUDENT
+}
+
+enum Plan {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  CANCELED
+  PAST_DUE
+  TRIALING
+}
+
+// ============================================
+// ORGANIZATION (Multi-tenant root)
+// ============================================
+
+model Organization {
+  id               String    @id @default(uuid())
+  name             String
+  slug             String    @unique
+  plan             Plan      @default(FREE)
+  stripeCustomerId String?   @unique
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  users         User[]
+  courses       Course[]
+  subscriptions Subscription[]
+
+  @@index([slug])
+}
+
+// ============================================
+// USER (belongs to one organization)
+// ============================================
+
+model User {
+  id             String   @id @default(uuid())
+  email          String   @unique
+  passwordHash   String
+  firstName      String
+  lastName       String
+  role           Role     @default(STUDENT)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Organization relation (tenant isolation)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Relations
+  createdCourses  Course[]    @relation("CourseCreator")
+  uploadedMaterials Material[] @relation("MaterialUploader")
+  createdQuestions Question[] @relation("QuestionCreator")
+  attempts         Attempt[]
+
+  @@index([email])
+  @@index([organizationId])
+}
+
+// ============================================
+// COURSE (belongs to organization)
+// ============================================
+
+model Course {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Organization relation (tenant isolation)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  // Creator relation
+  createdById String
+  createdBy   User   @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Relations
+  materials Material[]
+  questions Question[]
+
+  @@index([organizationId])
+  @@index([createdById])
+}
+
+// ============================================
+// MATERIAL (course attachments)
+// ============================================
+
+model Material {
+  id        String   @id @default(uuid())
+  fileName  String
+  fileUrl   String
+  fileType  String
+  fileSize  Int
+  createdAt DateTime @default(now())
+
+  // Course relation
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Uploader relation
+  uploadedById String
+  uploadedBy   User   @relation("MaterialUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+}
+
+// ============================================
+// QUESTION (exam questions)
+// ============================================
+
+model Question {
+  id          String   @id @default(uuid())
+  content     String
+  hint        String?
+  aiGenerated Boolean  @default(false)
+  approved    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Course relation
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  // Creator relation
+  createdById String
+  createdBy   User   @relation("QuestionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  // Relations
+  answers  Answer[]
+  attempts Attempt[]
+
+  @@index([courseId])
+  @@index([approved])
+}
+
+// ============================================
+// ANSWER (question options)
+// ============================================
+
+model Answer {
+  id        String  @id @default(uuid())
+  content   String
+  isCorrect Boolean @default(false)
+
+  // Question relation
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Relations
+  attempts Attempt[]
+
+  @@index([questionId])
+}
+
+// ============================================
+// ATTEMPT (student quiz attempts)
+// ============================================
+
+model Attempt {
+  id        String   @id @default(uuid())
+  isCorrect Boolean
+  createdAt DateTime @default(now())
+
+  // User relation
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Question relation
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  // Selected answer relation
+  selectedAnswerId String
+  selectedAnswer   Answer @relation(fields: [selectedAnswerId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([questionId])
+  @@index([createdAt])
+}
+
+// ============================================
+// SUBSCRIPTION (Stripe billing)
+// ============================================
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  stripeSubscriptionId String             @unique
+  stripePriceId        String
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+
+  // Organization relation
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([stripeSubscriptionId])
+}
