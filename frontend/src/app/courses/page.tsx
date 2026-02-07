@@ -10,12 +10,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost } from "@/lib/api";
+import { useToast } from "@/components/ui/toast";
 import { Course } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { Plus, BookOpen, FileQuestion, Loader2, X, Play } from "lucide-react";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -53,13 +55,19 @@ export default function CoursesPage() {
     setError("");
 
     try {
-      await apiPost("/courses", newCourse);
+      console.log("[Courses] Creating course:", newCourse);
+      const result = await apiPost("/courses", newCourse);
+      console.log("[Courses] Course created:", result);
       setNewCourse({ name: "", description: "" });
       setShowCreate(false);
       await fetchCourses();
     } catch (err: unknown) {
+      console.error("[Courses] Creation failed:", err);
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Failed to create course");
+      const errorMessage =
+        error.response?.data?.message || "Failed to create course";
+      setError(errorMessage);
+      showToast(errorMessage, "error");
     } finally {
       setCreating(false);
     }

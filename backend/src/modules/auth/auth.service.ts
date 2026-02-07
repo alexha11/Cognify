@@ -64,7 +64,7 @@ export class AuthService {
           passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
-          role: Role.ADMIN,
+          role: Role.INSTRUCTOR, // Organization creator gets INSTRUCTOR role (ADMIN requires payment)
           organizationId: organization.id,
         },
         include: {

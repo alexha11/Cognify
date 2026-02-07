@@ -61,4 +61,14 @@ export const apiPost = async <T>(url: string, data?: any): Promise<T> => {
   return response.data.data;
 };
 
+export const apiPut = async <T>(url: string, data?: any): Promise<T> => {
+  const response = await api.put(url, data);
+  return response.data.data;
+};
+
+export const apiDelete = async <T>(url: string): Promise<T> => {
+  const response = await api.delete(url);
+  return response.data.data;
+};
+
 export default api;

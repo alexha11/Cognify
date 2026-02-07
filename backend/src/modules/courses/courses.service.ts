@@ -24,11 +24,14 @@ export class CoursesService {
     userId: string,
     organizationId: string,
   ) {
+    console.log('[CoursesService] Creating course:', { dto, userId, organizationId });
+    
     // Check plan limits
     const canCreate = await this.organizationsService.checkPlanLimit(
       organizationId,
       'courses',
     );
+    console.log('[CoursesService] Plan limit check:', { canCreate });
 
     if (!canCreate) {
       throw new ForbiddenException(
@@ -36,7 +39,7 @@ export class CoursesService {
       );
     }
 
-    return this.prisma.course.create({
+    const course = await this.prisma.course.create({
       data: {
         name: dto.name,
         description: dto.description,
@@ -59,6 +62,8 @@ export class CoursesService {
         },
       },
     });
+    console.log('[CoursesService] Course created successfully:', { id: course.id, name: course.name });
+    return course;
   }
 
   /**
