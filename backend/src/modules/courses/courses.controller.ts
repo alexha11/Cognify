@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
-import { JwtAuthGuard, RolesGuard } from '../../common/guards';
+import { JwtAuthGuard, OptionalJwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
@@ -38,7 +38,9 @@ export class CoursesController {
    * GET /courses
    */
   @Get()
+  @UseGuards(OptionalJwtAuthGuard)
   async findAll(@CurrentUser() user?: AuthenticatedUser): Promise<any[]> {
+    console.log('[CoursesController] GET /courses - user:', user?.userId, 'role:', user?.role, 'orgId:', user?.organizationId);
     return this.coursesService.findAll(user?.organizationId, user?.role);
   }
 
@@ -47,6 +49,7 @@ export class CoursesController {
    * GET /courses/:id
    */
   @Get(':id')
+  @UseGuards(OptionalJwtAuthGuard)
   async findOne(
     @Param('id') id: string,
     @CurrentUser() user?: AuthenticatedUser,
