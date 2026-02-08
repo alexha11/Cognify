@@ -37,7 +37,7 @@ export class AttemptsService {
       throw new ForbiddenException('Invalid answer for this question');
     }
 
-    // Check if already answered
+    // Check if already answered - if so, update the attempt instead of throwing
     const existingAttempt = await this.prisma.attempt.findFirst({
       where: {
         userId,
@@ -45,26 +45,44 @@ export class AttemptsService {
       },
     });
 
+    let attempt;
     if (existingAttempt) {
-      throw new ForbiddenException('You have already answered this question');
+      // Update existing attempt for retry
+      attempt = await this.prisma.attempt.update({
+        where: { id: existingAttempt.id },
+        data: {
+          selectedAnswerId: dto.selectedAnswerId,
+          isCorrect: answer.isCorrect,
+        },
+        include: {
+          question: {
+            include: {
+              answers: true,
+            },
+          },
+          selectedAnswer: true,
+        },
+      });
+    } else {
+      // Create new attempt
+      attempt = await this.prisma.attempt.create({
+        data: {
+          userId,
+          questionId: dto.questionId,
+          selectedAnswerId: dto.selectedAnswerId,
+          isCorrect: answer.isCorrect,
+        },
+        include: {
+          question: {
+            include: {
+              answers: true,
+            },
+          },
+          selectedAnswer: true,
+        },
+      });
     }
 
-    const attempt = await this.prisma.attempt.create({
-      data: {
-        userId,
-        questionId: dto.questionId,
-        selectedAnswerId: dto.selectedAnswerId,
-        isCorrect: answer.isCorrect,
-      },
-      include: {
-        question: {
-          include: {
-            answers: true,
-          },
-        },
-        selectedAnswer: true,
-      },
-    });
 
     return {
       id: attempt.id,

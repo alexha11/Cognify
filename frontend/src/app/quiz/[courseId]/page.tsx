@@ -21,6 +21,7 @@ import {
   Loader2,
   Sparkles,
   Search,
+  RefreshCw,
 } from "lucide-react";
 
 export default function QuizPage() {
@@ -138,6 +139,28 @@ export default function QuizPage() {
     }
   };
 
+  const handleRetry = async () => {
+    // Reset all quiz state
+    setCurrentIndex(0);
+    setSelectedAnswer(null);
+    setResult(null);
+    setCompleted(false);
+    setDemoStats({ correct: 0, total: 0 });
+    setIsLoading(true);
+
+    try {
+      // Re-fetch all questions
+      const allQuestions = await apiGet<Question[]>(
+        `/questions/course/${courseId}`,
+      );
+      setQuestions(allQuestions || []);
+    } catch (error) {
+      console.error("Failed to fetch questions", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isMounted) return null;
 
   if (isLoading) {
@@ -200,27 +223,39 @@ export default function QuizPage() {
                   <Sparkles className="mr-2 h-5 w-5" />
                   Save Progress & Continue
                 </Button>
-                <Link href="/courses">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-8 font-semibold"
+                  onClick={handleRetry}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Retry Quiz
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  size="lg"
+                  className="px-8 font-bold"
+                  onClick={handleRetry}
+                >
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Retry Quiz
+                </Button>
+                <Link href="/progress">
                   <Button
                     size="lg"
                     variant="outline"
                     className="px-8 font-semibold"
                   >
-                    Explore Other Courses
-                  </Button>
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link href="/progress">
-                  <Button size="lg" className="px-8 font-bold">
                     View Progress
                   </Button>
                 </Link>
                 <Link href="/courses">
                   <Button
                     size="lg"
-                    variant="outline"
+                    variant="ghost"
                     className="px-8 font-semibold"
                   >
                     Back to Courses
