@@ -6,6 +6,98 @@ export class OrganizationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Get all public organizations (for discovery)
+   * No authentication required
+   */
+  async findAllPublic(): Promise<any[]> {
+    const organizations = await this.prisma.organization.findMany({
+      where: { isPublic: true },
+      include: {
+        _count: {
+          select: {
+            courses: { where: { isPublic: true } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return organizations.map(org => ({
+      id: org.id,
+      name: org.name,
+      slug: org.slug,
+      description: org.description,
+      logoUrl: org.logoUrl,
+      courseCount: org._count.courses,
+      createdAt: org.createdAt,
+    }));
+  }
+
+  /**
+   * Get organization by slug (for public discovery)
+   * Returns org with its public courses
+   */
+  async findBySlug(slug: string, userId?: string, userOrgId?: string): Promise<any> {
+    const organization = await this.prisma.organization.findUnique({
+      where: { slug },
+      include: {
+        _count: {
+          select: {
+            users: true,
+            courses: true,
+          },
+        },
+        courses: {
+          where: {
+            OR: [
+              { isPublic: true },
+              ...(userOrgId === undefined ? [] : [{ organizationId: userOrgId }]),
+              ...(userId === undefined ? [] : [{ createdById: userId }]),
+            ],
+          },
+          include: {
+            _count: {
+              select: { questions: true },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
+    });
+
+    if (!organization) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    // Check if user can access this org (public or member)
+    const canAccess = organization.isPublic || userOrgId === organization.id;
+    if (!canAccess) {
+      throw new NotFoundException('Organization not found');
+    }
+
+    return {
+      id: organization.id,
+      name: organization.name,
+      slug: organization.slug,
+      description: organization.description,
+      logoUrl: organization.logoUrl,
+      isPublic: organization.isPublic,
+      plan: organization.plan,
+      createdAt: organization.createdAt,
+      userCount: organization._count.users,
+      courseCount: organization._count.courses,
+      courses: organization.courses.map(course => ({
+        id: course.id,
+        name: course.name,
+        description: course.description,
+        isPublic: course.isPublic,
+        questionCount: course._count.questions,
+        createdAt: course.createdAt,
+      })),
+    };
+  }
+
+  /**
    * Get current organization details
    * Organization ID is derived from JWT, never from request
    */
@@ -30,6 +122,9 @@ export class OrganizationsService {
       id: organization.id,
       name: organization.name,
       slug: organization.slug,
+      description: organization.description,
+      logoUrl: organization.logoUrl,
+      isPublic: organization.isPublic,
       plan: organization.plan,
       createdAt: organization.createdAt,
       userCount: organization._count.users,
@@ -57,11 +152,11 @@ export class OrganizationsService {
   }
 
   /**
-   * Update organization name
+   * Update organization
    */
   async update(
     organizationId: string,
-    data: { name?: string },
+    data: { name?: string; description?: string; logoUrl?: string },
   ): Promise<any> {
     return this.prisma.organization.update({
       where: { id: organizationId },
@@ -70,13 +165,33 @@ export class OrganizationsService {
   }
 
   /**
+   * Toggle organization visibility (public/private)
+   * Only admins can change visibility
+   */
+  async updateVisibility(
+    organizationId: string,
+    isPublic: boolean,
+  ): Promise<any> {
+    const updated = await this.prisma.organization.update({
+      where: { id: organizationId },
+      data: { isPublic },
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      isPublic: updated.isPublic,
+    };
+  }
+
+  /**
    * Get plan limits based on organization plan
    */
   getPlanLimits(plan: string): { maxCourses: number; maxQuestions: number; maxUsers: number } {
     const limits = {
-      FREE: { maxCourses: 1, maxQuestions: 50, maxUsers: 5 },
-      PRO: { maxCourses: 10, maxQuestions: 500, maxUsers: 50 },
-      ENTERPRISE: { maxCourses: -1, maxQuestions: -1, maxUsers: -1 }, // unlimited
+      FREE: { maxCourses: 5, maxQuestions: 200, maxUsers: 10 },
+      PRO: { maxCourses: 25, maxQuestions: 1000, maxUsers: 100 },
+      ENTERPRISE: { maxCourses: -1, maxQuestions: -1, maxUsers: -1 },
     };
 
     return limits[plan as keyof typeof limits] || limits.FREE;
@@ -112,7 +227,6 @@ export class OrganizationsService {
       return limits.maxUsers === -1 || org._count.users < limits.maxUsers;
     }
 
-    // For questions, we need to count across all courses
     if (limitType === 'questions') {
       const questionCount = await this.prisma.question.count({
         where: {

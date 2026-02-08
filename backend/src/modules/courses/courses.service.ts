@@ -176,6 +176,43 @@ export class CoursesService {
   }
 
   /**
+   * Toggle course visibility (public/private)
+   * Instructors can only change their own courses
+   * Admins can change any course in their organization
+   */
+  async updateVisibility(
+    id: string,
+    isPublic: boolean,
+    userId: string,
+    organizationId: string,
+    role: Role,
+  ): Promise<any> {
+    const course = await this.prisma.course.findFirst({
+      where: { id, organizationId },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    // Instructors can only update their own courses
+    if (role === Role.INSTRUCTOR && course.createdById !== userId) {
+      throw new ForbiddenException('You can only change visibility of courses you created');
+    }
+
+    const updated = await this.prisma.course.update({
+      where: { id },
+      data: { isPublic },
+    });
+
+    return {
+      id: updated.id,
+      name: updated.name,
+      isPublic: updated.isPublic,
+    };
+  }
+
+  /**
    * Delete course
    * Only admin can delete
    */

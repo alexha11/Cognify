@@ -3,6 +3,7 @@ import {
   Get,
   Post,
   Put,
+  Patch,
   Delete,
   Body,
   Param,
@@ -72,6 +73,27 @@ export class CoursesController {
     return this.coursesService.update(
       id,
       dto,
+      user.userId,
+      user.organizationId,
+      user.role,
+    );
+  }
+
+  /**
+   * Toggle course visibility (public/private)
+   * PATCH /courses/:id/visibility
+   */
+  @Patch(':id/visibility')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  async updateVisibility(
+    @Param('id') id: string,
+    @Body() dto: { isPublic: boolean },
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.coursesService.updateVisibility(
+      id,
+      dto.isPublic,
       user.userId,
       user.organizationId,
       user.role,

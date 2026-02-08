@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Sparkles, BookOpen, Brain, BarChart3 } from 'lucide-react';
-import { useAuth } from '@/lib/auth';
+import Link from "next/link";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Sparkles, BookOpen, Brain, BarChart3, Building2 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
@@ -13,7 +13,7 @@ export default function HomePage() {
 
   useEffect(() => {
     if (!isLoading && user) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [user, isLoading, router]);
 
@@ -27,12 +27,15 @@ export default function HomePage() {
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Cognify
-          </span>
+              Cognify
+            </span>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="/courses" className="text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400">
-              Browse Courses
+            <Link
+              href="/organizations"
+              className="text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-400 dark:hover:text-indigo-400"
+            >
+              Browse Organizations
             </Link>
             <div className="flex items-center gap-4">
               <Link href="/login">
@@ -51,14 +54,14 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-6">
           <div className="text-center">
             <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl dark:text-white">
-              Master Any Subject with{' '}
+              Master Any Subject with{" "}
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Cognify
               </span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-              Create courses, upload materials, generate AI questions, and track student progress. 
-              The complete platform for modern education.
+              Create courses, upload materials, generate AI questions, and track
+              student progress. The complete platform for modern education.
             </p>
             <div className="mt-10 flex items-center justify-center gap-4">
               <Link href="/register">
@@ -66,9 +69,14 @@ export default function HomePage() {
                   Start Free Trial
                 </Button>
               </Link>
-              <Link href="/courses">
-                <Button size="lg" variant="outline" className="px-8">
-                  Browse Courses
+              <Link href="/organizations">
+                <Button
+                  size="lg"
+                  variant="outline"
+                  className="px-8 flex items-center gap-2"
+                >
+                  <Building2 className="w-5 h-5" />
+                  Browse Organizations
                 </Button>
               </Link>
             </div>
@@ -84,7 +92,8 @@ export default function HomePage() {
                 Course Management
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Create and organize courses, upload materials, and manage content with ease.
+                Create and organize courses, upload materials, and manage
+                content with ease.
               </p>
             </div>
 
@@ -96,7 +105,8 @@ export default function HomePage() {
                 AI Question Generation
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Generate high-quality exam questions instantly using advanced AI technology.
+                Generate high-quality exam questions instantly using advanced AI
+                technology.
               </p>
             </div>
 
@@ -108,7 +118,8 @@ export default function HomePage() {
                 Progress Tracking
               </h3>
               <p className="text-gray-600 dark:text-gray-400">
-                Monitor student performance with detailed analytics and insights.
+                Monitor student performance with detailed analytics and
+                insights.
               </p>
             </div>
           </div>

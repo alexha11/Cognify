@@ -15,6 +15,7 @@ import {
   Lock,
   UserCircle,
   Shield,
+  Building2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -58,7 +59,11 @@ export function Sidebar() {
     ? navItems[user.role] || navItems.STUDENT
     : [
         { href: "/", label: "Home", icon: LayoutDashboard },
-        { href: "/courses", label: "Browse Courses", icon: BookOpen },
+        {
+          href: "/organizations",
+          label: "Browse Organizations",
+          icon: Building2,
+        },
         {
           href: "/progress",
           label: "My Progress",

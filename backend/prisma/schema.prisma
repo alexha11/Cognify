@@ -41,6 +41,9 @@ model Organization {
   id               String    @id @default(uuid())
   name             String
   slug             String    @unique
+  description      String?   // Organization description for discovery
+  logoUrl          String?   // Organization logo for branding
+  isPublic         Boolean   @default(false) // Visibility toggle for discovery
   plan             Plan      @default(FREE)
   stripeCustomerId String?   @unique
   createdAt        DateTime  @default(now())
@@ -52,6 +55,7 @@ model Organization {
   subscriptions Subscription[]
 
   @@index([slug])
+  @@index([isPublic])
 }
 
 // ============================================
@@ -91,7 +95,8 @@ model Course {
   id          String   @id @default(uuid())
   name        String
   description String?
-  isPublished Boolean  @default(false)
+  isPublic    Boolean  @default(false) // Visibility toggle for discovery
+  isPublished Boolean  @default(false) // Internal publish state
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -109,6 +114,7 @@ model Course {
 
   @@index([organizationId])
   @@index([createdById])
+  @@index([isPublic])
 }
 
 // ============================================
