@@ -20,6 +20,7 @@ import {
   Trophy,
   Loader2,
   Sparkles,
+  Search,
 } from "lucide-react";
 
 export default function QuizPage() {
@@ -282,9 +283,25 @@ export default function QuizPage() {
         {/* Question Card */}
         <Card className="border-2">
           <CardHeader>
-            <CardTitle className="text-xl leading-relaxed">
-              {currentQuestion.content}
-            </CardTitle>
+            <div className="flex items-start justify-between gap-4">
+              <CardTitle className="text-xl leading-relaxed">
+                {currentQuestion.content}
+              </CardTitle>
+              <button
+                onClick={() => {
+                  const query = encodeURIComponent(currentQuestion.content);
+                  window.open(
+                    `https://www.google.com/search?q=${query}`,
+                    "_blank",
+                  );
+                }}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 hover:text-indigo-600 bg-gray-100 hover:bg-indigo-50 dark:bg-gray-800 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                title="Search this question on Google"
+              >
+                <Search className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Search Google</span>
+              </button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-3">
             {currentQuestion.answers.map((answer, index) => {
