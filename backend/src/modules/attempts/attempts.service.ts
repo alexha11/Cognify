@@ -83,6 +83,11 @@ export class AttemptsService {
       });
     }
 
+    // After success, check if course is completed
+    if (attempt.isCorrect) {
+      await this.checkAndMarkCompletion(userId, question.courseId);
+    }
+
 
     return {
       id: attempt.id,
@@ -195,6 +200,13 @@ export class AttemptsService {
     const answered = attempts.length;
     const correct = attempts.filter((a) => a.isCorrect).length;
 
+    const percentage = totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
+    
+    // Also check if they officially have a completion record
+    const completion = await (this.prisma as any).courseCompletion.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+    });
+
     return {
       courseId,
       courseName: course.name,
@@ -202,7 +214,50 @@ export class AttemptsService {
       answered,
       correct,
       remaining: totalQuestions - answered,
-      percentage: totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0,
+      percentage,
+      isCompleted: !!completion,
     };
+  }
+
+  /**
+   * Check if all approved questions in a course are correctly answered and mark course as complete
+   */
+  async checkAndMarkCompletion(userId: string, courseId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      include: {
+        questions: {
+          where: { approved: true },
+          select: { id: true },
+        },
+      },
+    });
+
+    if (!course || course.questions.length === 0) return;
+
+    const correctAttempts = await this.prisma.attempt.findMany({
+      where: {
+        userId,
+        questionId: { in: course.questions.map((q: any) => q.id) },
+        isCorrect: true,
+      },
+      select: { questionId: true },
+    });
+
+    const uniqueCorrectQuestions = new Set(correctAttempts.map((a: any) => a.questionId));
+
+    if (uniqueCorrectQuestions.size === course.questions.length) {
+      // Mark as complete
+      await (this.prisma as any).courseCompletion.upsert({
+        where: {
+          userId_courseId: { userId, courseId },
+        },
+        create: {
+          userId,
+          courseId,
+        },
+        update: {},
+      });
+    }
   }
 }

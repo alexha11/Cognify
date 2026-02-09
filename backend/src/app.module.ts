@@ -12,6 +12,7 @@ import { AttemptsModule } from './modules/attempts';
 import { MaterialsModule } from './modules/materials';
 import { AiModule } from './modules/ai';
 import { BillingModule } from './modules/billing';
+import { AccessControlModule } from './modules/access-control';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { BillingModule } from './modules/billing';
     MaterialsModule,
     AiModule,
     BillingModule,
+    AccessControlModule,
   ],
 })
 export class AppModule {}

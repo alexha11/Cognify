@@ -33,6 +33,12 @@ enum SubscriptionStatus {
   TRIALING
 }
 
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 // ============================================
 // ORGANIZATION (Multi-tenant root)
 // ============================================
@@ -82,6 +88,8 @@ model User {
   uploadedMaterials Material[] @relation("MaterialUploader")
   createdQuestions Question[] @relation("QuestionCreator")
   attempts         Attempt[]
+  completions      CourseCompletion[]
+  roleRequests     RoleRequest[]
 
   @@index([email])
   @@index([organizationId])
@@ -109,8 +117,11 @@ model Course {
   createdBy   User   @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
 
   // Relations
-  materials Material[]
-  questions Question[]
+  materials     Material[]
+  questions     Question[]
+  prerequisites CoursePrerequisite[] @relation("CourseDependencies")
+  requiredFor   CoursePrerequisite[] @relation("RequiredFor")
+  completions   CourseCompletion[]
 
   @@index([organizationId])
   @@index([createdById])
@@ -235,4 +246,49 @@ model Subscription {
 
   @@index([organizationId])
   @@index([stripeSubscriptionId])
+}
+
+// ============================================
+// RBAC & PROGRESS
+// ============================================
+
+model CoursePrerequisite {
+  id              String @id @default(uuid())
+  courseId        String
+  requiresCourseId String
+  
+  course          Course @relation("CourseDependencies", fields: [courseId], references: [id], onDelete: Cascade)
+  prerequisite    Course @relation("RequiredFor", fields: [requiresCourseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, requiresCourseId])
+  @@index([courseId])
+  @@index([requiresCourseId])
+}
+
+model CourseCompletion {
+  id        String   @id @default(uuid())
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
+}
+
+model RoleRequest {
+  id        String   @id @default(uuid())
+  userId    String
+  reason    String
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
 }

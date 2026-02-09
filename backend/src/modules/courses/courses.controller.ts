@@ -55,7 +55,7 @@ export class CoursesController {
     @Param('id') id: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any> {
-    return this.coursesService.findOne(id, user?.organizationId, user?.role);
+    return this.coursesService.findOne(id, user?.organizationId, user?.role, user?.userId);
   }
 
   /**
@@ -112,5 +112,47 @@ export class CoursesController {
     @CurrentUser('organizationId') organizationId: string,
   ): Promise<{ message: string }> {
     return this.coursesService.remove(id, organizationId);
+  }
+
+  /**
+   * Add prerequisite to course
+   * POST /courses/:id/prerequisites
+   */
+  @Post(':id/prerequisites')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  async addPrerequisite(
+    @Param('id') id: string,
+    @Body('prerequisiteId') prerequisiteId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.coursesService.addPrerequisite(
+      id,
+      prerequisiteId,
+      user.organizationId,
+      user.userId,
+      user.role,
+    );
+  }
+
+  /**
+   * Remove prerequisite from course
+   * DELETE /courses/:id/prerequisites/:prerequisiteId
+   */
+  @Delete(':id/prerequisites/:prerequisiteId')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  async removePrerequisite(
+    @Param('id') id: string,
+    @Param('prerequisiteId') prerequisiteId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.coursesService.removePrerequisite(
+      id,
+      prerequisiteId,
+      user.organizationId,
+      user.userId,
+      user.role,
+    );
   }
 }

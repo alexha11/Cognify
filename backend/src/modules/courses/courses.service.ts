@@ -101,7 +101,7 @@ export class CoursesService {
    * Get single course by ID
    * Enforces organization isolation
    */
-  async findOne(id: string, organizationId?: string, userRole?: Role) {
+  async findOne(id: string, organizationId?: string, userRole?: Role, userId?: string) {
     const course = await this.prisma.course.findFirst({
       where: {
         id,
@@ -126,14 +126,49 @@ export class CoursesService {
           },
           orderBy: { createdAt: 'desc' },
         },
-      },
+        prerequisites: {
+          include: {
+            prerequisite: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
+      } as any,
     });
 
     if (!course) {
       throw new NotFoundException('Course not found');
     }
 
-    return course;
+    // Role-based access control for Student
+    if (userRole === Role.STUDENT && userId) {
+      const prerequisitesMet = await this.checkPrerequisites(id, userId);
+      
+      if (!prerequisitesMet) {
+        // Hide materials and correct answers if prerequisites not met
+        return {
+          ...course,
+          materials: [], // Restricted
+          questions: (course as any).questions.map((q: any) => ({
+            ...q,
+            hint: 'Prerequisites not met', // Optional: hide hint too?
+            answers: q.answers.map((a: any) => ({
+              ...a,
+              isCorrect: undefined, // Hide correctness
+            })),
+          })),
+          prerequisitesMet: false,
+        };
+      }
+    }
+
+    return {
+      ...course,
+      prerequisitesMet: true,
+    };
   }
 
   /**
@@ -210,6 +245,97 @@ export class CoursesService {
       name: updated.name,
       isPublic: updated.isPublic,
     };
+  }
+
+  /**
+   * Check if user has completed all prerequisites for a course
+   */
+  async checkPrerequisites(courseId: string, userId: string): Promise<boolean> {
+    const prerequisites = await (this.prisma as any).coursePrerequisite.findMany({
+      where: { courseId },
+      select: { requiresCourseId: true },
+    });
+
+    if (prerequisites.length === 0) return true;
+
+    const completions = await (this.prisma as any).courseCompletion.findMany({
+      where: {
+        userId,
+        courseId: { in: prerequisites.map((p: any) => p.requiresCourseId) },
+      },
+    });
+
+    return completions.length === prerequisites.length;
+  }
+
+  /**
+   * Add a prerequisite to a course
+   */
+  async addPrerequisite(courseId: string, prerequisiteId: string, organizationId: string, userId: string, role: Role) {
+    // Verify course access
+    await this.verifyCourseAccess(courseId, organizationId, userId, role);
+    
+    // Verify prerequisite exists
+    const prerequisite = await this.prisma.course.findFirst({
+      where: { id: prerequisiteId, organizationId },
+    });
+
+    if (!prerequisite) {
+      throw new NotFoundException('Prerequisite course not found');
+    }
+
+    if (courseId === prerequisiteId) {
+      throw new ForbiddenException('A course cannot be a prerequisite of itself');
+    }
+
+    return (this.prisma as any).coursePrerequisite.upsert({
+      where: {
+        courseId_requiresCourseId: {
+          courseId,
+          requiresCourseId: prerequisiteId,
+        },
+      },
+      create: {
+        courseId,
+        requiresCourseId: prerequisiteId,
+      },
+      update: {},
+    });
+  }
+
+  /**
+   * Remove a prerequisite from a course
+   */
+  async removePrerequisite(courseId: string, prerequisiteId: string, organizationId: string, userId: string, role: Role) {
+    await this.verifyCourseAccess(courseId, organizationId, userId, role);
+
+    await (this.prisma as any).coursePrerequisite.delete({
+      where: {
+        courseId_requiresCourseId: {
+          courseId,
+          requiresCourseId: prerequisiteId,
+        },
+      },
+    });
+
+    return { message: 'Prerequisite removed' };
+  }
+
+  /**
+   * Helper to verify if user can manage a course
+   */
+  private async verifyCourseAccess(courseId: string, organizationId: string, userId: string, role: Role) {
+    const course = await this.prisma.course.findFirst({
+      where: { id: courseId, organizationId },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    if (role !== Role.ADMIN && course.createdById !== userId) {
+      throw new ForbiddenException('Not authorized to manage this course');
+    }
   }
 
   /**
