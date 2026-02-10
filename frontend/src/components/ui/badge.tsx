@@ -1,33 +1,40 @@
-import * as React from "react"
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { cn } from "@/lib/utils";
 
 const Badge = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement> & {
-    variant?: "default" | "secondary" | "success" | "warning" | "destructive" | "outline"
+    variant?:
+      | "default"
+      | "secondary"
+      | "success"
+      | "warning"
+      | "destructive"
+      | "outline";
   }
 >(({ className, variant = "default", ...props }, ref) => {
   const variants = {
-    default: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300",
-    secondary: "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300",
-    success: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300",
-    warning: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300",
-    destructive: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300",
-    outline: "border border-gray-200 dark:border-gray-700",
-  }
+    default: "bg-primary/10 text-primary",
+    secondary: "bg-muted text-muted-foreground",
+    success: "bg-green-500/5 text-green-700 border border-green-500/10",
+    warning: "bg-yellow-500/5 text-yellow-700 border border-yellow-500/10",
+    destructive:
+      "bg-destructive/5 text-destructive border border-destructive/10",
+    outline: "border border-border",
+  };
 
   return (
     <div
       ref={ref}
       className={cn(
-        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors",
+        "inline-flex items-center rounded-full px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest transition-colors",
         variants[variant],
-        className
+        className,
       )}
       {...props}
     />
-  )
-})
-Badge.displayName = "Badge"
+  );
+});
+Badge.displayName = "Badge";
 
-export { Badge }
+export { Badge };

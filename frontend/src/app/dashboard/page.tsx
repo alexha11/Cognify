@@ -52,7 +52,6 @@ export default function DashboardPage() {
 
         const results = await Promise.all(promises);
 
-        // results[0] is always courses
         const coursesData = results[0];
         setCourses(
           Array.isArray(coursesData) ? coursesData : coursesData?.data || [],
@@ -83,63 +82,78 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-10">
-        {/* Header */}
+      <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in duration-500">
+        {/* Navigation & Welcome */}
         {!user ? (
-          <div className="relative overflow-hidden rounded-3xl bg-indigo-600 p-8 md:p-12 text-white shadow-2xl">
-            <div className="relative z-10 max-w-2xl">
-              <h1 className="text-4xl md:text-5xl font-black mb-4 leading-tight">
-                Master Any Subject with AI-Powered Learning
+          <Card className="p-12 md:p-20 border-border/60 overflow-hidden relative">
+            <div className="relative z-10 max-w-3xl space-y-8">
+              <Badge
+                variant="outline"
+                className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-primary/5"
+              >
+                AI-Powered Synthesis
+              </Badge>
+              <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-foreground leading-[1.05]">
+                Master any subject with{" "}
+                <span className="font-serif italic font-normal text-muted-foreground/80">
+                  precision.
+                </span>
               </h1>
-              <p className="text-lg text-indigo-100 mb-8 max-w-lg">
-                Generates personalized quizzes, tracks your progress, and helps
-                you learn faster with state-of-the-art AI.
+              <p className="text-xl text-muted-foreground max-w-xl leading-relaxed font-serif">
+                Cognify synthesizes personalized assessments, providing
+                data-driven trajectory for students and educators.
               </p>
-              <div className="flex flex-wrap gap-4">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-white text-indigo-600 hover:bg-indigo-50 font-bold h-14 px-8 rounded-xl shadow-lg shadow-indigo-900/20"
-                >
-                  <Link href="/register">Start Learning Free</Link>
+              <div className="flex flex-wrap gap-6 pt-4">
+                <Button asChild size="xl" variant="pill">
+                  <Link href="/register">
+                    Initialize for free
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                  </Link>
                 </Button>
                 <Button
                   asChild
                   variant="outline"
-                  size="lg"
-                  className="border-indigo-300 text-white hover:bg-indigo-500 font-bold h-14 px-8 rounded-xl backdrop-blur-sm"
+                  size="xl"
+                  className="rounded-full"
                 >
-                  <Link href="/courses">Browse Courses</Link>
+                  <Link href="/courses">Browse Curriculum</Link>
                 </Button>
               </div>
             </div>
-            {/* Decorative elements */}
-            <div className="absolute top-0 right-0 -mr-20 -mt-20 h-64 w-64 rounded-full bg-indigo-500/30 blur-3xl" />
-            <div className="absolute bottom-0 left-0 -ml-20 -mb-20 h-64 w-64 rounded-full bg-purple-500/20 blur-3xl" />
-            <Sparkles className="absolute right-12 bottom-12 h-32 w-32 text-indigo-400 opacity-20 rotate-12" />
-          </div>
+          </Card>
         ) : (
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                Welcome back, {user.firstName}!
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="space-y-4">
+              <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+                Account Terminal
               </h1>
-              <p className="mt-1 text-gray-500 dark:text-gray-400">
-                {user.organizationName} • {user.role.toLowerCase()}
-              </p>
+              <div className="flex items-center gap-3 text-muted-foreground font-serif text-lg">
+                <span className="text-foreground font-semibold font-sans">
+                  {user.firstName} {user.lastName}
+                </span>
+                <span className="opacity-40">•</span>
+                <span>{user.organizationName}</span>
+                <span className="opacity-40">•</span>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] font-bold uppercase tracking-widest bg-primary/5"
+                >
+                  {user.role}
+                </Badge>
+              </div>
             </div>
             {(isAdmin || isInstructor) && (
-              <div className="flex gap-3">
+              <div className="flex gap-4">
                 <Link href="/courses">
-                  <Button variant="outline">
-                    <Plus className="h-4 w-4" />
+                  <Button variant="pill" size="lg">
+                    <Plus className="h-5 w-5 mr-1" />
                     New Course
                   </Button>
                 </Link>
                 <Link href="/ai-generate">
-                  <Button>
-                    <Sparkles className="h-4 w-4" />
-                    Generate Questions
+                  <Button variant="outline" size="lg" className="rounded-full">
+                    <Sparkles className="h-5 w-5 mr-1" />
+                    AI Synthesis
                   </Button>
                 </Link>
               </div>
@@ -147,63 +161,81 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {/* Stats Grid */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30">
-                  <BookOpen className="h-6 w-6" />
+        {/* Audit Metrics */}
+        <div className="grid gap-6 md:grid-cols-4">
+          <Card className="hover:bg-secondary/20 transition-all duration-300">
+            <CardContent className="p-8 space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                  <BookOpen className="h-5 w-5" />
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    Courses
-                  </p>
-                  <p className="text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">
-                    {organization?.courseCount || 0}
-                  </p>
-                </div>
+                <Badge
+                  variant="outline"
+                  className="text-[10px] font-bold tracking-widest uppercase"
+                >
+                  Library
+                </Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                  Curriculum Units
+                </p>
+                <p className="text-4xl font-semibold tracking-tighter text-foreground">
+                  {organization?.courseCount || 0}
+                </p>
               </div>
             </CardContent>
           </Card>
 
           {(isAdmin || isInstructor) && (
             <>
-              <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-purple-50 text-purple-600 dark:bg-purple-900/30">
-                      <FileQuestion className="h-6 w-6" />
+              <Card className="hover:bg-secondary/20 transition-all duration-300">
+                <CardContent className="p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                      <FileQuestion className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Questions
-                      </p>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">
-                        {courses.reduce(
-                          (acc, c) => acc + (c._count?.questions || 0),
-                          0,
-                        )}
-                      </p>
-                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-bold tracking-widest uppercase"
+                    >
+                      Bank
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                      Validated Items
+                    </p>
+                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
+                      {courses.reduce(
+                        (acc, c) => acc + (c._count?.questions || 0),
+                        0,
+                      )}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 dark:bg-green-900/30">
-                      <Users className="h-6 w-6" />
+              <Card className="hover:bg-secondary/20 transition-all duration-300">
+                <CardContent className="p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                      <Users className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Team
-                      </p>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">
-                        {organization?.userCount || 0}
-                      </p>
-                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-bold tracking-widest uppercase"
+                    >
+                      Staff
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                      Active Members
+                    </p>
+                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
+                      {organization?.userCount || 0}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -212,48 +244,60 @@ export default function DashboardPage() {
 
           {(isStudent || !user) && (
             <>
-              <Card className="border-0 shadow-sm transition-shadow hover:shadow-md relative overflow-hidden group">
+              <Card className="relative group hover:bg-secondary/20 transition-all duration-300">
                 {!user && (
-                  <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                    <Lock className="h-4 w-4 text-gray-400" />
+                  <div className="absolute top-4 right-4 z-10">
+                    <Lock className="h-4 w-4 text-muted-foreground/40" />
                   </div>
                 )}
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50 text-green-600 dark:bg-green-900/30">
-                      <TrendingUp className="h-6 w-6" />
+                <CardContent className="p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/5 text-green-700">
+                      <TrendingUp className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Answered
-                      </p>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">
-                        {user && stats ? stats.overall.total : "128"}
-                      </p>
-                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-bold tracking-widest uppercase"
+                    >
+                      Volume
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                      Items Answered
+                    </p>
+                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
+                      {user && stats ? stats.overall.total : "128"}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card className="border-0 shadow-sm transition-shadow hover:shadow-md relative overflow-hidden group">
+              <Card className="relative group hover:bg-secondary/20 transition-all duration-300">
                 {!user && (
-                  <div className="absolute inset-0 bg-white/40 dark:bg-black/40 backdrop-blur-[1px] z-10 flex items-center justify-center">
-                    <Lock className="h-4 w-4 text-gray-400" />
+                  <div className="absolute top-4 right-4 z-10">
+                    <Lock className="h-4 w-4 text-muted-foreground/40" />
                   </div>
                 )}
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 text-yellow-600 dark:bg-yellow-900/30">
-                      <TrendingUp className="h-6 w-6" />
+                <CardContent className="p-8 space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                      <TrendingUp className="h-5 w-5" />
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                        Accuracy
-                      </p>
-                      <p className="text-2xl font-black text-gray-900 dark:text-white leading-none mt-1">
-                        {user && stats ? `${stats.overall.percentage}%` : "92%"}
-                      </p>
-                    </div>
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-bold tracking-widest uppercase"
+                    >
+                      Recall
+                    </Badge>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                      Accuracy Threshold
+                    </p>
+                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
+                      {user && stats ? `${stats.overall.percentage}%` : "92%"}
+                    </p>
                   </div>
                 </CardContent>
               </Card>
@@ -261,70 +305,68 @@ export default function DashboardPage() {
           )}
 
           {isAdmin && organization && (
-            <Card className="border-0 shadow-sm transition-shadow hover:shadow-md">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600 dark:bg-blue-900/30">
-                    <Sparkles className="h-6 w-6" />
+            <Card className="hover:bg-secondary/20 transition-all duration-300">
+              <CardContent className="p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                    <Sparkles className="h-5 w-5" />
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">
-                      Active Plan
-                    </p>
-                    <div className="mt-1">
-                      <Badge
-                        variant={
-                          organization.plan === "FREE" ? "secondary" : "default"
-                        }
-                        className="font-bold"
-                      >
-                        {organization.plan}
-                      </Badge>
-                    </div>
-                  </div>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-bold tracking-widest uppercase"
+                  >
+                    Tier
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    License Status
+                  </p>
+                  <p className="text-2xl font-semibold tracking-tight text-foreground uppercase pt-1">
+                    {organization.plan} Plan
+                  </p>
                 </div>
               </CardContent>
             </Card>
           )}
         </div>
 
-        {/* Recent Courses */}
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-              {isStudent ? "Explore Courses" : "Your Courses"}
+        {/* Curriculum Exploration */}
+        <section className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              {isStudent ? "Explore Curriculum" : "Managed Pathways"}
             </h2>
             <Link href="/courses">
               <Button
-                variant="ghost"
-                size="sm"
-                className="font-bold text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50"
+                variant="link"
+                className="text-primary text-[10px] font-bold uppercase tracking-widest p-0 h-auto hover:opacity-70 transition-opacity"
               >
-                View All
-                <ArrowRight className="h-4 w-4 ml-2" />
+                View Repository
+                <ArrowRight className="h-3 w-3 ml-2" />
               </Button>
             </Link>
           </div>
 
           {isLoading ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3">
               {[1, 2, 3].map((i) => (
-                <Card
+                <div
                   key={i}
-                  className="animate-pulse border-0 shadow-sm h-48"
+                  className="animate-pulse bg-secondary/50 rounded-[32px] h-64"
                 />
               ))}
             </div>
           ) : courses.length === 0 ? (
-            <Card className="border-dashed border-2 border-gray-200 dark:border-gray-800 bg-transparent">
-              <CardContent className="py-12 text-center">
-                <BookOpen className="mx-auto h-12 w-12 text-gray-300" />
-                <p className="mt-4 text-gray-500 font-medium text-lg">
-                  No courses available yet
+            <Card className="border-dashed py-24 bg-card/50">
+              <CardContent className="text-center space-y-6 pt-0 p-8">
+                <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/20" />
+                <p className="text-muted-foreground font-serif text-lg italic">
+                  No currency active in the repository.
                 </p>
                 {(isAdmin || isInstructor) && (
-                  <Button asChild className="mt-6 bg-indigo-600">
-                    <Link href="/courses">Create Your First Course</Link>
+                  <Button asChild variant="pill">
+                    <Link href="/courses">Initialize Curriculum</Link>
                   </Button>
                 )}
               </CardContent>
@@ -333,26 +375,27 @@ export default function DashboardPage() {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {(courses || []).slice(0, 6).map((course) => (
                 <Link key={course.id} href={`/courses/${course.id}`}>
-                  <Card className="group h-full border-0 shadow-sm transition-all hover:shadow-xl hover:-translate-y-1 overflow-hidden">
-                    <div className="h-2 bg-gradient-to-r from-indigo-500 to-purple-600" />
-                    <CardHeader>
-                      <CardTitle className="group-hover:text-indigo-600 transition-colors line-clamp-1">
-                        {course.name}
-                      </CardTitle>
+                  <Card className="group h-full hover:bg-card hover:border-primary/20 transition-all duration-300 flex flex-col">
+                    <CardHeader className="p-8">
+                      <div className="space-y-3">
+                        <CardTitle className="text-xl font-semibold tracking-tight group-hover:text-primary transition-colors line-clamp-1">
+                          {course.name}
+                        </CardTitle>
+                        <p className="text-sm text-muted-foreground font-serif line-clamp-3 leading-relaxed min-h-[4.5rem]">
+                          {course.description ||
+                            "No pedagogical description provided for this pathway."}
+                        </p>
+                      </div>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem]">
-                        {course.description ||
-                          "No description provided for this course."}
-                      </p>
-                      <div className="mt-6 flex items-center gap-4 text-xs font-bold text-gray-400 uppercase tracking-tighter">
-                        <span className="flex items-center gap-1.5">
-                          <FileQuestion className="h-3.5 w-3.5" />
-                          {course._count?.questions || 0} Questions
+                    <CardContent className="px-8 pb-8 pt-0 mt-auto">
+                      <div className="pt-6 border-t border-border/40 flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                        <span className="flex items-center gap-2">
+                          <FileQuestion className="h-3.5 w-3.5 opacity-40" />
+                          {course._count?.questions || 0} Units
                         </span>
-                        <span className="flex items-center gap-1.5">
-                          <BookOpen className="h-3.5 w-3.5" />
-                          {course._count?.materials || 0} Materials
+                        <span className="flex items-center gap-2">
+                          <BookOpen className="h-3.5 w-3.5 opacity-40" />
+                          {course._count?.materials || 0} Assets
                         </span>
                       </div>
                     </CardContent>
@@ -363,38 +406,48 @@ export default function DashboardPage() {
           )}
         </section>
 
+        {/* Enhanced Guest CTA */}
         {!user && (
-          <section className="rounded-3xl bg-gradient-to-br from-gray-900 to-indigo-950 p-10 md:p-16 text-center text-white relative overflow-hidden">
-            <div className="relative z-10 max-w-2xl mx-auto">
-              <Badge className="mb-6 bg-indigo-500/20 text-indigo-300 border-indigo-500/30 px-4 py-1.5 text-xs font-black uppercase tracking-widest">
-                Unlock Full Potential
+          <Card className="p-16 md:p-24 text-center bg-primary text-primary-foreground relative overflow-hidden group border-none">
+            {/* Background Texture/Pattern */}
+            <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
+              <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full border-[40px] border-primary-foreground" />
+              <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full border-[20px] border-primary-foreground" />
+            </div>
+
+            <div className="relative z-10 max-w-2xl mx-auto space-y-10">
+              <Badge
+                variant="outline"
+                className="px-6 py-2 border-primary-foreground/30 text-primary-foreground text-[10px] font-bold uppercase tracking-[0.3em] bg-white/5"
+              >
+                Access Institutional Grade AI
               </Badge>
-              <h2 className="text-3xl md:text-4xl font-black mb-6 leading-tight">
-                Ready to transform your study routine?
+              <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1]">
+                Revolutionize your{" "}
+                <span className="font-serif italic font-normal text-white/70">
+                  learning logic.
+                </span>
               </h2>
-              <p className="text-gray-400 text-lg mb-10 leading-relaxed">
-                Join thousands of students and instructors using Cognify to save
-                time, track progress, and achieve academic excellence.
+              <p className="text-primary-foreground/80 text-xl font-serif leading-relaxed">
+                Join thousands of students and instructors leveraging Cognify to
+                automate assessments and archive progression.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
                 <FeatureGate
                   variant="prompt"
-                  title="Full Access"
-                  description="Create your free account today to unlock personalized quizzes and progress tracking."
+                  title="Initialize Identity"
+                  description="Establish your free credentials to preserve your learning history and unlock granular analytics."
                 >
                   <Button
-                    size="lg"
-                    className="bg-indigo-600 hover:bg-indigo-700 font-bold h-14 px-10 rounded-xl shadow-xl shadow-indigo-900/40 w-full sm:w-auto"
+                    size="xl"
+                    className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 w-full sm:w-auto px-12 rounded-full border-none shadow-xl shadow-black/10"
                   >
-                    Join Cognify for Free
+                    Initialize for free
                   </Button>
                 </FeatureGate>
               </div>
             </div>
-            {/* Background elements */}
-            <div className="absolute top-0 right-0 h-full w-1/3 bg-gradient-to-l from-indigo-500/10 to-transparent" />
-            <div className="absolute bottom-0 left-0 h-full w-1/3 bg-gradient-to-r from-purple-500/5 to-transparent" />
-          </section>
+          </Card>
         )}
       </div>
     </DashboardLayout>

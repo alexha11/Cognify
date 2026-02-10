@@ -4,7 +4,16 @@ import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { Sparkles, BookOpen, Brain, BarChart3, Building2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Sparkles,
+  BookOpen,
+  Brain,
+  BarChart3,
+  Building2,
+  ArrowRight,
+} from "lucide-react";
 import { Header } from "@/components/layout";
 import { useAuth } from "@/lib/auth";
 
@@ -19,90 +28,131 @@ export default function HomePage() {
   }, [user, isLoading, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950">
+    <div className="min-h-screen bg-background selection:bg-primary/10">
       <Header />
 
-      {/* Hero */}
-      <main className="pt-32 pb-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="text-center">
-            <h1 className="text-5xl font-extrabold tracking-tight text-gray-900 sm:text-6xl dark:text-white">
-              Master Any Subject with{" "}
-              <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Cognify
+      <main className="pt-32 pb-32">
+        <div className="mx-auto max-w-7xl px-8">
+          {/* Hero Section */}
+          <div className="text-center max-w-4xl mx-auto space-y-10">
+            <Badge variant="outline" className="px-4 py-1.5 text-sm">
+              Pedagogical Excellence powered by AI
+            </Badge>
+            <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-foreground leading-[1.05]">
+              Master any subject with{" "}
+              <span className="font-serif italic font-normal text-muted-foreground/80">
+                unrivaled precision.
               </span>
             </h1>
-            <p className="mx-auto mt-6 max-w-2xl text-lg text-gray-600 dark:text-gray-400">
-              Create courses, upload materials, generate AI questions, and track
-              student progress. The complete platform for modern education.
+            <p className="mx-auto max-w-2xl text-xl text-muted-foreground font-serif leading-relaxed">
+              Cognify synthesizes your learning materials into cognitive
+              assessments, providing data-driven insights for students and
+              educators alike.
             </p>
-            <div className="mt-10 flex items-center justify-center gap-4">
-              <Link href="/register">
-                <Button size="lg" className="px-8">
-                  Start Free Trial
-                </Button>
-              </Link>
-              <Link href="/organizations">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="px-8 flex items-center gap-2"
-                >
+            <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
+              <Button asChild size="xl" variant="pill">
+                <Link href="/register">
+                  Start your free trial
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="xl"
+                variant="outline"
+                className="rounded-full"
+              >
+                <Link href="/organizations" className="flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
-                  Browse Organizations
-                </Button>
-              </Link>
+                  Explore Institutions
+                </Link>
+              </Button>
             </div>
           </div>
 
-          {/* Features */}
-          <div id="features" className="mt-32 grid gap-8 md:grid-cols-3">
-            <div className="group rounded-2xl border border-gray-200 bg-white/80 p-8 backdrop-blur transition-all hover:border-indigo-200 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900/80">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
-                <BookOpen className="h-6 w-6 text-white" />
-              </div>
-              <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                Course Management
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Create and organize courses, upload materials, and manage
-                content with ease.
-              </p>
-            </div>
+          {/* Feature Grid */}
+          <div id="features" className="mt-40 grid gap-8 md:grid-cols-3">
+            {[
+              {
+                icon: BookOpen,
+                title: "Curriculum Design",
+                desc: "Architect complex courses, curate research materials, and organize content within a unified pedagogical framework.",
+              },
+              {
+                icon: Brain,
+                title: "AI Question Synthesis",
+                desc: "Utilize state-of-the-art foundations to generate high-quality assessment items instantly from any subject domain.",
+              },
+              {
+                icon: BarChart3,
+                title: "Cognitive Analytics",
+                desc: "Monitor intellectual growth through granular performance analytics and personalized competency mapping.",
+              },
+            ].map((feature, i) => (
+              <Card
+                key={i}
+                className="group bg-card hover:border-primary/20 transition-all duration-300"
+              >
+                <CardContent className="p-10 space-y-8">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary group-hover:scale-110 transition-transform">
+                    <feature.icon className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-4">
+                    <h3 className="text-xl font-semibold text-foreground tracking-tight">
+                      {feature.title}
+                    </h3>
+                    <p className="text-muted-foreground font-serif leading-relaxed">
+                      {feature.desc}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-            <div className="group rounded-2xl border border-gray-200 bg-white/80 p-8 backdrop-blur transition-all hover:border-indigo-200 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900/80">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
-                <Brain className="h-6 w-6 text-white" />
+          {/* Social Proof / Trust Section */}
+          <div className="mt-40 pt-20 border-t border-border/60 text-center">
+            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-12">
+              Trusted by research institutions and leading educators
+            </h2>
+            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 grayscale opacity-40">
+              {/* These would be logos in a real app */}
+              <div className="text-2xl font-bold tracking-tighter">
+                STANFORD
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                AI Question Generation
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Generate high-quality exam questions instantly using advanced AI
-                technology.
-              </p>
-            </div>
-
-            <div className="group rounded-2xl border border-gray-200 bg-white/80 p-8 backdrop-blur transition-all hover:border-indigo-200 hover:shadow-xl dark:border-gray-800 dark:bg-gray-900/80">
-              <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
-                <BarChart3 className="h-6 w-6 text-white" />
+              <div className="text-2xl font-bold tracking-tighter italic">
+                MIT
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
-                Progress Tracking
-              </h3>
-              <p className="text-gray-600 dark:text-gray-400">
-                Monitor student performance with detailed analytics and
-                insights.
-              </p>
+              <div className="text-2xl font-bold tracking-tighter">HARVARD</div>
+              <div className="text-2xl font-bold tracking-tighter italic font-serif">
+                Aalto
+              </div>
             </div>
           </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 py-12 dark:border-gray-800">
-        <div className="mx-auto max-w-7xl px-6 text-center text-sm text-gray-500">
-          © 2026 Cognify. All rights reserved.
+      <footer className="border-t border-border/40 py-16 bg-card/10">
+        <div className="mx-auto max-w-7xl px-8 flex flex-col md:flex-row justify-between items-center gap-8">
+          <div className="text-sm font-semibold tracking-tight">
+            Cognify
+            <span className="text-muted-foreground font-normal">.ai</span>
+          </div>
+          <div className="flex gap-8 text-sm text-muted-foreground">
+            <Link href="#" className="hover:text-foreground transition-colors">
+              Privacy
+            </Link>
+            <Link href="#" className="hover:text-foreground transition-colors">
+              Terms
+            </Link>
+            <Link href="#" className="hover:text-foreground transition-colors">
+              Contact
+            </Link>
+          </div>
+          <div className="text-xs text-muted-foreground/60 font-serif">
+            © 2026 Cognify Engineering. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>

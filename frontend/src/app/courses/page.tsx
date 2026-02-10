@@ -79,48 +79,51 @@ export default function CoursesPage() {
     <DashboardLayout>
       <div className="space-y-8">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Courses
+        <div className="flex items-center justify-between pb-4">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              Courses.
             </h1>
-            <p className="mt-1 text-gray-500">
-              {canCreate ? "Manage your courses" : "Browse available courses"}
+            <p className="text-muted-foreground font-serif">
+              {canCreate
+                ? "Manage your curriculum"
+                : "Explore available pathways"}
             </p>
           </div>
-          {canCreate && (
-            <Button onClick={() => setShowCreate(true)}>
+          {canCreate && !showCreate && (
+            <Button onClick={() => setShowCreate(true)} size="sm">
               <Plus className="h-4 w-4" />
               New Course
             </Button>
           )}
         </div>
 
-        {/* Create Course Modal */}
+        {/* Create Course Section */}
         {showCreate && (
-          <Card className="border-indigo-200 dark:border-indigo-800">
+          <Card className="border border-border">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle>Create New Course</CardTitle>
+              <CardTitle className="text-xl">Create new course</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowCreate(false)}
+                className="rounded-full"
               >
                 <X className="h-4 w-4" />
               </Button>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleCreate} className="space-y-4">
+              <form onSubmit={handleCreate} className="space-y-6 max-w-2xl">
                 {error && (
-                  <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600">
+                  <div className="rounded bg-destructive/10 p-3 text-sm text-destructive">
                     {error}
                   </div>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="name">Course Name</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="name">Course name</Label>
                   <Input
                     id="name"
-                    placeholder="Introduction to Machine Learning"
+                    placeholder="e.g., Foundations of AI"
                     value={newCourse.name}
                     onChange={(e) =>
                       setNewCourse({ ...newCourse, name: e.target.value })
@@ -128,11 +131,11 @@ export default function CoursesPage() {
                     required
                   />
                 </div>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <Label htmlFor="description">Description (optional)</Label>
                   <Input
                     id="description"
-                    placeholder="Learn the fundamentals of ML..."
+                    placeholder="A brief overview of the course content..."
                     value={newCourse.description}
                     onChange={(e) =>
                       setNewCourse({
@@ -142,20 +145,21 @@ export default function CoursesPage() {
                     }
                   />
                 </div>
-                <div className="flex gap-3">
-                  <Button type="submit" disabled={creating}>
+                <div className="flex gap-4 pt-4">
+                  <Button type="submit" disabled={creating} size="lg">
                     {creating ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
                         Creating...
                       </>
                     ) : (
-                      "Create Course"
+                      "Create course"
                     )}
                   </Button>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="ghost"
+                    size="lg"
                     onClick={() => setShowCreate(false)}
                   >
                     Cancel
@@ -168,38 +172,40 @@ export default function CoursesPage() {
 
         {/* Courses Grid */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <div className="flex justify-center py-20">
+            <Loader2 className="h-8 w-8 animate-spin text-muted" />
           </div>
         ) : courses.length === 0 ? (
-          <div className="py-16 text-center">
-            <BookOpen className="mx-auto h-16 w-16 text-gray-300" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-              No courses yet
+          <div className="py-24 text-center">
+            <div className="mx-auto h-16 w-16 text-muted/30 mb-6">
+              <BookOpen className="h-full w-full" />
+            </div>
+            <h3 className="text-xl font-semibold text-foreground">
+              No courses found.
             </h3>
-            <p className="mt-2 text-gray-500">
+            <p className="mt-2 text-muted-foreground font-serif">
               {canCreate
-                ? "Create your first course to get started."
-                : "No courses are available yet."}
+                ? "Begin by creating your first educational pathway."
+                : "Check back later for newly published courses."}
             </p>
             {canCreate && (
-              <Button className="mt-6" onClick={() => setShowCreate(true)}>
+              <Button className="mt-8" onClick={() => setShowCreate(true)}>
                 <Plus className="h-4 w-4" />
-                Create Course
+                Create course
               </Button>
             )}
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 pb-12">
             {courses.map((course) => (
               <Card
                 key={course.id}
-                className="group h-full transition-all hover:border-indigo-200 hover:shadow-xl dark:hover:border-indigo-800"
+                className="group h-full hover:bg-secondary/50 transition-all"
               >
                 <CardHeader>
-                  <div className="flex items-start justify-between">
+                  <div className="flex items-start justify-between gap-4">
                     <Link href={`/courses/${course.id}`} className="flex-1">
-                      <CardTitle className="group-hover:text-indigo-600 cursor-pointer">
+                      <CardTitle className="text-xl font-semibold leading-tight group-hover:text-primary transition-colors">
                         {course.name}
                       </CardTitle>
                     </Link>
@@ -210,35 +216,35 @@ export default function CoursesPage() {
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                   <Link href={`/courses/${course.id}`}>
-                    <p className="text-sm text-gray-500 line-clamp-2 min-h-[2.5rem] cursor-pointer hover:text-gray-700">
-                      {course.description || "No description"}
+                    <p className="text-base text-muted-foreground font-serif line-clamp-2 min-h-[3rem] leading-relaxed">
+                      {course.description ||
+                        "No description provided for this course."}
                     </p>
                   </Link>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <FileQuestion className="h-4 w-4" />
+                  <div className="flex items-center gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <span className="flex items-center gap-2">
+                      <FileQuestion className="h-3.5 w-3.5" />
                       {course._count.questions} questions
                     </span>
-                    <span>{course._count.materials} materials</span>
+                    <span className="flex items-center gap-2">
+                      <BookOpen className="h-3.5 w-3.5" />
+                      {course._count.materials} materials
+                    </span>
                   </div>
 
                   {/* Start Quiz Button */}
                   <Link href={`/quiz/${course.id}`} className="block">
-                    <Button
-                      className="w-full bg-indigo-600 hover:bg-indigo-700 font-semibold"
-                      size="lg"
-                    >
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Quiz
+                    <Button variant="pill" size="lg" className="w-full">
+                      <Play className="h-4 w-4 text-xs" />
+                      Take assessment
                     </Button>
                   </Link>
 
-                  <div className="pt-2 border-t border-gray-100 dark:border-gray-800">
-                    <p className="text-xs text-gray-400">
-                      Created {formatDate(course.createdAt)} by{" "}
-                      {course.createdBy.firstName}
+                  <div className="pt-4 border-t border-border">
+                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                      Created {formatDate(course.createdAt)}
                     </p>
                   </div>
                 </CardContent>

@@ -15,7 +15,11 @@ import {
   Play,
   Lock,
   Globe,
+  Loader2,
 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Course {
   id: string;
@@ -76,29 +80,31 @@ export default function OrganizationDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-muted" />
       </div>
     );
   }
 
   if (error || !organization) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950">
-        <div className="text-center">
-          <Building2 className="mx-auto h-16 w-16 text-gray-300 mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Organization Not Found
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center max-w-md p-12 bg-card border border-border rounded-[40px] shadow-sm">
+          <div className="mx-auto h-16 w-16 bg-primary/5 rounded-2xl flex items-center justify-center text-primary/40 mb-8">
+            <Building2 className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-semibold text-foreground mb-4">
+            Institutional access denied.
           </h1>
-          <p className="text-gray-500 mb-6">
-            This organization may be private or doesn't exist.
+          <p className="text-muted-foreground font-serif leading-relaxed mb-10">
+            We could not locate this organization within our database, or it is
+            currently restricted to private access only.
           </p>
-          <Link
-            href="/organizations"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Back to Organizations
+          <Link href="/organizations">
+            <Button variant="pill" size="lg" className="w-full">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Institutional Directory
+            </Button>
           </Link>
         </div>
       </div>
@@ -106,175 +112,199 @@ export default function OrganizationDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950">
-      {/* Header */}
-      <header className="sticky top-0 z-50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 border-b border-gray-200/50 dark:border-gray-800/50">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                <span className="text-xl font-bold text-white">C</span>
-              </div>
-              <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                Cognify
-              </span>
-            </Link>
-            {user ? (
-              <Link
-                href="/dashboard"
-                className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
-              >
-                Dashboard
-              </Link>
-            ) : (
-              <Link
-                href="/login"
-                className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-indigo-600 transition-colors"
-              >
-                Sign In
-              </Link>
-            )}
-          </div>
+    <div className="min-h-screen bg-background">
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        {/* Navigation / Breadcrumb */}
+        <div className="flex items-center justify-between mb-12">
+          <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+            <ol className="flex items-center gap-2">
+              <li>
+                <Link href="/" className="hover:text-primary transition-colors">
+                  Cognify
+                </Link>
+              </li>
+              <li className="opacity-40">/</li>
+              <li>
+                <Link
+                  href="/organizations"
+                  className="hover:text-primary transition-colors"
+                >
+                  Directory
+                </Link>
+              </li>
+              <li className="opacity-40">/</li>
+              <li className="text-primary/60">{organization.name}</li>
+            </ol>
+          </nav>
+          <Link href="/organizations">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[10px] font-bold uppercase tracking-widest gap-2"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Return to Directory
+            </Button>
+          </Link>
         </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Breadcrumb */}
-        <nav className="text-sm mb-8">
-          <ol className="flex items-center gap-2 text-gray-500">
-            <li>
-              <Link href="/" className="hover:text-indigo-600">
-                Home
-              </Link>
-            </li>
-            <li>/</li>
-            <li>
-              <Link href="/organizations" className="hover:text-indigo-600">
-                Organizations
-              </Link>
-            </li>
-            <li>/</li>
-            <li className="text-gray-900 dark:text-white font-medium">
-              {organization.name}
-            </li>
-          </ol>
-        </nav>
-
-        {/* Organization Header */}
-        <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-8 mb-8">
-          <div className="flex flex-col md:flex-row gap-6">
-            {/* Logo */}
-            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {organization.logoUrl ? (
-                <img
-                  src={organization.logoUrl}
-                  alt={organization.name}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <Building2 className="w-12 h-12 text-indigo-600 dark:text-indigo-400" />
-              )}
-            </div>
-
-            {/* Info */}
-            <div className="flex-1">
-              <div className="flex items-start justify-between">
-                <div>
-                  <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-                    {organization.name}
-                  </h1>
-                  {organization.description && (
-                    <p className="text-gray-600 dark:text-gray-400 mb-4 max-w-2xl">
-                      {organization.description}
-                    </p>
+        {/* Organization Profile Header */}
+        <Card className="mb-16 border-border overflow-hidden">
+          <CardContent className="p-0">
+            <div className="flex flex-col md:flex-row divide-y md:divide-y-0 md:divide-x divide-border/40">
+              {/* Identity Section */}
+              <div className="p-10 md:p-12 md:max-w-md w-full flex flex-col items-center md:items-start text-center md:text-left">
+                <div className="w-24 h-24 rounded-[32px] bg-secondary/40 border border-border/50 flex items-center justify-center overflow-hidden mb-8 shadow-sm">
+                  {organization.logoUrl ? (
+                    <img
+                      src={organization.logoUrl}
+                      alt={organization.name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <Building2 className="w-10 h-10 text-primary/60" />
                   )}
                 </div>
-                <span className="flex items-center gap-1 px-3 py-1 text-sm bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 rounded-full">
-                  <Globe className="w-4 h-4" />
-                  Public
-                </span>
+                <div className="space-y-4">
+                  <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+                    {organization.name}
+                  </h1>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-bold border-green-500/20 text-green-700 bg-green-500/5 normal-case tracking-widest flex self-start mx-auto md:mx-0"
+                  >
+                    <Globe className="w-3.5 h-3.5 mr-2" />
+                    Verified Institution
+                  </Badge>
+                </div>
               </div>
 
-              {/* Stats */}
-              <div className="flex flex-wrap gap-6 text-sm text-gray-600 dark:text-gray-400">
-                <span className="flex items-center gap-2">
-                  <BookOpen className="w-5 h-5 text-indigo-500" />
-                  <strong>{organization.courseCount}</strong> courses
-                </span>
-                <span className="flex items-center gap-2">
-                  <Users className="w-5 h-5 text-purple-500" />
-                  <strong>{organization.userCount}</strong> members
-                </span>
-                <span className="flex items-center gap-2">
-                  <Calendar className="w-5 h-5 text-gray-400" />
-                  Joined{" "}
-                  {new Date(organization.createdAt).toLocaleDateString(
-                    "en-US",
-                    {
-                      month: "short",
-                      year: "numeric",
-                    },
-                  )}
-                </span>
+              {/* Description & Metadata Section */}
+              <div className="flex-1 p-10 md:p-12 bg-secondary/5 flex flex-col justify-between gap-12">
+                <div className="space-y-4">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    Contextual Overview
+                  </p>
+                  <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
+                    {organization.description ||
+                      "Synthesizing educational excellence with advanced curriculum pathways."}
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 lg:grid-cols-3 gap-8">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Enrollment
+                    </p>
+                    <div className="flex items-end gap-2">
+                      <p className="text-2xl font-semibold text-foreground tracking-tighter">
+                        {organization.userCount}
+                      </p>
+                      <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
+                        Members
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Curriculum
+                    </p>
+                    <div className="flex items-end gap-2">
+                      <p className="text-2xl font-semibold text-foreground tracking-tighter">
+                        {organization.courseCount}
+                      </p>
+                      <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
+                        Pathways
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1 hidden lg:block">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Archival Info
+                    </p>
+                    <div className="flex items-end gap-2">
+                      <p className="text-base font-medium text-foreground tracking-tight">
+                        {new Date(organization.createdAt).toLocaleDateString(
+                          "en-US",
+                          { month: "short", year: "numeric" },
+                        )}
+                      </p>
+                      <span className="text-[10px] text-muted-foreground/60 pb-1 uppercase tracking-tighter">
+                        Established
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
-        {/* Courses Section */}
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-            Courses
-          </h2>
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              Institutional Pathways.
+            </h2>
+            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest hidden md:block">
+              {organization.courses.length} educational units discoverable
+            </p>
+          </div>
 
           {organization.courses.length === 0 ? (
-            <div className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-              <BookOpen className="mx-auto h-12 w-12 text-gray-300 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                No courses yet
+            <div className="p-20 text-center bg-card rounded-[40px] border border-dashed border-border/60">
+              <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/30 mb-6" />
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Curriculum processing...
               </h3>
-              <p className="text-gray-500">
-                This organization hasn't published any courses yet.
+              <p className="text-muted-foreground font-serif leading-relaxed italic">
+                This organization is currently formulating its educational
+                pathways.
               </p>
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
               {organization.courses.map((course) => (
                 <Link
                   key={course.id}
                   href={`/courses/${course.id}`}
-                  className="group bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700 transition-all"
+                  className="group p-8 rounded-[32px] bg-card border border-border shadow-sm hover:border-primary/20 transition-all duration-500 flex flex-col h-full"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/50 dark:to-indigo-900/50 flex items-center justify-center">
-                      <BookOpen className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                  <div className="flex items-start justify-between mb-8">
+                    <div className="w-12 h-12 rounded-xl bg-secondary/40 border border-border/50 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all duration-500">
+                      <BookOpen className="w-5 h-5 text-primary/60 group-hover:text-primary-foreground transition-colors" />
                     </div>
                     {course.isPublic ? (
-                      <Globe className="w-4 h-4 text-green-500" />
+                      <Badge
+                        variant="outline"
+                        className="text-[8px] bg-green-500/5 border-green-500/10 text-green-700 tracking-[0.2em]"
+                      >
+                        Open
+                      </Badge>
                     ) : (
-                      <Lock className="w-4 h-4 text-gray-400" />
+                      <Lock className="w-3.5 h-3.5 text-muted-foreground/30" />
                     )}
                   </div>
 
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 group-hover:text-indigo-600 transition-colors">
-                    {course.name}
-                  </h3>
+                  <div className="flex-1 space-y-3 mb-8">
+                    <h3 className="text-xl font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors">
+                      {course.name}
+                    </h3>
+                    {course.description && (
+                      <p className="text-sm text-muted-foreground font-serif leading-relaxed italic line-clamp-2">
+                        {course.description}
+                      </p>
+                    )}
+                  </div>
 
-                  {course.description && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
-                      {course.description}
-                    </p>
-                  )}
-
-                  <div className="flex items-center justify-between">
-                    <span className="flex items-center gap-1.5 text-sm text-gray-500">
-                      <HelpCircle className="w-4 h-4" />
-                      {course.questionCount} questions
-                    </span>
-                    <span className="flex items-center gap-1 text-sm font-medium text-indigo-600 dark:text-indigo-400 group-hover:gap-2 transition-all">
-                      <Play className="w-4 h-4" />
-                      Start Quiz
-                    </span>
+                  <div className="flex items-center justify-between pt-6 border-t border-border/40">
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      <HelpCircle className="w-3.5 h-3.5 text-primary/40" />
+                      {course.questionCount} Units
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] font-bold text-primary uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 duration-500">
+                      Begin
+                      <Play className="w-3 h-3 fill-current" />
+                    </div>
                   </div>
                 </Link>
               ))}

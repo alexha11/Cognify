@@ -18,7 +18,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost } from "@/lib/api";
 import { Course, Question, Material } from "@/types";
-import { formatDate, formatFileSize } from "@/lib/utils";
+import { cn, formatDate, formatFileSize } from "@/lib/utils";
 import {
   ArrowLeft,
   FileQuestion,
@@ -101,266 +101,414 @@ export default function CourseDetailPage() {
   const approvedQuestions = questions.filter((q) => q.approved);
 
   return (
-    <DashboardLayout>
-      <div className="space-y-8">
-        {/* Header */}
-        <div>
-          <Link
-            href="/courses"
-            className="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 mb-4"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to courses
-          </Link>
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
-                {course.name}
-                <Badge variant={course.isPublished ? "success" : "secondary"}>
-                  {course.isPublished ? "Published" : "Draft"}
-                </Badge>
-              </h1>
-              <p className="mt-2 text-gray-500">
-                {course.description || "No description"}
-              </p>
-            </div>
-            <div className="flex gap-3">
-              {(!user || isStudent) && approvedQuestions.length > 0 && (
-                <Link href={`/quiz/${course.id}`}>
-                  <Button className="bg-indigo-600 hover:bg-indigo-700">
-                    <Play className="h-4 w-4 mr-2" />
-                    {user ? "Start Quiz" : "Try Demo Quiz"}
-                  </Button>
+    <div className="min-h-screen bg-background">
+      <main className="max-w-7xl mx-auto px-6 py-12">
+        {/* Navigation / Return */}
+        <div className="flex items-center justify-between mb-12">
+          <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+            <ol className="flex items-center gap-2">
+              <li>
+                <Link href="/" className="hover:text-primary transition-colors">
+                  Cognify
                 </Link>
-              )}
-              {canEdit && (
-                <Link href={`/ai-generate?courseId=${course.id}`}>
-                  <Button>
-                    <Sparkles className="h-4 w-4" />
-                    Generate Questions
-                  </Button>
-                </Link>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Stats */}
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <FileQuestion className="h-8 w-8 text-indigo-600" />
-                <div>
-                  <p className="text-2xl font-bold">
-                    {approvedQuestions.length}
-                  </p>
-                  <p className="text-sm text-gray-500">Questions</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center gap-3">
-                <FileText className="h-8 w-8 text-purple-600" />
-                <div>
-                  <p className="text-2xl font-bold">{materials.length}</p>
-                  <p className="text-sm text-gray-500">Materials</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-          {canEdit && pendingQuestions.length > 0 && (
-            <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-3">
-                  <Sparkles className="h-8 w-8 text-yellow-600" />
-                  <div>
-                    <p className="text-2xl font-bold">
-                      {pendingQuestions.length}
-                    </p>
-                    <p className="text-sm text-yellow-700 dark:text-yellow-400">
-                      Pending Approval
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Pending Questions */}
-        {canEdit && pendingQuestions.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-yellow-500" />
-                AI Questions - Pending Approval
-              </CardTitle>
-              <CardDescription>
-                Review and approve AI-generated questions
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {pendingQuestions.map((question) => (
-                <div
-                  key={question.id}
-                  className="rounded-lg border border-yellow-200 bg-yellow-50/50 p-4 dark:border-yellow-800 dark:bg-yellow-900/10"
+              </li>
+              <li className="opacity-40">/</li>
+              <li>
+                <Link
+                  href="/courses"
+                  className="hover:text-primary transition-colors"
                 >
-                  <p className="font-medium text-gray-900 dark:text-white">
-                    {question.content}
-                  </p>
-                  <div className="mt-3 space-y-1">
-                    {question.answers.map((answer, i) => (
-                      <div
-                        key={answer.id}
-                        className={`text-sm ${answer.isCorrect ? "text-green-600 font-medium" : "text-gray-600"}`}
-                      >
-                        {String.fromCharCode(65 + i)}. {answer.content}{" "}
-                        {answer.isCorrect && "✓"}
-                      </div>
-                    ))}
-                  </div>
-                  {question.hint && (
-                    <p className="mt-2 text-sm text-gray-500">
-                      <strong>Hint:</strong> {question.hint}
-                    </p>
-                  )}
-                  <div className="mt-4 flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => handleApprove(question.id)}
-                    >
-                      <Check className="h-4 w-4" />
-                      Approve
-                    </Button>
-                    <Button size="sm" variant="outline">
-                      <X className="h-4 w-4" />
-                      Reject
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        )}
+                  Curriculum
+                </Link>
+              </li>
+              <li className="opacity-40">/</li>
+              <li className="text-primary/60">{course.name}</li>
+            </ol>
+          </nav>
+          <Link href="/courses">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[10px] font-bold uppercase tracking-widest gap-2"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              Institutional Curriculum
+            </Button>
+          </Link>
+        </div>
 
-        {/* Approved Questions */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Questions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {approvedQuestions.length === 0 ? (
-              <div className="py-8 text-center text-gray-500">
-                <FileQuestion className="mx-auto h-12 w-12 text-gray-300" />
-                <p className="mt-4">No questions yet</p>
-                {canEdit && (
-                  <Link href={`/ai-generate?courseId=${course.id}`}>
-                    <Button className="mt-4">
-                      <Sparkles className="h-4 w-4 mr-2" />
-                      Generate with AI
-                    </Button>
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {(user ? approvedQuestions : approvedQuestions.slice(0, 5)).map(
-                  (question, index) => (
-                    <div
-                      key={question.id}
-                      className={`${!user && index >= 3 ? "opacity-50 blur-[0.5px]" : ""} rounded-lg border p-4`}
+        {/* Course Core Header */}
+        <Card className="mb-16 border-border overflow-hidden">
+          <CardContent className="p-0">
+            <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border/40">
+              {/* Info Section */}
+              <div className="p-10 md:p-12 lg:max-w-xl w-full space-y-8">
+                <div className="space-y-4">
+                  <div className="flex items-center gap-4">
+                    <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+                      {course.name}
+                    </h1>
+                    <Badge
+                      variant={course.isPublished ? "outline" : "secondary"}
+                      className={
+                        course.isPublished
+                          ? "text-[8px] border-green-500/20 text-green-700 bg-green-500/5"
+                          : ""
+                      }
                     >
-                      <p className="font-medium">
-                        {index + 1}. {question.content}
+                      {course.isPublished
+                        ? "Published Path"
+                        : "Developmental Draft"}
+                    </Badge>
+                  </div>
+                  <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
+                    {course.description ||
+                      "Synthesizing deep-domain knowledge through structured curriculum integration."}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap gap-4 pt-4">
+                  {(!user || isStudent) && approvedQuestions.length > 0 && (
+                    <Link href={`/quiz/${course.id}`}>
+                      <Button
+                        variant="pill"
+                        size="lg"
+                        className="shadow-xl shadow-black/5 px-10"
+                      >
+                        <Play className="h-4 w-4 mr-3 fill-current" />
+                        {user ? "Initialize Assessment" : "Trial Assessment"}
+                      </Button>
+                    </Link>
+                  )}
+                  {canEdit && (
+                    <Link href={`/ai-generate?courseId=${course.id}`}>
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="rounded-full border-border hover:bg-secondary/50"
+                      >
+                        <Sparkles className="h-4 w-4 mr-3 text-primary/60" />
+                        Synthesize Units
+                      </Button>
+                    </Link>
+                  )}
+                </div>
+              </div>
+
+              {/* Snapshot Section */}
+              <div className="flex-1 p-10 md:p-12 bg-secondary/5 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-8">
+                    Curriculum Metrics
+                  </p>
+                  <div className="grid grid-cols-2 gap-12">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        Synthesis Units
                       </p>
-                      <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-                        {question.answers.map((answer, i) => (
-                          <div
-                            key={answer.id}
-                            className={`text-sm rounded px-3 py-2 ${answer.isCorrect ? "bg-green-100 text-green-700 dark:bg-green-900/30" : "bg-gray-100 text-gray-600 dark:bg-gray-800"}`}
-                          >
-                            {String.fromCharCode(65 + i)}. {answer.content}
-                          </div>
-                        ))}
+                      <div className="flex items-end gap-2">
+                        <p className="text-3xl font-semibold text-foreground tracking-tighter">
+                          {approvedQuestions.length}
+                        </p>
+                        <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
+                          Assessment Items
+                        </span>
                       </div>
                     </div>
-                  ),
-                )}
-
-                {!user && (
-                  <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 border border-indigo-100 dark:border-indigo-800 text-center">
-                    <Lock className="h-8 w-8 text-indigo-500 mx-auto mb-3" />
-                    <h4 className="font-bold text-gray-900 dark:text-white">
-                      Unlock {approvedQuestions.length} Questions
-                    </h4>
-                    <p className="text-sm text-gray-500 mt-1 mb-4">
-                      You&apos;re viewing a limited preview. Sign in to access
-                      all questions and start tracking your progress.
-                    </p>
-                    <FeatureGate
-                      variant="prompt"
-                      title="Full Question Access"
-                      description="Get unlimited access to all course questions, detailed explanations, and progress tracking."
-                    >
-                      <Button size="sm" className="bg-indigo-600">
-                        Sign Up to See More
-                        <ArrowRight className="h-4 w-4 ml-2" />
-                      </Button>
-                    </FeatureGate>
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        Supplemental
+                      </p>
+                      <div className="flex items-end gap-2">
+                        <p className="text-3xl font-semibold text-foreground tracking-tighter">
+                          {materials.length}
+                        </p>
+                        <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
+                          Deep-dive Docs
+                        </span>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                </div>
 
-        {/* Materials */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Materials</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {materials.length === 0 ? (
-              <div className="py-8 text-center">
-                <FileText className="mx-auto h-12 w-12 text-gray-300" />
-                <p className="mt-4 text-gray-500">No materials uploaded</p>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                {materials.map((material) => (
-                  <div
-                    key={material.id}
-                    className="flex items-center justify-between rounded-lg border p-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <FileText className="h-5 w-5 text-gray-400" />
+                {canEdit && pendingQuestions.length > 0 && (
+                  <div className="mt-12 p-6 rounded-3xl bg-yellow-500/5 border border-yellow-500/20 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
+                        <Sparkles className="h-5 w-5 text-yellow-600" />
+                      </div>
                       <div>
-                        <p className="font-medium">{material.fileName}</p>
-                        <p className="text-xs text-gray-500">
-                          {formatFileSize(material.fileSize)} •{" "}
-                          {formatDate(material.createdAt)}
+                        <p className="text-lg font-semibold text-foreground tracking-tight">
+                          {pendingQuestions.length} pending synthesis
+                        </p>
+                        <p className="text-[10px] font-bold text-yellow-700 uppercase tracking-widest">
+                          Awaiting human verification
                         </p>
                       </div>
                     </div>
-                    <FeatureGate
-                      variant="prompt"
-                      title="Download Materials"
-                      description="Sign in to download and view study materials for this course."
-                    >
-                      <Button variant="outline" size="sm">
-                        View
-                      </Button>
-                    </FeatureGate>
+                    <ArrowRight className="h-5 w-5 text-yellow-600/40" />
                   </div>
-                ))}
+                )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
-      </div>
-    </DashboardLayout>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start mb-24">
+          <div className="lg:col-span-2 space-y-12">
+            {/* Pending Questions */}
+            {canEdit && pendingQuestions.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                    Awaiting Synthesis.
+                  </h3>
+                  <Badge
+                    variant="warning"
+                    className="text-[8px] bg-yellow-500/5 border-yellow-500/20 text-yellow-700 tracking-widest font-bold"
+                  >
+                    Verification Required
+                  </Badge>
+                </div>
+                <div className="space-y-6">
+                  {pendingQuestions.map((question) => (
+                    <Card
+                      key={question.id}
+                      className="border-yellow-500/10 bg-yellow-500/[0.02]"
+                    >
+                      <CardContent className="p-8 space-y-8">
+                        <p className="text-lg font-medium text-foreground leading-relaxed">
+                          {question.content}
+                        </p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {question.answers.map((answer, i) => (
+                            <div
+                              key={answer.id}
+                              className={`p-4 rounded-2xl border text-sm transition-all duration-300 flex items-center justify-between ${
+                                answer.isCorrect
+                                  ? "bg-green-500/5 border-green-500/20 text-green-700 font-medium"
+                                  : "bg-background/50 border-border/40 text-muted-foreground"
+                              }`}
+                            >
+                              <span className="flex-1">
+                                <span className="text-[10px] font-bold opacity-40 mr-3 italic">
+                                  {String.fromCharCode(65 + i)} /
+                                </span>
+                                {answer.content}
+                              </span>
+                              {answer.isCorrect && (
+                                <Check className="h-3.5 w-3.5" />
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                        <div className="pt-6 border-t border-border/40 flex items-center justify-between">
+                          {question.hint && (
+                            <p className="text-xs text-muted-foreground font-serif italic">
+                              <span className="text-[10px] font-bold uppercase tracking-widest text-primary/40 not-italic mr-3">
+                                Hint /
+                              </span>
+                              {question.hint}
+                            </p>
+                          )}
+                          <div className="flex gap-3">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleApprove(question.id)}
+                              className="text-[10px] font-bold uppercase tracking-widest text-green-700 hover:bg-green-500/10 hover:text-green-800"
+                            >
+                              Commit
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-[10px] font-bold uppercase tracking-widest text-destructive/60 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              Discord
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Approved Questions List */}
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                  Active Units.
+                </h3>
+                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Verified Assessment Database
+                </div>
+              </div>
+
+              {approvedQuestions.length === 0 ? (
+                <Card className="border-dashed border-2 border-border/60 bg-transparent">
+                  <CardContent className="p-20 text-center space-y-6">
+                    <FileQuestion className="mx-auto h-12 w-12 text-muted-foreground/20" />
+                    <p className="text-muted-foreground font-serif italic leading-relaxed">
+                      The curriculum database contains no active assessment
+                      units.
+                    </p>
+                    {canEdit && (
+                      <Link href={`/ai-generate?courseId=${course.id}`}>
+                        <Button variant="pill">
+                          <Sparkles className="h-4 w-4 mr-3" />
+                          Generate Initial Units
+                        </Button>
+                      </Link>
+                    )}
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {(user
+                    ? approvedQuestions
+                    : approvedQuestions.slice(0, 5)
+                  ).map((question, index) => (
+                    <div
+                      key={question.id}
+                      className={cn(
+                        "group p-6 rounded-3xl border border-border/50 bg-card/30 hover:bg-card hover:border-primary/10 transition-all duration-500",
+                        !user && index >= 3
+                          ? "opacity-30 grayscale blur-[1px]"
+                          : "",
+                      )}
+                    >
+                      <div className="flex gap-6 items-start">
+                        <span className="text-2xl font-semibold text-primary/10 tracking-tighter tabular-nums pt-1 group-hover:text-primary/20 transition-colors">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <div className="space-y-4 flex-1">
+                          <p className="text-base font-medium text-foreground tracking-tight leading-relaxed">
+                            {question.content}
+                          </p>
+                          <div className="flex flex-wrap gap-2 pt-2">
+                            {question.answers.map((answer, i) => (
+                              <Badge
+                                key={answer.id}
+                                variant="outline"
+                                className={cn(
+                                  "text-[8px] font-bold tracking-widest transition-all duration-500",
+                                  answer.isCorrect
+                                    ? "bg-green-500/5 border-green-500/20 text-green-700/60"
+                                    : "bg-secondary/20 border-border/30 text-muted-foreground/40",
+                                )}
+                              >
+                                {String.fromCharCode(64 + (i + 1))}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {!user && (
+                    <Card className="border-dashed border border-border/60 bg-secondary/5 mt-12 overflow-hidden relative">
+                      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
+                      <CardContent className="p-12 text-center space-y-8 relative z-10">
+                        <div className="mx-auto w-16 h-16 bg-primary/5 rounded-[24px] flex items-center justify-center text-primary/40">
+                          <Lock className="h-8 w-8" />
+                        </div>
+                        <div className="space-y-3">
+                          <h4 className="text-2xl font-semibold tracking-tight text-foreground">
+                            Unlock Institutional Access.
+                          </h4>
+                          <p className="text-muted-foreground font-serif italic max-w-sm mx-auto leading-relaxed">
+                            A total of{" "}
+                            <span className="text-primary font-bold not-italic">
+                              {approvedQuestions.length} units
+                            </span>{" "}
+                            are archived. Initialize your identity to gain full
+                            archival access.
+                          </p>
+                        </div>
+                        <FeatureGate
+                          variant="prompt"
+                          title="Curriculum Expansion"
+                          description="Expand your archival permissions to include full assessment units, explanatory synthesis, and progression tracking."
+                        >
+                          <Button
+                            variant="pill"
+                            size="lg"
+                            className="shadow-xl shadow-black/5"
+                          >
+                            Authorize Identity
+                            <ArrowRight className="h-4 w-4 ml-3" />
+                          </Button>
+                        </FeatureGate>
+                      </CardContent>
+                    </Card>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <aside className="space-y-12">
+            {/* Supplemental Materials */}
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  Resources.
+                </h3>
+              </div>
+
+              {materials.length === 0 ? (
+                <div className="p-10 text-center bg-secondary/5 rounded-[32px] border border-dashed border-border/40">
+                  <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-[0.2em] italic">
+                    No supplemental media.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {materials.map((material) => (
+                    <Card
+                      key={material.id}
+                      className="border-border/40 bg-card/40 hover:bg-card transition-all duration-300"
+                    >
+                      <CardContent className="p-5 flex items-center justify-between group">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-xl bg-secondary/60 flex items-center justify-center text-primary/40 group-hover:text-primary transition-all duration-500">
+                            <FileText className="h-5 w-5" />
+                          </div>
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold text-foreground tracking-tight line-clamp-1">
+                              {material.fileName}
+                            </p>
+                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+                              {formatFileSize(material.fileSize)} • Doc
+                            </p>
+                          </div>
+                        </div>
+                        <FeatureGate
+                          variant="prompt"
+                          title="Archival Retrieval"
+                          description="Full identity verification is required to extract curriculum assets."
+                        >
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 rounded-full border border-border/40 group-hover:border-primary group-hover:text-primary transition-all duration-500"
+                          >
+                            <Play className="h-3 w-3 translate-x-[1px] fill-current" />
+                          </Button>
+                        </FeatureGate>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      </main>
+    </div>
   );
 }

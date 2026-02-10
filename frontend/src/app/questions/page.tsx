@@ -4,15 +4,28 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 import {
   Plus,
   Trash2,
-  Edit,
   Check,
   X,
   HelpCircle,
   Lightbulb,
   BookOpen,
+  ArrowRight,
+  Filter,
 } from "lucide-react";
 
 interface Answer {
@@ -163,11 +176,6 @@ export default function QuestionsPage() {
     setError("");
 
     try {
-      console.log("[Questions] Creating question:", {
-        newQuestion,
-        newAnswers,
-        selectedCourse,
-      });
       await apiPost("/questions", {
         content: newQuestion.content,
         hint: newQuestion.hint || undefined,
@@ -189,7 +197,6 @@ export default function QuestionsPage() {
       );
       setQuestions(data || []);
     } catch (err: unknown) {
-      console.error("[Questions] Creation failed:", err);
       const error = err as { response?: { data?: { message?: string } } };
       setError(error.response?.data?.message || "Failed to create question");
     } finally {
@@ -212,287 +219,356 @@ export default function QuestionsPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="max-w-6xl mx-auto space-y-12">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4">
+            <h1 className="text-4xl font-semibold tracking-tight text-foreground">
               Question Bank
             </h1>
-            <p className="mt-1 text-gray-500">
-              Manage questions and answers for your courses
+            <p className="text-muted-foreground font-serif text-lg leading-relaxed max-w-xl">
+              Curate and validate your institutional question repository for
+              pedagogical excellence.
             </p>
           </div>
           {canManage && (
-            <button
+            <Button
               onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 transition-opacity"
+              variant="pill"
+              size="xl"
+              className="md:w-auto"
             >
-              <Plus className="w-5 h-5" />
-              Add Question
-            </button>
+              <Plus className="w-5 h-5 mr-2" />
+              Add unit
+            </Button>
           )}
         </div>
 
-        {/* Course Selector */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
-          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-            Select Course
-          </label>
-          <select
-            value={selectedCourse}
-            onChange={(e) => setSelectedCourse(e.target.value)}
-            className="w-full px-4 py-2 border rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">-- Select a course --</option>
-            {courses.map((course) => (
-              <option key={course.id} value={course.id}>
-                {course.name}
-              </option>
-            ))}
-          </select>
-        </div>
+        {/* Filters/Selectors */}
+        <Card className="bg-card">
+          <CardContent className="p-8">
+            <div className="flex flex-col sm:flex-row items-center gap-6">
+              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary shrink-0">
+                <Filter className="h-5 w-5" />
+              </div>
+              <div className="flex-1 w-full space-y-2">
+                <Label
+                  htmlFor="courseKey"
+                  className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
+                >
+                  Select curriculum pathway
+                </Label>
+                <select
+                  id="courseKey"
+                  value={selectedCourse}
+                  onChange={(e) => setSelectedCourse(e.target.value)}
+                  className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-serif"
+                >
+                  <option value="">-- All Pathways --</option>
+                  {courses.map((course) => (
+                    <option key={course.id} value={course.id}>
+                      {course.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Questions List */}
         {isLoading ? (
-          <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <div className="flex justify-center py-20">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
           </div>
         ) : questions.length === 0 ? (
-          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-            <HelpCircle className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-4 text-lg font-medium text-gray-900 dark:text-white">
-              No questions yet
-            </h3>
-            <p className="mt-2 text-gray-500">
-              {selectedCourse
-                ? "Add your first question to this course"
-                : "Select a course to view questions"}
-            </p>
-          </div>
+          <Card className="border-dashed py-20 bg-transparent">
+            <CardContent className="text-center space-y-8">
+              <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-secondary text-muted-foreground/40">
+                <HelpCircle className="h-8 w-8" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-2xl font-semibold tracking-tight">
+                  Repository Empty
+                </h3>
+                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
+                  {selectedCourse
+                    ? "Initialize this pathway by adding your first synthesis unit."
+                    : "Select a curriculum pathway above to view technical items."}
+                </p>
+              </div>
+              {canManage && selectedCourse && (
+                <Button
+                  onClick={() => setShowCreate(true)}
+                  variant="outline"
+                  size="lg"
+                >
+                  Begin Synthesis
+                </Button>
+              )}
+            </CardContent>
+          </Card>
         ) : (
-          <div className="space-y-4">
+          <div className="grid gap-6">
+            <div className="flex items-center justify-between px-2">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                {questions.length} Items retrieved
+              </span>
+            </div>
             {questions.map((question, index) => (
-              <div
+              <Card
                 key={question.id}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6"
+                className="group hover:border-primary/20 transition-all duration-300"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-sm font-medium text-gray-500">
-                        Q{index + 1}
-                      </span>
-                      {question.aiGenerated && (
-                        <span className="px-2 py-0.5 text-xs bg-purple-100 text-purple-700 rounded-full">
-                          AI Generated
+                <CardContent className="p-8">
+                  <div className="flex items-start justify-between gap-6">
+                    <div className="space-y-6 flex-1">
+                      <div className="flex flex-wrap items-center gap-4">
+                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">
+                          ID: Q{String(index + 1).padStart(3, "0")}
                         </span>
-                      )}
-                      {!question.approved && (
-                        <span className="px-2 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">
-                          Pending Approval
-                        </span>
+                        {question.aiGenerated && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary border-primary/20"
+                          >
+                            AI Synthesis
+                          </Badge>
+                        )}
+                        {!question.approved && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-bold uppercase tracking-widest bg-secondary text-muted-foreground border-border"
+                          >
+                            Awaiting Validation
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xl font-semibold text-foreground tracking-tight leading-relaxed font-serif italic pr-8">
+                        "{question.content}"
+                      </p>
+                      {question.hint && (
+                        <div className="flex items-start gap-3 p-4 rounded-xl bg-secondary/40 border border-border/40">
+                          <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                          <p className="text-sm text-muted-foreground font-serif leading-relaxed italic">
+                            {question.hint}
+                          </p>
+                        </div>
                       )}
                     </div>
-                    <p className="text-gray-900 dark:text-white font-medium">
-                      {question.content}
-                    </p>
-                    {question.hint && (
-                      <p className="mt-2 text-sm text-gray-500 flex items-center gap-1">
-                        <Lightbulb className="w-4 h-4" />
-                        {question.hint}
-                      </p>
+                    {canManage && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(question.id)}
+                        className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5"
+                        title="Decouple item"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
                     )}
                   </div>
-                  {canManage && (
-                    <div className="flex gap-2 ml-4">
-                      <button
-                        onClick={() => handleDelete(question.id)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
-                </div>
 
-                {/* Answers */}
-                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
-                  {question.answers.map((answer) => (
-                    <div
-                      key={answer.id}
-                      className={`flex items-center gap-2 p-3 rounded-lg ${
-                        answer.isCorrect
-                          ? "bg-green-50 border border-green-200 dark:bg-green-900/20 dark:border-green-800"
-                          : "bg-gray-50 dark:bg-gray-700/50"
-                      }`}
-                    >
-                      {answer.isCorrect ? (
-                        <Check className="w-4 h-4 text-green-600" />
-                      ) : (
-                        <X className="w-4 h-4 text-gray-400" />
-                      )}
-                      <span
-                        className={
+                  {/* Answers */}
+                  <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {question.answers.map((answer, i) => (
+                      <div
+                        key={answer.id || i}
+                        className={`flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 ${
                           answer.isCorrect
-                            ? "text-green-700 dark:text-green-400"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
+                            ? "bg-primary/5 border-primary/20 text-foreground"
+                            : "bg-background border-border text-muted-foreground"
+                        }`}
                       >
-                        {answer.content}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+                        <div
+                          className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
+                            answer.isCorrect
+                              ? "bg-primary border-primary text-primary-foreground"
+                              : "border-border text-muted-foreground/20"
+                          }`}
+                        >
+                          {answer.isCorrect ? (
+                            <Check className="h-3.5 w-3.5" />
+                          ) : (
+                            <div className="h-1.5 w-1.5 rounded-full bg-current" />
+                          )}
+                        </div>
+                        <span className="text-base font-serif leading-relaxed">
+                          {answer.content}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             ))}
           </div>
         )}
 
-        {/* Create Question Modal */}
+        {/* Create Question Modal - Redesigned as Overlay */}
         {showCreate && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-              <div className="p-6 border-b dark:border-gray-700">
-                <h2 className="text-xl font-semibold dark:text-white">
-                  Add New Question
-                </h2>
-              </div>
-              <form onSubmit={handleCreate} className="p-6 space-y-6">
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-                    {error}
+          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
+            <Card className="max-w-3xl w-full shadow-2xl bg-card animate-in fade-in zoom-in-95 duration-300">
+              <CardHeader className="p-10 border-b border-border/40">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-1">
+                    <CardTitle className="text-2xl font-semibold tracking-tight">
+                      Manual Synthesis
+                    </CardTitle>
+                    <CardDescription className="font-serif">
+                      Define a new assessment unit for the curriculum.
+                    </CardDescription>
                   </div>
-                )}
-
-                {/* Question Content */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Question *
-                  </label>
-                  <textarea
-                    value={newQuestion.content}
-                    onChange={(e) =>
-                      setNewQuestion({
-                        ...newQuestion,
-                        content: e.target.value,
-                      })
-                    }
-                    rows={3}
-                    className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    placeholder="Enter your question..."
-                    required
-                    minLength={10}
-                    maxLength={500}
-                  />
-                  <p className="mt-1 text-xs text-gray-500">
-                    {newQuestion.content.length}/500 characters
-                  </p>
-                </div>
-
-                {/* Hint */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Hint (optional)
-                  </label>
-                  <input
-                    type="text"
-                    value={newQuestion.hint}
-                    onChange={(e) =>
-                      setNewQuestion({ ...newQuestion, hint: e.target.value })
-                    }
-                    className="w-full px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
-                    placeholder="Optional hint for students..."
-                    maxLength={200}
-                  />
-                </div>
-
-                {/* Answers */}
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                      Answers * (minimum 2, maximum 6)
-                    </label>
-                    {newAnswers.length < 6 && (
-                      <button
-                        type="button"
-                        onClick={addAnswer}
-                        className="text-sm text-blue-600 hover:text-blue-700"
-                      >
-                        + Add Answer
-                      </button>
-                    )}
-                  </div>
-                  <div className="space-y-3">
-                    {newAnswers.map((answer, index) => (
-                      <div key={index} className="flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => updateAnswer(index, "isCorrect", true)}
-                          className={`p-2 rounded-lg border transition-colors ${
-                            answer.isCorrect
-                              ? "bg-green-100 border-green-500 text-green-700"
-                              : "bg-gray-50 border-gray-300 text-gray-400 hover:border-green-500"
-                          }`}
-                          title="Mark as correct answer"
-                        >
-                          <Check className="w-4 h-4" />
-                        </button>
-                        <input
-                          type="text"
-                          value={answer.content}
-                          onChange={(e) =>
-                            updateAnswer(index, "content", e.target.value)
-                          }
-                          className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500"
-                          placeholder={`Answer ${index + 1}...`}
-                          required
-                          maxLength={200}
-                        />
-                        {newAnswers.length > 2 && (
-                          <button
-                            type="button"
-                            onClick={() => removeAnswer(index)}
-                            className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <p className="mt-2 text-xs text-gray-500">
-                    Click the checkmark to mark the correct answer
-                  </p>
-                </div>
-
-                {/* Actions */}
-                <div className="flex justify-end gap-3 pt-4 border-t dark:border-gray-700">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowCreate(false);
-                      setError("");
-                      setNewQuestion({ content: "", hint: "" });
-                      setNewAnswers([
-                        { content: "", isCorrect: true },
-                        { content: "", isCorrect: false },
-                      ]);
-                    }}
-                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowCreate(false)}
+                    className="hover:bg-secondary rounded-full"
                   >
-                    Cancel
-                  </button>
-                  <button
+                    <X className="w-6 h-6" />
+                  </Button>
+                </div>
+              </CardHeader>
+              <form onSubmit={handleCreate}>
+                <div className="p-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                  {error && (
+                    <div className="p-4 bg-destructive/5 border border-destructive/20 text-destructive rounded-xl text-sm font-serif italic">
+                      {error}
+                    </div>
+                  )}
+
+                  <div className="space-y-4">
+                    <Label
+                      htmlFor="questionContent"
+                      className="text-[10px] font-bold uppercase tracking-widest"
+                    >
+                      Question Narrative
+                    </Label>
+                    <textarea
+                      id="questionContent"
+                      value={newQuestion.content}
+                      onChange={(e) =>
+                        setNewQuestion({
+                          ...newQuestion,
+                          content: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      className="w-full px-5 py-4 border border-border rounded-2xl bg-background text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-serif text-lg italic"
+                      placeholder="Articulate the question unit..."
+                      required
+                      minLength={10}
+                    />
+                    <div className="flex justify-end pr-2">
+                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
+                        {newQuestion.content.length} characters
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <Label
+                      htmlFor="hintContent"
+                      className="text-[10px] font-bold uppercase tracking-widest"
+                    >
+                      Pedagogical Hint
+                    </Label>
+                    <Input
+                      id="hintContent"
+                      value={newQuestion.hint}
+                      onChange={(e) =>
+                        setNewQuestion({ ...newQuestion, hint: e.target.value })
+                      }
+                      className="font-serif italic text-base px-5 py-6 rounded-xl"
+                      placeholder="Optional technical guidance..."
+                    />
+                  </div>
+
+                  <div className="space-y-6">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                        Unit Options
+                      </Label>
+                      {newAnswers.length < 6 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={addAnswer}
+                          className="text-[10px] font-bold uppercase tracking-widest text-primary"
+                        >
+                          + Expand options
+                        </Button>
+                      )}
+                    </div>
+                    <div className="space-y-4">
+                      {newAnswers.map((answer, index) => (
+                        <div key={index} className="flex items-center gap-4">
+                          <Button
+                            type="button"
+                            variant={answer.isCorrect ? "default" : "ghost"}
+                            size="icon"
+                            onClick={() =>
+                              updateAnswer(index, "isCorrect", true)
+                            }
+                            className={cn(
+                              "h-10 w-10 shrink-0 rounded-xl transition-all duration-300",
+                              answer.isCorrect
+                                ? "shadow-lg shadow-primary/20"
+                                : "text-muted-foreground/20 hover:border-primary/40",
+                            )}
+                            title="Verify as correct"
+                          >
+                            <Check className="w-5 h-5" />
+                          </Button>
+                          <Input
+                            value={answer.content}
+                            onChange={(e) =>
+                              updateAnswer(index, "content", e.target.value)
+                            }
+                            className="flex-1 font-serif text-base px-5 py-6 rounded-xl"
+                            placeholder={`Option unit ${index + 1}...`}
+                            required
+                          />
+                          {newAnswers.length > 2 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => removeAnswer(index)}
+                              className="text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5"
+                            >
+                              <X className="w-5 h-5" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-10 border-t border-border/40 bg-secondary/10 flex justify-end gap-6 rounded-b-[32px]">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setShowCreate(false)}
+                    className="font-bold text-[10px] uppercase tracking-widest"
+                  >
+                    Discard
+                  </Button>
+                  <Button
                     type="submit"
                     disabled={creating}
-                    className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+                    variant="pill"
+                    size="xl"
+                    className="px-10"
                   >
-                    {creating ? "Creating..." : "Create Question"}
-                  </button>
+                    {creating ? "Processing..." : "Submit Unit"}
+                    {!creating && <ArrowRight className="ml-2 h-5 w-5" />}
+                  </Button>
                 </div>
               </form>
-            </div>
+            </Card>
           </div>
         )}
       </div>

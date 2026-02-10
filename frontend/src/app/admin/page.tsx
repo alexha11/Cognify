@@ -4,8 +4,15 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth";
 import {
   BookOpen,
@@ -16,6 +23,7 @@ import {
   FileText,
   BarChart3,
   Shield,
+  ArrowRight,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -32,10 +40,7 @@ export default function AdminPage() {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center min-h-[60vh]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-            <p className="mt-4 text-gray-500">Loading admin panel...</p>
-          </div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
         </div>
       </DashboardLayout>
     );
@@ -47,268 +52,182 @@ export default function AdminPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600">
-                <Shield className="h-6 w-6 text-white" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
+                <Shield className="h-7 w-7" />
               </div>
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-                  Admin Dashboard
+              <div className="space-y-1">
+                <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+                  Administrative Control
                 </h1>
-                <p className="text-sm text-gray-500">
-                  Centralized platform administration
+                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
+                  Unified platform governance and curriculum management.
                 </p>
               </div>
             </div>
           </div>
+          <Badge
+            variant="outline"
+            className="px-4 py-1.5 h-fit text-[10px] font-bold uppercase tracking-widest bg-primary/5"
+          >
+            Systems Administrator
+          </Badge>
         </div>
 
-        {/* Quick Stats */}
+        {/* Quick Stats Grid */}
         <div className="grid gap-6 md:grid-cols-4">
-          <Card className="border-l-4 border-l-indigo-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Courses
+          {[
+            { label: "Total Curriculum", icon: BookOpen, value: "--" },
+            { label: "Synthesis Units", icon: FileQuestion, value: "--" },
+            { label: "Platform Members", icon: Users, value: "--" },
+            { label: "Active Sessions", icon: BarChart3, value: "--" },
+          ].map((stat, i) => (
+            <Card
+              key={i}
+              className="hover:bg-secondary/20 transition-colors duration-300"
+            >
+              <CardContent className="p-8 space-y-6">
+                <div className="flex items-center justify-between">
+                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                    <stat.icon className="h-5 w-5" />
+                  </div>
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] font-bold tracking-widest uppercase bg-background"
+                  >
+                    Audit
+                  </Badge>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    {stat.label}
                   </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    --
+                  <p className="text-3xl font-semibold tracking-tighter text-foreground">
+                    {stat.value}
                   </p>
                 </div>
-                <BookOpen className="h-8 w-8 text-indigo-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-green-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Questions
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    --
-                  </p>
-                </div>
-                <FileQuestion className="h-8 w-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-purple-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Total Users
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    --
-                  </p>
-                </div>
-                <Users className="h-8 w-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-l-4 border-l-orange-500">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-500">
-                    Active Quizzes
-                  </p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">
-                    --
-                  </p>
-                </div>
-                <BarChart3 className="h-8 w-8 text-orange-500" />
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* Admin Actions */}
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-            Administration Tools
-          </h2>
+        {/* Admin Actions Grid */}
+        <div className="space-y-8">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-semibold tracking-tight">
+              Platform Governance
+            </h2>
+            <div className="h-[1px] flex-1 mx-8 bg-border/40" />
+          </div>
+
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {/* Course Management */}
-            <Link href="/courses">
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                      <BookOpen className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+            {[
+              {
+                title: "Curriculum Oversight",
+                desc: "Monitor and organize all institutional course structures.",
+                href: "/courses",
+                icon: BookOpen,
+                label: "Courses",
+              },
+              {
+                title: "Synthesis Engine",
+                desc: "Access AI capabilities to generate assessment material.",
+                href: "/ai-generate",
+                icon: Sparkles,
+                label: "AI Systems",
+              },
+              {
+                title: "Question Validation",
+                desc: "Pedagogical review and authorization of question banks.",
+                href: "/courses",
+                icon: FileQuestion,
+                label: "Validation",
+              },
+              {
+                title: "Institutional Configuration",
+                desc: "Manage organizational parameters and security protocols.",
+                href: "/dashboard",
+                icon: Settings,
+                label: "Settings",
+              },
+              {
+                title: "Asset Repository",
+                desc: "Centralized management of all research and course materials.",
+                href: "/courses",
+                icon: FileText,
+                label: "Materials",
+              },
+              {
+                title: "Efficacy Analytics",
+                desc: "Deep-dive into platform-wide learning metrics.",
+                href: "/progress",
+                icon: BarChart3,
+                label: "Analytics",
+              },
+            ].map((tool, i) => (
+              <Link key={i} href={tool.href}>
+                <Card className="group h-full hover:border-primary/30 transition-all duration-300">
+                  <CardHeader className="p-8">
+                    <div className="flex items-center justify-between mb-8">
+                      <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary group-hover:bg-primary/10 transition-colors">
+                        <tool.icon className="h-6 w-6" />
+                      </div>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] font-bold tracking-widest uppercase"
+                      >
+                        {tool.label}
+                      </Badge>
                     </div>
-                    <div>
-                      <CardTitle className="group-hover:text-indigo-600">
-                        Manage Courses
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        Create and organize courses
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    View All Courses
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* AI Question Generation */}
-            <Link href="/ai-generate">
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-purple-100 dark:bg-purple-900/30">
-                      <Sparkles className="h-6 w-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="group-hover:text-purple-600">
-                        AI Generation
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        Generate quiz questions
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    Generate Questions
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Question Management */}
-            <Link href="/courses">
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-900/30">
-                      <FileQuestion className="h-6 w-6 text-green-600 dark:text-green-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="group-hover:text-green-600">
-                        Question Bank
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        Review and approve questions
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    Manage Questions
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Organization Settings */}
-            <Link href="/dashboard">
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800">
-                      <Settings className="h-6 w-6 text-gray-600 dark:text-gray-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="group-hover:text-gray-600">
-                        Organization
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        Configure organization settings
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    View Settings
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Materials Management */}
-            <Link href="/courses">
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-900/30">
-                      <FileText className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="group-hover:text-blue-600">
-                        Course Materials
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        Upload and manage materials
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    View Materials
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
-
-            {/* Analytics */}
-            <Link href="/progress">
-              <Card className="group hover:shadow-lg transition-all cursor-pointer h-full">
-                <CardHeader>
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-orange-100 dark:bg-orange-900/30">
-                      <BarChart3 className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-                    </div>
-                    <div>
-                      <CardTitle className="group-hover:text-orange-600">
-                        Analytics
-                      </CardTitle>
-                      <p className="text-sm text-gray-500">
-                        View platform analytics
-                      </p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <Button variant="outline" className="w-full">
-                    View Analytics
-                  </Button>
-                </CardContent>
-              </Card>
-            </Link>
+                    <CardTitle className="text-xl font-semibold mb-3 tracking-tight group-hover:text-primary transition-colors">
+                      {tool.title}
+                    </CardTitle>
+                    <CardDescription className="text-muted-foreground font-serif text-base leading-relaxed">
+                      {tool.desc}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="px-8 pb-8 pt-0">
+                    <Button
+                      variant="outline"
+                      className="w-full rounded-xl group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all duration-300"
+                    >
+                      Access Terminal
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
         </div>
 
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Platform Activity</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-center py-8 text-gray-500">
-              <p>Activity tracking coming soon...</p>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Activity Log Placeholder */}
+        <section className="space-y-6 pt-6">
+          <Card className="border-dashed bg-transparent">
+            <CardHeader className="p-8 text-center sm:text-left">
+              <CardTitle className="text-xl font-semibold">
+                System Audit Log
+              </CardTitle>
+              <CardDescription className="font-serif">
+                Platform-wide events and administrative actions.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="px-8 pb-16 pt-0 text-center">
+              <div className="py-12 flex flex-col items-center space-y-4">
+                <div className="h-12 w-12 rounded-full border border-border flex items-center justify-center text-muted-foreground/30 font-serif">
+                  !
+                </div>
+                <p className="text-muted-foreground font-serif italic text-lg opacity-60">
+                  System event streaming beginning soon.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </section>
       </div>
     </DashboardLayout>
   );

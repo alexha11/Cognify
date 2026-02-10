@@ -5,10 +5,10 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Sparkles, Loader2 } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -56,127 +56,186 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950">
-      <Header />
-
-      <main className="flex min-h-[calc(100vh-4rem)] items-center justify-center p-4 pt-20">
-        <div className="w-full max-w-md animate-fade-in">
-          <Card className="border-0 shadow-2xl">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Create your account</CardTitle>
-              <CardDescription>Start your free trial today</CardDescription>
+    <div className="min-h-screen bg-background">
+      <main className="flex min-h-screen items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <Card className="border border-border p-1">
+            <CardHeader className="text-center pt-10 pb-12">
+              <div className="mx-auto w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mb-8 animate-in zoom-in duration-500">
+                <Sparkles className="h-6 w-6" />
+              </div>
+              <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
+                Begin your{" "}
+                <span className="text-primary/40 italic font-serif">
+                  odyssey.
+                </span>
+              </CardTitle>
+              <CardDescription className="text-base text-muted-foreground font-serif italic mt-3">
+                Establish your cognitive profile and join a verified educational
+                sphere.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <CardContent className="px-10">
+              <form
+                onSubmit={handleSubmit(onSubmit)}
+                className="gap-8 flex flex-col"
+              >
                 {error && (
-                  <div className="rounded-lg bg-red-50 p-3 text-sm text-red-600 dark:bg-red-900/20 dark:text-red-400">
+                  <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 text-[10px] font-bold text-destructive uppercase tracking-widest text-center animate-in fade-in slide-in-from-top-2">
                     {error}
                   </div>
                 )}
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="gap-6 flex flex-col">
+                  {/* Name Fields */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="firstName"
+                        className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                      >
+                        First name
+                      </Label>
+                      <Input
+                        id="firstName"
+                        placeholder="John"
+                        {...register("firstName")}
+                        className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                          errors.firstName
+                            ? "border-destructive/40 focus:ring-destructive/5"
+                            : ""
+                        }`}
+                      />
+                      {errors.firstName && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                          {errors.firstName.message}
+                        </p>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="lastName"
+                        className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                      >
+                        Last name
+                      </Label>
+                      <Input
+                        id="lastName"
+                        placeholder="Doe"
+                        {...register("lastName")}
+                        className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                          errors.lastName
+                            ? "border-destructive/40 focus:ring-destructive/5"
+                            : ""
+                        }`}
+                      />
+                      {errors.lastName && (
+                        <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                          {errors.lastName.message}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Institution */}
                   <div className="space-y-2">
-                    <Label htmlFor="firstName">First name</Label>
+                    <Label
+                      htmlFor="organizationName"
+                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                    >
+                      Cognitive Institution
+                    </Label>
                     <Input
-                      id="firstName"
-                      placeholder="John"
-                      {...register("firstName")}
-                      className={errors.firstName ? "border-red-500" : ""}
+                      id="organizationName"
+                      placeholder="e.g. Aalto University"
+                      {...register("organizationName")}
+                      className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        errors.organizationName
+                          ? "border-destructive/40 focus:ring-destructive/5"
+                          : ""
+                      }`}
                     />
-                    {errors.firstName && (
-                      <p className="text-xs text-red-500">
-                        {errors.firstName.message}
+                    {errors.organizationName && (
+                      <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                        {errors.organizationName.message}
                       </p>
                     )}
                   </div>
+
+                  {/* Email */}
                   <div className="space-y-2">
-                    <Label htmlFor="lastName">Last name</Label>
+                    <Label
+                      htmlFor="email"
+                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                    >
+                      Electronic Mail
+                    </Label>
                     <Input
-                      id="lastName"
-                      placeholder="Doe"
-                      {...register("lastName")}
-                      className={errors.lastName ? "border-red-500" : ""}
+                      id="email"
+                      type="email"
+                      placeholder="curator@cognify.io"
+                      {...register("email")}
+                      className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        errors.email
+                          ? "border-destructive/40 focus:ring-destructive/5"
+                          : ""
+                      }`}
                     />
-                    {errors.lastName && (
-                      <p className="text-xs text-red-500">
-                        {errors.lastName.message}
+                    {errors.email && (
+                      <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                        {errors.email.message}
                       </p>
                     )}
                   </div>
-                </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="organizationName">Organization name</Label>
-                  <Input
-                    id="organizationName"
-                    placeholder="Aalto University"
-                    {...register("organizationName")}
-                    className={errors.organizationName ? "border-red-500" : ""}
-                  />
-                  {errors.organizationName && (
-                    <p className="text-xs text-red-500">
-                      {errors.organizationName.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@company.com"
-                    {...register("email")}
-                    className={errors.email ? "border-red-500" : ""}
-                  />
-                  {errors.email && (
-                    <p className="text-xs text-red-500">
-                      {errors.email.message}
-                    </p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••••"
-                    {...register("password")}
-                    className={errors.password ? "border-red-500" : ""}
-                  />
-                  {errors.password && (
-                    <p className="text-xs text-red-500">
-                      {errors.password.message}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500">Minimum 8 characters</p>
+                  {/* Password */}
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="password"
+                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                    >
+                      Passphrase
+                    </Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      {...register("password")}
+                      className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        errors.password
+                          ? "border-destructive/40 focus:ring-destructive/5"
+                          : ""
+                      }`}
+                    />
+                    {errors.password && (
+                      <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                        {errors.password.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full h-14 text-sm font-bold tracking-[0.1em] rounded-2xl shadow-xl shadow-black/5"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Creating account...
-                    </>
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    "Create account"
+                    "Initialize Identity"
                   )}
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="justify-center">
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                Already have an account?{" "}
+            <CardFooter className="justify-center pt-8 pb-10 text-[10px] font-bold uppercase tracking-[0.2em]">
+              <p className="text-muted-foreground/60">
+                Existing researcher?{" "}
                 <Link
                   href="/login"
-                  className="font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                  className="text-primary hover:text-primary/70 transition-colors"
                 >
-                  Sign in
+                  Authorize Session
                 </Link>
               </p>
             </CardFooter>

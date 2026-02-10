@@ -79,20 +79,22 @@ export function Sidebar() {
       ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white/95 backdrop-blur dark:border-gray-800 dark:bg-gray-950/95">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-background">
       <div className="flex h-full flex-col">
         {/* Logo */}
-        <div className="flex h-16 items-center gap-3 border-b border-gray-200 px-6 dark:border-gray-800">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600">
-            <Sparkles className="h-5 w-5 text-white" />
-          </div>
-          <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-            Cognify
-          </span>
+        <div className="flex h-16 items-center gap-3 border-b border-border px-6">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="flex h-8 w-8 items-center justify-center rounded bg-primary transition-transform group-hover:scale-105">
+              <Sparkles className="h-4 w-4 text-primary-foreground" />
+            </div>
+            <span className="text-xl font-semibold tracking-tight text-foreground lowercase">
+              cognify
+            </span>
+          </Link>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4">
+        <nav className="flex-1 space-y-0.5 p-4">
           {items.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
@@ -103,77 +105,81 @@ export function Sidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center justify-between rounded-lg px-3 py-2.5 text-sm font-medium transition-all",
+                  "flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all duration-300",
                   isActive
-                    ? "bg-gradient-to-r from-indigo-500/10 to-purple-500/10 text-indigo-700 dark:text-indigo-400"
-                    : "text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800",
+                    ? "bg-secondary text-primary shadow-sm shadow-black/[0.02]"
+                    : "text-muted-foreground hover:bg-secondary/40 hover:text-foreground",
                 )}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4">
                   <Icon
-                    className={cn("h-5 w-5", isActive && "text-indigo-600")}
+                    className={cn(
+                      "h-4 w-4 transition-colors",
+                      isActive ? "text-primary" : "text-muted-foreground/50",
+                    )}
                   />
                   {item.label}
                 </div>
-                {isGated && <Lock className="h-3.5 w-3.5 text-gray-400" />}
+                {isGated && (
+                  <Lock className="h-3 w-3 text-muted-foreground/30" />
+                )}
               </Link>
             );
           })}
         </nav>
 
         {/* User section */}
-        <div className="border-t border-gray-200 p-4 dark:border-gray-800">
+        <div className="border-t border-border p-4">
           {user ? (
-            <div className="flex items-center gap-3 rounded-lg bg-gray-50 p-3 dark:bg-gray-900">
-              <Avatar className="h-9 w-9">
-                <AvatarFallback>
+            <div className="flex items-center gap-4 rounded-[20px] bg-secondary/30 p-4 border border-border/40">
+              <Avatar className="h-9 w-9 border border-border/60 shadow-sm">
+                <AvatarFallback className="text-[10px] font-bold bg-background text-primary/60">
                   {getInitials(user.firstName, user.lastName)}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate dark:text-white">
+                <p className="text-[11px] font-bold text-foreground truncate tracking-tight">
                   {user.firstName} {user.lastName}
                 </p>
-                <p className="text-xs text-gray-500 truncate dark:text-gray-400">
-                  {user.role.toLowerCase()}
+                <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
+                  {user.role} Identity
                 </p>
               </div>
-              <button
+              <Button
+                variant="ghost"
+                size="icon"
                 onClick={logout}
-                className="rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-600 dark:hover:bg-gray-800"
-                title="Logout"
+                className="h-8 w-8 text-muted-foreground hover:bg-background hover:text-destructive"
+                title="De-authorize Session"
               >
                 <LogOut className="h-4 w-4" />
-              </button>
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="rounded-xl bg-indigo-50/50 dark:bg-indigo-900/10 p-4 border border-indigo-100/50 dark:border-indigo-800/50">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="h-8 w-8 rounded-full bg-indigo-100 dark:bg-indigo-900 flex items-center justify-center text-indigo-600">
+              <div className="rounded-2xl bg-card p-5 border border-border">
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="h-8 w-8 rounded-full bg-background border border-border flex items-center justify-center text-primary">
                     <UserCircle className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-indigo-900 dark:text-indigo-300 uppercase tracking-wider">
-                      Guest Mode
+                    <p className="text-[10px] font-bold text-foreground uppercase tracking-widest">
+                      Guest
                     </p>
-                    <p className="text-[10px] text-indigo-600 dark:text-indigo-400">
-                      Limited access
+                    <p className="text-[10px] text-muted-foreground">
+                      Upgrade for more
                     </p>
                   </div>
                 </div>
-                <div className="space-y-2">
-                  <Button
-                    asChild
-                    className="w-full h-8 text-xs bg-indigo-600 hover:bg-indigo-700"
-                  >
-                    <Link href="/register">Sign Up Free</Link>
+                <div className="space-y-3">
+                  <Button asChild size="sm" className="w-full text-xs">
+                    <Link href="/register">Join Cognify</Link>
                   </Button>
                   <Link
                     href="/login"
-                    className="block text-center text-[11px] font-medium text-indigo-600 hover:text-indigo-700 underline underline-offset-4"
+                    className="block text-center text-[10px] font-medium text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    Already have an account? Sign in
+                    Log in
                   </Link>
                 </div>
               </div>

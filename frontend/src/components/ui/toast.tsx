@@ -8,6 +8,8 @@ import {
   ReactNode,
 } from "react";
 import { X, AlertCircle, CheckCircle, Info, AlertTriangle } from "lucide-react";
+import { Button } from "./button";
+import { cn } from "@/lib/utils";
 
 type ToastType = "success" | "error" | "warning" | "info";
 
@@ -59,7 +61,7 @@ function ToastContainer({
   onRemove: (id: string) => void;
 }) {
   return (
-    <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-md">
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col gap-3 max-w-sm w-full">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -83,28 +85,28 @@ function ToastItem({
 
   const styles = {
     success: {
-      bg: "bg-green-50 dark:bg-green-900/30",
-      border: "border-green-200 dark:border-green-800",
-      text: "text-green-800 dark:text-green-200",
+      bg: "bg-[#F0FDF4]",
+      border: "border-green-200/60",
+      text: "text-green-800",
       icon: <CheckCircle className="w-5 h-5 text-green-600" />,
     },
     error: {
-      bg: "bg-red-50 dark:bg-red-900/30",
-      border: "border-red-200 dark:border-red-800",
-      text: "text-red-800 dark:text-red-200",
-      icon: <AlertCircle className="w-5 h-5 text-red-600" />,
+      bg: "bg-destructive/5",
+      border: "border-destructive/10",
+      text: "text-destructive",
+      icon: <AlertCircle className="w-5 h-5 text-destructive" />,
     },
     warning: {
-      bg: "bg-yellow-50 dark:bg-yellow-900/30",
-      border: "border-yellow-200 dark:border-yellow-800",
-      text: "text-yellow-800 dark:text-yellow-200",
-      icon: <AlertTriangle className="w-5 h-5 text-yellow-600" />,
+      bg: "bg-[#FFFBEB]",
+      border: "border-amber-200/60",
+      text: "text-amber-800",
+      icon: <AlertTriangle className="w-5 h-5 text-amber-600" />,
     },
     info: {
-      bg: "bg-blue-50 dark:bg-blue-900/30",
-      border: "border-blue-200 dark:border-blue-800",
-      text: "text-blue-800 dark:text-blue-200",
-      icon: <Info className="w-5 h-5 text-blue-600" />,
+      bg: "bg-primary/5",
+      border: "border-primary/10",
+      text: "text-primary",
+      icon: <Info className="w-5 h-5 text-primary" />,
     },
   };
 
@@ -112,19 +114,23 @@ function ToastItem({
 
   return (
     <div
-      className={`flex items-start gap-3 p-4 rounded-lg border shadow-lg animate-slide-in ${style.bg} ${style.border}`}
+      className={`flex items-center gap-4 p-5 rounded-2xl border shadow-2xl shadow-black/5 animate-in slide-in-from-right-8 fade-in duration-500 ${style.bg} ${style.border}`}
       role="alert"
     >
-      {style.icon}
-      <p className={`flex-1 text-sm font-medium ${style.text}`}>
+      <div className="shrink-0">{style.icon}</div>
+      <p
+        className={`flex-1 text-sm font-semibold tracking-tight ${style.text}`}
+      >
         {toast.message}
       </p>
-      <button
+      <Button
+        variant="ghost"
+        size="icon"
         onClick={() => onRemove(toast.id)}
-        className={`${style.text} hover:opacity-70 transition-opacity`}
+        className={cn(style.text, "opacity-30 hover:opacity-100 h-8 w-8")}
       >
         <X className="w-4 h-4" />
-      </button>
+      </Button>
     </div>
   );
 }

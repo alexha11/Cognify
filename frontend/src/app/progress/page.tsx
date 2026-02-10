@@ -18,6 +18,7 @@ import {
   X,
   BookOpen,
   Loader2,
+  ArrowRight,
 } from "lucide-react";
 
 export default function ProgressPage() {
@@ -76,8 +77,8 @@ export default function ProgressPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -85,14 +86,15 @@ export default function ProgressPage() {
 
   return (
     <DashboardLayout>
-      <div className="space-y-8">
-        {/* Header */}
+      <div className="max-w-6xl mx-auto space-y-12">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-            My Progress
+          <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+            Learning Progress
           </h1>
-          <p className="mt-1 text-gray-500">Track your learning journey</p>
+          <p className="mt-2 text-muted-foreground font-serif text-lg leading-relaxed">
+            Monitor your intellectual trajectory and master your curriculum.
+          </p>
         </div>
 
         {!user ? (
@@ -102,184 +104,199 @@ export default function ProgressPage() {
             {/* Overall Stats */}
             {stats && (
               <div className="grid gap-6 md:grid-cols-3">
-                <Card className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white border-0 shadow-lg">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-4">
-                      <BarChart3 className="h-10 w-10 opacity-80" />
-                      <div>
-                        <p className="text-sm opacity-80 uppercase tracking-wider">
-                          Total Answered
+                {[
+                  {
+                    label: "Synthesis Volume",
+                    value: stats.overall.total,
+                    icon: BarChart3,
+                    desc: "Total items processed",
+                  },
+                  {
+                    label: "Accuracy Threshold",
+                    value: `${stats.overall.percentage}%`,
+                    icon: TrendingUp,
+                    desc: "Precision of your assessments",
+                  },
+                  {
+                    label: "Successful Identifications",
+                    value: stats.overall.correct,
+                    icon: Check,
+                    desc: "Verifiable correct responses",
+                  },
+                ].map((item, i) => (
+                  <Card
+                    key={i}
+                    className="hover:bg-secondary/20 transition-colors"
+                  >
+                    <CardContent className="p-8">
+                      <div className="flex items-center justify-between mb-8">
+                        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+                          <item.icon className="h-5 w-5" />
+                        </div>
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] font-bold uppercase tracking-widest"
+                        >
+                          Metrics
+                        </Badge>
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                          {item.label}
                         </p>
-                        <p className="text-3xl font-bold">
-                          {stats.overall.total}
+                        <p className="text-4xl font-semibold text-foreground tracking-tighter">
+                          {item.value}
                         </p>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-green-500 to-emerald-600 text-white border-0 shadow-lg">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-4">
-                      <Check className="h-10 w-10 opacity-80" />
-                      <div>
-                        <p className="text-sm opacity-80 uppercase tracking-wider">
-                          Correct Answers
-                        </p>
-                        <p className="text-3xl font-bold">
-                          {stats.overall.correct}
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-gradient-to-br from-yellow-500 to-orange-600 text-white border-0 shadow-lg">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-4">
-                      <TrendingUp className="h-10 w-10 opacity-80" />
-                      <div>
-                        <p className="text-sm opacity-80 uppercase tracking-wider">
-                          Accuracy Rate
-                        </p>
-                        <p className="text-3xl font-bold">
-                          {stats.overall.percentage}%
-                        </p>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
+                      <p className="mt-4 text-xs text-muted-foreground font-serif italic">
+                        {item.desc}
+                      </p>
+                    </CardContent>
+                  </Card>
+                ))}
               </div>
             )}
 
             {/* Course Progress */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Course Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {courses.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <BookOpen className="mx-auto h-12 w-12 text-gray-300" />
-                    <p className="mt-4 text-gray-500">No courses available</p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    {courses.map((course) => {
-                      const progress = courseProgress[course.id];
-                      const percentage = progress?.percentage || 0;
+            <section className="space-y-6">
+              <h2 className="text-xl font-semibold tracking-tight">
+                Curriculum Mastery
+              </h2>
+              {courses.length === 0 ? (
+                <Card className="border-dashed py-16">
+                  <CardContent className="text-center space-y-4">
+                    <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/30" />
+                    <p className="text-muted-foreground font-serif">
+                      No courses identified in your curriculum yet.
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="grid gap-6">
+                  {courses.map((course) => {
+                    const progress = courseProgress[course.id];
+                    const percentage = progress?.percentage || 0;
 
-                      return (
-                        <div
-                          key={course.id}
-                          className="rounded-xl border border-gray-100 dark:border-gray-800 p-5 hover:border-indigo-100 transition-colors"
-                        >
-                          <div className="flex items-center justify-between mb-3">
-                            <h3 className="font-bold text-lg">{course.name}</h3>
+                    return (
+                      <Card
+                        key={course.id}
+                        className="group hover:bg-secondary/10 transition-colors duration-300"
+                      >
+                        <CardContent className="p-8">
+                          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                            <div className="space-y-2">
+                              <h3 className="font-semibold text-xl tracking-tight leading-none">
+                                {course.name}
+                              </h3>
+                              <p className="text-sm text-muted-foreground font-serif">
+                                {progress?.answered || 0} /{" "}
+                                {progress?.totalQuestions || 0} units validated
+                              </p>
+                            </div>
                             <Badge
                               variant={
-                                percentage === 100 ? "success" : "secondary"
+                                percentage === 100 ? "default" : "secondary"
                               }
-                              className="px-3 py-1"
+                              className="px-4 py-1.5 h-fit self-start"
                             >
-                              {percentage}% Complete
+                              {percentage}% Mastery
                             </Badge>
                           </div>
-                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden dark:bg-gray-800">
-                            <div
-                              className="h-full bg-gradient-to-r from-indigo-500 to-purple-600 transition-all duration-500"
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                          {progress && (
-                            <div className="mt-3 flex justify-between text-sm text-gray-500">
-                              <span className="font-medium">
-                                {progress.answered} / {progress.totalQuestions}{" "}
-                                questions answered
+
+                          <div className="space-y-4">
+                            <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
+                              <div
+                                className="h-full bg-primary transition-all duration-1000 ease-out"
+                                style={{ width: `${percentage}%` }}
+                              />
+                            </div>
+                            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
+                              <span className="text-muted-foreground">
+                                Progression
                               </span>
-                              <span className="text-green-600 font-bold">
-                                {progress.correct} correct
+                              <span className="text-primary">
+                                {percentage}% Complete
                               </span>
                             </div>
-                          )}
+                          </div>
+
                           {progress && progress.remaining > 0 && (
-                            <Link
-                              href={`/quiz/${course.id}`}
-                              className="mt-4 block text-right"
-                            >
-                              <Button
-                                size="sm"
-                                className="bg-indigo-600 hover:bg-indigo-700"
-                              >
-                                Continue Quiz
+                            <div className="mt-8 pt-8 border-t border-border/40 flex justify-end">
+                              <Button asChild variant="pill" size="lg">
+                                <Link href={`/quiz/${course.id}`}>
+                                  Resume session
+                                  <ArrowRight className="ml-2 h-4 w-4" />
+                                </Link>
                               </Button>
-                            </Link>
+                            </div>
                           )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
 
             {/* Recent Attempts */}
-            <Card className="shadow-sm">
-              <CardHeader>
-                <CardTitle>Recent Activity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {attempts.length === 0 ? (
-                  <div className="py-12 text-center">
-                    <p className="text-gray-500">No recent activity found</p>
+            <section className="space-y-6">
+              <h2 className="text-xl font-semibold tracking-tight">
+                Recent Activity
+              </h2>
+              {attempts.length === 0 ? (
+                <Card className="border-0 bg-secondary/20">
+                  <CardContent className="py-12 text-center space-y-6">
+                    <p className="text-muted-foreground font-serif italic text-lg">
+                      No recent activity found in your learning logs.
+                    </p>
                     <Link href="/courses">
-                      <Button className="mt-4 bg-indigo-600">
-                        Start Learning
+                      <Button variant="pill" size="xl">
+                        Identify courses
                       </Button>
                     </Link>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {(attempts || []).slice(0, 10).map((attempt) => (
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-3">
+                  {(attempts || []).slice(0, 10).map((attempt) => (
+                    <div
+                      key={attempt.id}
+                      className="flex items-center gap-6 p-5 rounded-2xl border border-border/40 hover:bg-card transition-all duration-300"
+                    >
                       <div
-                        key={attempt.id}
-                        className="flex items-center gap-4 rounded-xl border border-gray-50 dark:border-gray-900 p-4 hover:bg-gray-50/50 dark:hover:bg-gray-900/50 transition-colors"
+                        className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
+                          attempt.isCorrect
+                            ? "bg-primary/5 text-primary"
+                            : "bg-destructive/5 text-destructive"
+                        }`}
                       >
-                        <div
-                          className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
-                            attempt.isCorrect
-                              ? "bg-green-100 text-green-600 dark:bg-green-900/20"
-                              : "bg-red-100 text-red-600 dark:bg-red-900/20"
-                          }`}
-                        >
-                          {attempt.isCorrect ? (
-                            <Check className="h-6 w-6" />
-                          ) : (
-                            <X className="h-6 w-6" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="font-bold text-gray-900 dark:text-white truncate">
-                            {attempt.question.content}
+                        {attempt.isCorrect ? (
+                          <Check className="h-6 w-6" />
+                        ) : (
+                          <X className="h-6 w-6" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate text-lg">
+                          {attempt.question.content}
+                        </p>
+                        <div className="flex items-center gap-4 mt-2">
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-bold uppercase tracking-widest"
+                          >
+                            {attempt.isCorrect ? "Validated" : "Incorrect"}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground font-serif italic">
+                            {formatDate(attempt.createdAt)}
                           </p>
-                          <div className="flex items-center gap-2 mt-1">
-                            <Badge
-                              variant="outline"
-                              className="text-[10px] scale-90 origin-left"
-                            >
-                              {attempt.isCorrect ? "Correct" : "Incorrect"}
-                            </Badge>
-                            <p className="text-xs text-gray-500 font-medium">
-                              {formatDate(attempt.createdAt)}
-                            </p>
-                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
           </>
         )}
       </div>
