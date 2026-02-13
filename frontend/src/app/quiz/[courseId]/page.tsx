@@ -168,7 +168,7 @@ export default function QuizPage() {
     return (
       <DashboardLayout>
         <div className="flex justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -182,12 +182,12 @@ export default function QuizPage() {
             <Trophy className="h-10 w-10" />
           </div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-            {isDemoMode ? "Preview complete." : "Assessment complete."}
+            {isDemoMode ? "Preview complete" : "Quiz complete"}
           </h1>
-          <p className="mt-4 text-muted-foreground font-serif text-lg leading-relaxed">
+          <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
             {isDemoMode
-              ? "You've finished the guest preview. Create an account to unlock the full curriculum and track your mastery."
-              : "You've answered all available questions for this course."}
+              ? "You've finished the guest preview. Sign up to unlock the full course and track your progress."
+              : "You've completed all questions in this session."}
           </p>
 
           {(progress || isDemoMode) && (
@@ -197,8 +197,8 @@ export default function QuizPage() {
                   <Badge variant="secondary">GUEST MODE</Badge>
                 </div>
               )}
-              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                Overall Score
+              <p className="text-sm font-medium text-muted-foreground">
+                Your score
               </p>
               <p className="text-6xl font-semibold text-primary mt-4 tracking-tighter">
                 {isDemoMode
@@ -207,8 +207,8 @@ export default function QuizPage() {
               </p>
               <p className="text-muted-foreground mt-6 font-serif text-lg italic">
                 {isDemoMode
-                  ? `${demoStats.correct} out of ${demoStats.total} correct`
-                  : `${progress?.correct} out of ${progress?.totalQuestions} correct`}
+                  ? `${demoStats.correct} / ${demoStats.total} correct`
+                  : `${progress?.correct} / ${progress?.totalQuestions} correct`}
               </p>
             </div>
           )}
@@ -218,16 +218,16 @@ export default function QuizPage() {
               <>
                 <Button
                   size="lg"
-                  className="px-8 bg-indigo-600 hover:bg-indigo-700 font-bold"
+                  className="px-8 font-bold"
                   onClick={() => setShowAuthModal(true)}
                 >
                   <Sparkles className="mr-2 h-5 w-5" />
-                  Save Progress & Continue
+                  Save progress
                 </Button>
                 <Button
                   size="lg"
                   variant="outline"
-                  className="px-8 font-semibold"
+                  className="px-8 font-semibold rounded-xl"
                   onClick={handleRetry}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
@@ -242,24 +242,24 @@ export default function QuizPage() {
                   onClick={handleRetry}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
-                  Retry Quiz
+                  Retry quiz
                 </Button>
                 <Link href="/progress">
                   <Button
                     size="lg"
                     variant="outline"
-                    className="px-8 font-semibold"
+                    className="px-8 font-semibold rounded-xl"
                   >
-                    View Progress
+                    View progress
                   </Button>
                 </Link>
                 <Link href="/courses">
                   <Button
                     size="lg"
                     variant="ghost"
-                    className="px-8 font-semibold"
+                    className="px-8 font-semibold rounded-xl"
                   >
-                    Back to Courses
+                    Back to courses
                   </Button>
                 </Link>
               </>
@@ -269,8 +269,8 @@ export default function QuizPage() {
         <AuthPromptModal
           isOpen={showAuthModal}
           onClose={() => setShowAuthModal(false)}
-          title="Don't Lose Your Progress!"
-          description={`You just answered ${demoStats.correct} questions correctly! Create a free account now to save your results and continue mastering this course.`}
+          title="Don't lose your progress"
+          description={`You answered ${demoStats.correct} questions correctly! Create a free account to save your results.`}
         />
       </DashboardLayout>
     );
@@ -280,9 +280,9 @@ export default function QuizPage() {
     return (
       <DashboardLayout>
         <div className="text-center py-12">
-          <p className="text-gray-500">No questions available</p>
+          <p className="text-muted-foreground">No questions available</p>
           <Link href="/courses">
-            <Button className="mt-4">Back to Courses</Button>
+            <Button className="mt-4 rounded-xl">Back to courses</Button>
           </Link>
         </div>
       </DashboardLayout>
@@ -308,13 +308,13 @@ export default function QuizPage() {
 
         {/* Progress Tracker */}
         <div className="space-y-4">
-          <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
-            <span>Assessment progression</span>
-            <span className="text-primary/80">
+          <div className="flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <span>Progress</span>
+            <span className="text-foreground">
               {Math.round(
                 ((currentIndex + (result ? 1 : 0)) / questions.length) * 100,
               )}
-              % Complete
+              %
             </span>
           </div>
           <div className="h-1.5 bg-secondary/40 rounded-full overflow-hidden">
@@ -332,8 +332,8 @@ export default function QuizPage() {
           <CardHeader className="p-10 pb-6">
             <div className="space-y-8">
               <div className="flex items-start justify-between gap-6">
-                <CardTitle className="text-2xl md:text-3xl font-semibold leading-[1.3] tracking-tight font-serif italic text-foreground">
-                  "{currentQuestion.content}"
+                <CardTitle className="text-2xl md:text-3xl font-semibold leading-normal tracking-tight text-foreground">
+                  {currentQuestion.content}
                 </CardTitle>
               </div>
               <div className="flex items-center gap-6">
@@ -347,23 +347,16 @@ export default function QuizPage() {
                       "_blank",
                     );
                   }}
-                  className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest text-primary"
+                  className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
                 >
-                  <Search className="h-3.5 w-3.5" />
-                  Technical Analysis
+                  <Search className="h-4 w-4" />
+                  Search topic
                 </Button>
-                <div className="h-4 w-[1px] bg-border/40" />
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-bold border-border/60"
-                >
-                  Question ID: Q{String(currentIndex + 1).padStart(3, "0")}
-                </Badge>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-10 pt-4 space-y-4">
-            <div className="grid gap-4">
+          <CardContent className="p-10 pt-4 space-y-6">
+            <div className="grid gap-3">
               {currentQuestion.answers.map((answer, index) => {
                 const letter = String.fromCharCode(65 + index);
                 const isSelected = selectedAnswer === answer.id;
@@ -397,18 +390,35 @@ export default function QuizPage() {
                     onClick={() => !result && setSelectedAnswer(answer.id)}
                     disabled={!!result}
                     className={cn(
-                      "group w-full h-auto text-left p-6 rounded-2xl border transition-all duration-300",
-                      stateClasses,
+                      "group w-full h-auto text-left p-4 rounded-xl border-2 transition-all duration-200",
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border hover:border-primary/50 hover:bg-muted/50",
+                      showResult &&
+                        isCorrect &&
+                        "border-green-500 bg-green-500/5",
+                      showResult &&
+                        wasSelected &&
+                        !isCorrect &&
+                        "border-destructive bg-destructive/5",
+                      showResult &&
+                        !isCorrect &&
+                        !wasSelected &&
+                        "opacity-50 grayscale",
                     )}
                   >
                     <div className="flex items-center gap-5 w-full">
                       <span
                         className={cn(
-                          "flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-xl text-xs font-bold transition-all duration-300",
-                          isSelected ||
-                            (showResult && (isCorrect || wasSelected))
+                          "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200",
+                          isSelected
                             ? "bg-primary text-primary-foreground"
-                            : "bg-secondary/60 text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary",
+                            : "bg-secondary text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary",
+                          showResult && isCorrect && "bg-green-500 text-white",
+                          showResult &&
+                            wasSelected &&
+                            !isCorrect &&
+                            "bg-destructive text-white",
                         )}
                       >
                         {showResult && isCorrect ? (
@@ -419,7 +429,7 @@ export default function QuizPage() {
                           letter
                         )}
                       </span>
-                      <span className="text-lg font-serif leading-relaxed flex-1">
+                      <span className="text-base font-medium leading-relaxed flex-1">
                         {answer.content}
                       </span>
                       {showResult && isCorrect && (
@@ -435,15 +445,15 @@ export default function QuizPage() {
             {result && (
               <div className="mt-8 animate-in slide-in-from-top-4 fade-in duration-500">
                 <div
-                  className={`p-8 rounded-[32px] border ${
+                  className={`p-6 rounded-2xl border ${
                     result.isCorrect
-                      ? "bg-green-500/5 border-green-500/20"
-                      : "bg-destructive/5 border-destructive/20"
+                      ? "bg-green-500/10 border-green-500/20"
+                      : "bg-destructive/10 border-destructive/20"
                   }`}
                 >
                   <div className="flex items-center gap-4 mb-4">
                     <div
-                      className={`h-8 w-8 rounded-full flex items-center justify-center text-white ${
+                      className={`h-8 w-8 rounded-full flex items-center justify-center text-primary-foreground ${
                         result.isCorrect ? "bg-green-500" : "bg-destructive"
                       }`}
                     >
@@ -456,19 +466,14 @@ export default function QuizPage() {
                     <span
                       className={`font-semibold text-lg ${result.isCorrect ? "text-green-700" : "text-destructive"}`}
                     >
-                      {result.isCorrect
-                        ? "Synthesis Verified"
-                        : "Technical Divergence"}
+                      {result.isCorrect ? "Correct!" : "Incorrect"}
                     </span>
                   </div>
                   {result.hint && (
                     <div className="flex items-start gap-4 p-5 bg-background border border-border/60 rounded-2xl shadow-sm">
                       <Lightbulb className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
                       <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                          Pedagogical Insight
-                        </p>
-                        <p className="text-base text-foreground font-serif leading-relaxed italic opacity-80">
+                        <p className="text-sm font-medium text-foreground leading-relaxed">
                           {result.hint}
                         </p>
                       </div>
@@ -484,28 +489,24 @@ export default function QuizPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={!selectedAnswer || isSubmitting}
-                className="w-full h-16 text-lg tracking-wide rounded-2xl shadow-xl shadow-black/5"
-                size="xl"
+                className="w-full h-14 text-base font-semibold rounded-xl"
+                size="lg"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-6 w-6 animate-spin" />
                 ) : (
-                  "Verify Response"
+                  "Check answer"
                 )}
               </Button>
             ) : (
-              <Button
-                onClick={handleNext}
-                className="w-full h-16 text-lg tracking-wide rounded-2xl shadow-xl shadow-black/5"
-                size="xl"
-              >
+              <Button onClick={handleNext}>
                 {currentIndex < questions.length - 1 ? (
                   <>
-                    Transition to Next Unit
-                    <ArrowRight className="h-6 w-6 ml-3" />
+                    Next question
+                    <ArrowRight className="h-5 w-5 ml-2" />
                   </>
                 ) : (
-                  "Finalize Assessment"
+                  "Finish quiz"
                 )}
               </Button>
             )}

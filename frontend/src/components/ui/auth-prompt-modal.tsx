@@ -22,8 +22,8 @@ interface AuthPromptModalProps {
 export function AuthPromptModal({
   isOpen,
   onClose,
-  title = "Unlock Full Potential",
-  description = "Join Cognify today to save your progress, track your stats, and access premium learning materials.",
+  title = "Sign up to continue",
+  description = "Create a free account to save your progress and access all features.",
   action = "Unlock everything",
 }: AuthPromptModalProps) {
   if (!isOpen) return null;
@@ -31,12 +31,14 @@ export function AuthPromptModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="relative w-full max-w-md animate-in zoom-in-95 duration-200">
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClose}
-          className="absolute -top-2 -right-2 z-10 p-2 bg-background rounded-full shadow-lg border border-border text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute -top-2 -right-2 z-10 h-8 w-8 bg-background rounded-full shadow-lg border border-border"
         >
           <X className="h-4 w-4" />
-        </button>
+        </Button>
 
         <Card className="overflow-hidden border-border bg-card">
           <CardHeader className="text-center pt-10 pb-8 px-8">
@@ -79,12 +81,13 @@ export function AuthPromptModal({
               </Link>
             </Button>
 
-            <button
+            <Button
+              variant="ghost"
               onClick={onClose}
-              className="mt-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground transition-colors py-2"
+              className="mt-4 text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-foreground h-auto py-2"
             >
               Continue as guest
-            </button>
+            </Button>
           </CardContent>
         </Card>
       </div>

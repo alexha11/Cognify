@@ -85,7 +85,7 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in duration-500">
         {/* Navigation & Welcome */}
         {!user ? (
-          <Card className="p-12 md:p-20 border-border/60 overflow-hidden relative">
+          <Card className="p-10 md:p-16 border-border/60 overflow-hidden relative">
             <div className="relative z-10 max-w-3xl space-y-8">
               <Badge
                 variant="outline"
@@ -106,7 +106,7 @@ export default function DashboardPage() {
               <div className="flex flex-wrap gap-6 pt-4">
                 <Button asChild size="xl" variant="pill">
                   <Link href="/register">
-                    Initialize for free
+                    Get started free
                     <ArrowRight className="ml-2 h-5 w-5" />
                   </Link>
                 </Button>
@@ -116,7 +116,7 @@ export default function DashboardPage() {
                   size="xl"
                   className="rounded-full"
                 >
-                  <Link href="/courses">Browse Curriculum</Link>
+                  <Link href="/courses">Browse courses</Link>
                 </Button>
               </div>
             </div>
@@ -125,7 +125,7 @@ export default function DashboardPage() {
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-4">
               <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                Account Terminal
+                Dashboard
               </h1>
               <div className="flex items-center gap-3 text-muted-foreground font-serif text-lg">
                 <span className="text-foreground font-semibold font-sans">
@@ -164,7 +164,7 @@ export default function DashboardPage() {
         {/* Audit Metrics */}
         <div className="grid gap-6 md:grid-cols-4">
           <Card className="hover:bg-secondary/20 transition-all duration-300">
-            <CardContent className="p-8 space-y-6">
+            <CardContent className="p-6 space-y-4">
               <div className="flex items-center justify-between">
                 <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
                   <BookOpen className="h-5 w-5" />
@@ -178,7 +178,7 @@ export default function DashboardPage() {
               </div>
               <div className="space-y-1">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                  Curriculum Units
+                  Courses
                 </p>
                 <p className="text-4xl font-semibold tracking-tighter text-foreground">
                   {organization?.courseCount || 0}
@@ -190,7 +190,7 @@ export default function DashboardPage() {
           {(isAdmin || isInstructor) && (
             <>
               <Card className="hover:bg-secondary/20 transition-all duration-300">
-                <CardContent className="p-8 space-y-6">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
                       <FileQuestion className="h-5 w-5" />
@@ -204,7 +204,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Validated Items
+                      Questions
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
                       {courses.reduce(
@@ -217,7 +217,7 @@ export default function DashboardPage() {
               </Card>
 
               <Card className="hover:bg-secondary/20 transition-all duration-300">
-                <CardContent className="p-8 space-y-6">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
                       <Users className="h-5 w-5" />
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Active Members
+                      Members
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
                       {organization?.userCount || 0}
@@ -250,7 +250,7 @@ export default function DashboardPage() {
                     <Lock className="h-4 w-4 text-muted-foreground/40" />
                   </div>
                 )}
-                <CardContent className="p-8 space-y-6">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/5 text-green-700">
                       <TrendingUp className="h-5 w-5" />
@@ -264,7 +264,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Items Answered
+                      Questions answered
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
                       {user && stats ? stats.overall.total : "128"}
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                     <Lock className="h-4 w-4 text-muted-foreground/40" />
                   </div>
                 )}
-                <CardContent className="p-8 space-y-6">
+                <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
                       <TrendingUp className="h-5 w-5" />
@@ -293,7 +293,7 @@ export default function DashboardPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Accuracy Threshold
+                      Accuracy
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
                       {user && stats ? `${stats.overall.percentage}%` : "92%"}
@@ -306,7 +306,7 @@ export default function DashboardPage() {
 
           {isAdmin && organization && (
             <Card className="hover:bg-secondary/20 transition-all duration-300">
-              <CardContent className="p-8 space-y-6">
+              <CardContent className="p-6 space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
                     <Sparkles className="h-5 w-5" />
@@ -335,14 +335,14 @@ export default function DashboardPage() {
         <section className="space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight">
-              {isStudent ? "Explore Curriculum" : "Managed Pathways"}
+              {isStudent ? "Your courses" : "Your courses"}
             </h2>
             <Link href="/courses">
               <Button
                 variant="link"
                 className="text-primary text-[10px] font-bold uppercase tracking-widest p-0 h-auto hover:opacity-70 transition-opacity"
               >
-                View Repository
+                View all
                 <ArrowRight className="h-3 w-3 ml-2" />
               </Button>
             </Link>
@@ -362,11 +362,11 @@ export default function DashboardPage() {
               <CardContent className="text-center space-y-6 pt-0 p-8">
                 <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/20" />
                 <p className="text-muted-foreground font-serif text-lg italic">
-                  No currency active in the repository.
+                  No courses yet.
                 </p>
                 {(isAdmin || isInstructor) && (
                   <Button asChild variant="pill">
-                    <Link href="/courses">Initialize Curriculum</Link>
+                    <Link href="/courses">Create a course</Link>
                   </Button>
                 )}
               </CardContent>
@@ -382,8 +382,7 @@ export default function DashboardPage() {
                           {course.name}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground font-serif line-clamp-3 leading-relaxed min-h-[4.5rem]">
-                          {course.description ||
-                            "No pedagogical description provided for this pathway."}
+                          {course.description || "No description yet."}
                         </p>
                       </div>
                     </CardHeader>
@@ -408,7 +407,7 @@ export default function DashboardPage() {
 
         {/* Enhanced Guest CTA */}
         {!user && (
-          <Card className="p-16 md:p-24 text-center bg-primary text-primary-foreground relative overflow-hidden group border-none">
+          <Card className="p-12 md:p-16 text-center bg-primary text-primary-foreground relative overflow-hidden group border-none">
             {/* Background Texture/Pattern */}
             <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
               <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full border-[40px] border-primary-foreground" />
@@ -418,14 +417,14 @@ export default function DashboardPage() {
             <div className="relative z-10 max-w-2xl mx-auto space-y-10">
               <Badge
                 variant="outline"
-                className="px-6 py-2 border-primary-foreground/30 text-primary-foreground text-[10px] font-bold uppercase tracking-[0.3em] bg-white/5"
+                className="px-6 py-2 border-primary-foreground/30 text-primary-foreground text-[10px] font-bold uppercase tracking-[0.3em] bg-primary-foreground/5"
               >
-                Access Institutional Grade AI
+                AI-powered learning
               </Badge>
               <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1]">
                 Revolutionize your{" "}
-                <span className="font-serif italic font-normal text-white/70">
-                  learning logic.
+                <span className="font-serif italic font-normal text-primary-foreground/70">
+                  learning.
                 </span>
               </h2>
               <p className="text-primary-foreground/80 text-xl font-serif leading-relaxed">
@@ -435,14 +434,14 @@ export default function DashboardPage() {
               <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
                 <FeatureGate
                   variant="prompt"
-                  title="Initialize Identity"
-                  description="Establish your free credentials to preserve your learning history and unlock granular analytics."
+                  title="Create account"
+                  description="Sign up to save your progress and unlock analytics."
                 >
                   <Button
                     size="xl"
                     className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 w-full sm:w-auto px-12 rounded-full border-none shadow-xl shadow-black/10"
                   >
-                    Initialize for free
+                    Get started free
                   </Button>
                 </FeatureGate>
               </div>

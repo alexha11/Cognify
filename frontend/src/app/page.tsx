@@ -36,23 +36,22 @@ export default function HomePage() {
           {/* Hero Section */}
           <div className="text-center max-w-4xl mx-auto space-y-10">
             <Badge variant="outline" className="px-4 py-1.5 text-sm">
-              Pedagogical Excellence powered by AI
+              AI-powered learning
             </Badge>
             <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-foreground leading-[1.05]">
               Master any subject with{" "}
               <span className="font-serif italic font-normal text-muted-foreground/80">
-                unrivaled precision.
+                precision.
               </span>
             </h1>
-            <p className="mx-auto max-w-2xl text-xl text-muted-foreground font-serif leading-relaxed">
-              Cognify synthesizes your learning materials into cognitive
-              assessments, providing data-driven insights for students and
-              educators alike.
+            <p className="mx-auto max-w-2xl text-xl text-muted-foreground leading-relaxed">
+              Cognify turns your learning materials into smart assessments,
+              giving students and educators actionable insights.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
               <Button asChild size="xl" variant="pill">
                 <Link href="/register">
-                  Start your free trial
+                  Get started free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
               </Button>
@@ -64,7 +63,7 @@ export default function HomePage() {
               >
                 <Link href="/organizations" className="flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
-                  Explore Institutions
+                  Browse organizations
                 </Link>
               </Button>
             </div>
@@ -75,18 +74,18 @@ export default function HomePage() {
             {[
               {
                 icon: BookOpen,
-                title: "Curriculum Design",
-                desc: "Architect complex courses, curate research materials, and organize content within a unified pedagogical framework.",
+                title: "Course Management",
+                desc: "Create courses, organize materials, and build structured learning paths.",
               },
               {
                 icon: Brain,
-                title: "AI Question Synthesis",
-                desc: "Utilize state-of-the-art foundations to generate high-quality assessment items instantly from any subject domain.",
+                title: "AI Question Generation",
+                desc: "Generate high-quality questions instantly from any topic using AI.",
               },
               {
                 icon: BarChart3,
-                title: "Cognitive Analytics",
-                desc: "Monitor intellectual growth through granular performance analytics and personalized competency mapping.",
+                title: "Learning Analytics",
+                desc: "Track your progress with detailed analytics and personalized insights.",
               },
             ].map((feature, i) => (
               <Card
@@ -113,21 +112,8 @@ export default function HomePage() {
           {/* Social Proof / Trust Section */}
           <div className="mt-40 pt-20 border-t border-border/60 text-center">
             <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-12">
-              Trusted by research institutions and leading educators
+              Built for students and educators worldwide
             </h2>
-            <div className="flex flex-wrap justify-center items-center gap-12 md:gap-24 grayscale opacity-40">
-              {/* These would be logos in a real app */}
-              <div className="text-2xl font-bold tracking-tighter">
-                STANFORD
-              </div>
-              <div className="text-2xl font-bold tracking-tighter italic">
-                MIT
-              </div>
-              <div className="text-2xl font-bold tracking-tighter">HARVARD</div>
-              <div className="text-2xl font-bold tracking-tighter italic font-serif">
-                Aalto
-              </div>
-            </div>
           </div>
         </div>
       </main>

@@ -85,7 +85,7 @@ function ToastItem({
 
   const styles = {
     success: {
-      bg: "bg-[#F0FDF4]",
+      bg: "bg-green-500/5",
       border: "border-green-200/60",
       text: "text-green-800",
       icon: <CheckCircle className="w-5 h-5 text-green-600" />,
@@ -97,7 +97,7 @@ function ToastItem({
       icon: <AlertCircle className="w-5 h-5 text-destructive" />,
     },
     warning: {
-      bg: "bg-[#FFFBEB]",
+      bg: "bg-amber-500/5",
       border: "border-amber-200/60",
       text: "text-amber-800",
       icon: <AlertTriangle className="w-5 h-5 text-amber-600" />,

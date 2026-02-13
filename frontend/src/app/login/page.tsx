@@ -66,11 +66,10 @@ export default function LoginPage() {
                 <Sparkles className="h-6 w-6" />
               </div>
               <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
-                Welcome{" "}
-                <span className="text-primary/40 italic font-serif">back.</span>
+                Welcome back
               </CardTitle>
-              <CardDescription className="text-base text-muted-foreground font-serif italic mt-3">
-                Securely access your autonomous learning environment.
+              <CardDescription className="text-base text-muted-foreground mt-3">
+                Sign in to your account
               </CardDescription>
             </CardHeader>
             <CardContent className="px-10">
@@ -88,9 +87,9 @@ export default function LoginPage() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="email"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                      className="text-xs font-medium text-muted-foreground ml-1"
                     >
-                      Email identification
+                      Email
                     </Label>
                     <Input
                       id="email"
@@ -114,16 +113,16 @@ export default function LoginPage() {
                     <div className="flex justify-between items-center ml-1">
                       <Label
                         htmlFor="password"
-                        className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest"
+                        className="text-xs font-medium text-muted-foreground"
                       >
-                        Secret passphrase
+                        Password
                       </Label>
                       <Button
                         type="button"
                         variant="link"
-                        className="h-auto p-0 text-[10px] font-bold text-primary/40 hover:text-primary transition-colors uppercase tracking-widest"
+                        className="h-auto p-0 text-xs font-medium text-primary/40 hover:text-primary transition-colors"
                       >
-                        Lost key?
+                        Forgot password?
                       </Button>
                     </div>
                     <Input
@@ -147,25 +146,25 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-14 text-sm font-bold tracking-[0.1em] rounded-2xl shadow-xl shadow-black/5"
+                  className="w-full h-12 text-sm font-semibold rounded-xl"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    "Initialize Session"
+                    "Sign in"
                   )}
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="justify-center pt-8 pb-10 text-[10px] font-bold uppercase tracking-[0.2em]">
-              <p className="text-muted-foreground/60">
-                New researcher?{" "}
+            <CardFooter className="justify-center pt-8 pb-10 text-sm">
+              <p className="text-muted-foreground">
+                Don&apos;t have an account?{" "}
                 <Link
                   href="/register"
-                  className="text-primary hover:text-primary/70 transition-colors"
+                  className="text-primary font-medium hover:text-primary/70 transition-colors"
                 >
-                  Create Identity
+                  Sign up
                 </Link>
               </p>
             </CardFooter>

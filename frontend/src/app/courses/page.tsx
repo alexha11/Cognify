@@ -82,7 +82,7 @@ export default function CoursesPage() {
         <div className="flex items-center justify-between pb-4">
           <div className="space-y-1">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              Courses.
+              Courses
             </h1>
             <p className="text-muted-foreground font-serif">
               {canCreate
@@ -219,8 +219,7 @@ export default function CoursesPage() {
                 <CardContent className="space-y-6">
                   <Link href={`/courses/${course.id}`}>
                     <p className="text-base text-muted-foreground font-serif line-clamp-2 min-h-[3rem] leading-relaxed">
-                      {course.description ||
-                        "No description provided for this course."}
+                      {course.description || "No description yet."}
                     </p>
                   </Link>
                   <div className="flex items-center gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">

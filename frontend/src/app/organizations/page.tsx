@@ -5,6 +5,7 @@ import Link from "next/link";
 import { apiGet } from "@/lib/api";
 import { Building2, BookOpen, Search, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Organization {
   id: string;
@@ -66,31 +67,27 @@ export default function OrganizationsPage() {
                   </Link>
                 </li>
                 <li className="opacity-40">/</li>
-                <li className="text-primary/60">Institutional Directory</li>
+                <li className="text-primary/60">Organizations</li>
               </ol>
             </nav>
             <h1 className="text-4xl md:text-5xl font-semibold tracking-tight text-foreground">
-              Educational{" "}
-              <span className="text-primary/40 italic font-serif">
-                Spheres.
-              </span>
+              Organizations
             </h1>
-            <p className="text-lg text-muted-foreground font-serif max-w-xl leading-relaxed">
-              Explore verified learning organizations and their specialized
-              curriculum pathways. Find the perfect community for your cognitive
-              journey.
+            <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
+              Explore verified learning organizations and their courses. Find
+              the perfect community for your learning journey.
             </p>
           </div>
 
           <div className="w-full md:w-96">
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-              <input
+              <Input
                 type="text"
-                placeholder="Search database..."
+                placeholder="Search organizations..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 h-12 rounded-2xl border border-border bg-card text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/5 focus:border-primary transition-all shadow-sm"
+                className="w-full pl-11 pr-4 h-12 rounded-2xl text-sm placeholder:text-muted-foreground/50 shadow-sm"
               />
             </div>
           </div>
@@ -107,12 +104,12 @@ export default function OrganizationsPage() {
           <div className="text-center py-24 bg-card rounded-[40px] border border-dashed border-border/60">
             <Building2 className="mx-auto h-12 w-12 text-muted-foreground/30 mb-6" />
             <h3 className="text-xl font-semibold text-foreground mb-2">
-              No results discovered.
+              No organizations found.
             </h3>
-            <p className="text-muted-foreground font-serif">
+            <p className="text-muted-foreground">
               {searchQuery
-                ? "Your search query yielded no institutional matches."
-                : "The institutional directory is currently empty."}
+                ? "No organizations match your search."
+                : "No organizations have been added yet."}
             </p>
           </div>
         ) : (
@@ -157,7 +154,7 @@ export default function OrganizationsPage() {
                 <div className="mt-8 pt-6 border-t border-border/40 flex items-center justify-between">
                   <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                     <BookOpen className="w-3.5 h-3.5" />
-                    {org.courseCount} curriculum pathways
+                    {org.courseCount} courses
                   </div>
                   <div className="text-[10px] font-medium text-primary/40">
                     Active

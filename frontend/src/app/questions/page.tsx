@@ -226,9 +226,8 @@ export default function QuestionsPage() {
             <h1 className="text-4xl font-semibold tracking-tight text-foreground">
               Question Bank
             </h1>
-            <p className="text-muted-foreground font-serif text-lg leading-relaxed max-w-xl">
-              Curate and validate your institutional question repository for
-              pedagogical excellence.
+            <p className="text-muted-foreground text-lg leading-relaxed max-w-xl">
+              Manage and review questions for your courses.
             </p>
           </div>
           {canManage && (
@@ -239,7 +238,7 @@ export default function QuestionsPage() {
               className="md:w-auto"
             >
               <Plus className="w-5 h-5 mr-2" />
-              Add unit
+              Add question
             </Button>
           )}
         </div>
@@ -256,7 +255,7 @@ export default function QuestionsPage() {
                   htmlFor="courseKey"
                   className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
                 >
-                  Select curriculum pathway
+                  Select course
                 </Label>
                 <select
                   id="courseKey"
@@ -264,7 +263,7 @@ export default function QuestionsPage() {
                   onChange={(e) => setSelectedCourse(e.target.value)}
                   className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-serif"
                 >
-                  <option value="">-- All Pathways --</option>
+                  <option value="">All courses</option>
                   {courses.map((course) => (
                     <option key={course.id} value={course.id}>
                       {course.name}
@@ -289,12 +288,12 @@ export default function QuestionsPage() {
               </div>
               <div className="space-y-2">
                 <h3 className="text-2xl font-semibold tracking-tight">
-                  Repository Empty
+                  No questions yet
                 </h3>
-                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
+                <p className="text-muted-foreground text-lg leading-relaxed">
                   {selectedCourse
-                    ? "Initialize this pathway by adding your first synthesis unit."
-                    : "Select a curriculum pathway above to view technical items."}
+                    ? "Add your first question to get started."
+                    : "Select a course above to see its questions."}
                 </p>
               </div>
               {canManage && selectedCourse && (
@@ -303,7 +302,7 @@ export default function QuestionsPage() {
                   variant="outline"
                   size="lg"
                 >
-                  Begin Synthesis
+                  Add question
                 </Button>
               )}
             </CardContent>
@@ -312,7 +311,7 @@ export default function QuestionsPage() {
           <div className="grid gap-6">
             <div className="flex items-center justify-between px-2">
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {questions.length} Items retrieved
+                {questions.length} questions
               </span>
             </div>
             {questions.map((question, index) => (
@@ -332,7 +331,7 @@ export default function QuestionsPage() {
                             variant="outline"
                             className="text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary border-primary/20"
                           >
-                            AI Synthesis
+                            AI Generated
                           </Badge>
                         )}
                         {!question.approved && (
@@ -340,7 +339,7 @@ export default function QuestionsPage() {
                             variant="outline"
                             className="text-[10px] font-bold uppercase tracking-widest bg-secondary text-muted-foreground border-border"
                           >
-                            Awaiting Validation
+                            Pending review
                           </Badge>
                         )}
                       </div>
@@ -362,7 +361,7 @@ export default function QuestionsPage() {
                         size="icon"
                         onClick={() => handleDelete(question.id)}
                         className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5"
-                        title="Decouple item"
+                        title="Delete question"
                       >
                         <Trash2 className="w-5 h-5" />
                       </Button>
@@ -413,10 +412,10 @@ export default function QuestionsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-2xl font-semibold tracking-tight">
-                      Manual Synthesis
+                      Create question
                     </CardTitle>
-                    <CardDescription className="font-serif">
-                      Define a new assessment unit for the curriculum.
+                    <CardDescription>
+                      Add a new question for this course.
                     </CardDescription>
                   </div>
                   <Button
@@ -442,7 +441,7 @@ export default function QuestionsPage() {
                       htmlFor="questionContent"
                       className="text-[10px] font-bold uppercase tracking-widest"
                     >
-                      Question Narrative
+                      Question
                     </Label>
                     <textarea
                       id="questionContent"
@@ -455,7 +454,7 @@ export default function QuestionsPage() {
                       }
                       rows={3}
                       className="w-full px-5 py-4 border border-border rounded-2xl bg-background text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-serif text-lg italic"
-                      placeholder="Articulate the question unit..."
+                      placeholder="Enter your question..."
                       required
                       minLength={10}
                     />
@@ -471,7 +470,7 @@ export default function QuestionsPage() {
                       htmlFor="hintContent"
                       className="text-[10px] font-bold uppercase tracking-widest"
                     >
-                      Pedagogical Hint
+                      Hint (optional)
                     </Label>
                     <Input
                       id="hintContent"
@@ -480,14 +479,14 @@ export default function QuestionsPage() {
                         setNewQuestion({ ...newQuestion, hint: e.target.value })
                       }
                       className="font-serif italic text-base px-5 py-6 rounded-xl"
-                      placeholder="Optional technical guidance..."
+                      placeholder="Add a hint for students..."
                     />
                   </div>
 
                   <div className="space-y-6">
                     <div className="flex items-center justify-between">
                       <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Unit Options
+                        Answer options
                       </Label>
                       {newAnswers.length < 6 && (
                         <Button
@@ -497,7 +496,7 @@ export default function QuestionsPage() {
                           onClick={addAnswer}
                           className="text-[10px] font-bold uppercase tracking-widest text-primary"
                         >
-                          + Expand options
+                          + Add option
                         </Button>
                       )}
                     </div>
@@ -517,7 +516,7 @@ export default function QuestionsPage() {
                                 ? "shadow-lg shadow-primary/20"
                                 : "text-muted-foreground/20 hover:border-primary/40",
                             )}
-                            title="Verify as correct"
+                            title="Mark as correct"
                           >
                             <Check className="w-5 h-5" />
                           </Button>
@@ -527,7 +526,7 @@ export default function QuestionsPage() {
                               updateAnswer(index, "content", e.target.value)
                             }
                             className="flex-1 font-serif text-base px-5 py-6 rounded-xl"
-                            placeholder={`Option unit ${index + 1}...`}
+                            placeholder={`Option ${index + 1}...`}
                             required
                           />
                           {newAnswers.length > 2 && (
@@ -563,7 +562,7 @@ export default function QuestionsPage() {
                     size="xl"
                     className="px-10"
                   >
-                    {creating ? "Processing..." : "Submit Unit"}
+                    {creating ? "Saving..." : "Save question"}
                     {!creating && <ArrowRight className="ml-2 h-5 w-5" />}
                   </Button>
                 </div>

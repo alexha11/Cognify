@@ -65,14 +65,10 @@ export default function RegisterPage() {
                 <Sparkles className="h-6 w-6" />
               </div>
               <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
-                Begin your{" "}
-                <span className="text-primary/40 italic font-serif">
-                  odyssey.
-                </span>
+                Create your account
               </CardTitle>
-              <CardDescription className="text-base text-muted-foreground font-serif italic mt-3">
-                Establish your cognitive profile and join a verified educational
-                sphere.
+              <CardDescription className="text-base text-muted-foreground mt-3">
+                Get started with Cognify for free
               </CardDescription>
             </CardHeader>
             <CardContent className="px-10">
@@ -92,7 +88,7 @@ export default function RegisterPage() {
                     <div className="space-y-2">
                       <Label
                         htmlFor="firstName"
-                        className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                        className="text-xs font-medium text-muted-foreground ml-1"
                       >
                         First name
                       </Label>
@@ -115,7 +111,7 @@ export default function RegisterPage() {
                     <div className="space-y-2">
                       <Label
                         htmlFor="lastName"
-                        className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                        className="text-xs font-medium text-muted-foreground ml-1"
                       >
                         Last name
                       </Label>
@@ -141,9 +137,9 @@ export default function RegisterPage() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="organizationName"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                      className="text-xs font-medium text-muted-foreground ml-1"
                     >
-                      Cognitive Institution
+                      Organization
                     </Label>
                     <Input
                       id="organizationName"
@@ -166,9 +162,9 @@ export default function RegisterPage() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="email"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                      className="text-xs font-medium text-muted-foreground ml-1"
                     >
-                      Electronic Mail
+                      Email
                     </Label>
                     <Input
                       id="email"
@@ -192,9 +188,9 @@ export default function RegisterPage() {
                   <div className="space-y-2">
                     <Label
                       htmlFor="password"
-                      className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest ml-1"
+                      className="text-xs font-medium text-muted-foreground ml-1"
                     >
-                      Passphrase
+                      Password
                     </Label>
                     <Input
                       id="password"
@@ -217,25 +213,25 @@ export default function RegisterPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-14 text-sm font-bold tracking-[0.1em] rounded-2xl shadow-xl shadow-black/5"
+                  className="w-full h-12 text-sm font-semibold rounded-xl"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    "Initialize Identity"
+                    "Create account"
                   )}
                 </Button>
               </form>
             </CardContent>
-            <CardFooter className="justify-center pt-8 pb-10 text-[10px] font-bold uppercase tracking-[0.2em]">
-              <p className="text-muted-foreground/60">
-                Existing researcher?{" "}
+            <CardFooter className="justify-center pt-8 pb-10 text-sm">
+              <p className="text-muted-foreground">
+                Already have an account?{" "}
                 <Link
                   href="/login"
-                  className="text-primary hover:text-primary/70 transition-colors"
+                  className="text-primary font-medium hover:text-primary/70 transition-colors"
                 >
-                  Authorize Session
+                  Sign in
                 </Link>
               </p>
             </CardFooter>

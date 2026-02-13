@@ -142,7 +142,7 @@ export function Sidebar() {
                   {user.firstName} {user.lastName}
                 </p>
                 <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-widest opacity-60">
-                  {user.role} Identity
+                  {user.role}
                 </p>
               </div>
               <Button
@@ -150,7 +150,7 @@ export function Sidebar() {
                 size="icon"
                 onClick={logout}
                 className="h-8 w-8 text-muted-foreground hover:bg-background hover:text-destructive"
-                title="De-authorize Session"
+                title="Sign out"
               >
                 <LogOut className="h-4 w-4" />
               </Button>
