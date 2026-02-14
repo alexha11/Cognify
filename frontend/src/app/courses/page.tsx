@@ -235,7 +235,7 @@ export default function CoursesPage() {
                   <Link href={`/quiz/${course.id}`} className="block">
                     <Button variant="pill" size="lg" className="w-full">
                       <Play className="h-4 w-4 text-xs" />
-                      Take assessment
+                      Start Quiz
                     </Button>
                   </Link>
 
