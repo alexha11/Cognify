@@ -19,7 +19,7 @@ export class AttemptsController {
     @Body() dto: CreateAttemptDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.attemptsService.create(dto, user.userId, user.organizationId);
+    return this.attemptsService.create(dto, user.userId, user.organizationId || "");
   }
 
   /**
@@ -37,7 +37,7 @@ export class AttemptsController {
    */
   @Get('stats')
   async getStats(@CurrentUser() user: AuthenticatedUser): Promise<any> {
-    return this.attemptsService.getOverallStats(user.userId, user.organizationId);
+    return this.attemptsService.getOverallStats(user.userId, user.organizationId || "");
   }
 
   /**
@@ -49,6 +49,6 @@ export class AttemptsController {
     @Param('courseId') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.attemptsService.getCourseProgress(courseId, user.userId, user.organizationId);
+    return this.attemptsService.getCourseProgress(courseId, user.userId, user.organizationId || "");
   }
 }

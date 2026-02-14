@@ -25,11 +25,45 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
-## Project setup
-
 ```bash
 $ npm install
 ```
+
+## Database
+
+This project uses [Prisma](https://www.prisma.io/) as an ORM.
+
+### Standard Workflow
+
+1.  **Sync Schema (Development)**: Run this after any changes to `prisma/schema.prisma`. It will create a migration and apply it to your local DB.
+    ```bash
+    npx prisma migrate dev --name <migration_name>
+    ```
+2.  **Apply Migrations (Production/CI)**: Run this to apply all pending migrations in automated environments.
+    ```bash
+    npx prisma migrate deploy
+    ```
+3.  **Generate Client**: Keep the Prisma Client types in sync.
+    ```bash
+    npx prisma generate
+    ```
+
+### Troubleshooting: Schema Drift
+
+If you encounter an error stating that your migration history is out of sync with the database (drift), follow these steps to reconcile without losing data:
+
+1.  **Create a placeholder migration**:
+    ```bash
+    npx prisma migrate dev --create-only --name manual_sync
+    ```
+2.  **Mark as resolved**: Tell Prisma to consider the migration already applied.
+    ```bash
+    npx prisma migrate resolve --applied <migration_folder_name>
+    ```
+3.  **Generate Client**:
+    ```bash
+    npx prisma generate
+    ```
 
 ## Compile and run the project
 

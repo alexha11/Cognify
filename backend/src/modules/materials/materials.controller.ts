@@ -28,7 +28,7 @@ export class MaterialsController {
     @Body() dto: CreateMaterialDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.materialsService.create(dto, user.userId, user.organizationId);
+    return this.materialsService.create(dto, user.userId, user.organizationId || "");
   }
 
   /**
@@ -52,6 +52,6 @@ export class MaterialsController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.materialsService.remove(id, user.organizationId);
+    return this.materialsService.remove(id, user.organizationId || "");
   }
 }

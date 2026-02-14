@@ -27,7 +27,7 @@ export class AiController {
       dto.topic,
       dto.count || 5,
       user.userId,
-      user.organizationId,
+      user.organizationId || "",
     );
   }
 }

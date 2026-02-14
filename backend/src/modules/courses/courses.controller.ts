@@ -31,7 +31,7 @@ export class CoursesController {
     @Body() dto: CreateCourseDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.coursesService.create(dto, user.userId, user.organizationId);
+    return this.coursesService.create(dto, user.userId, user.organizationId || "");
   }
 
   /**
@@ -74,7 +74,7 @@ export class CoursesController {
       id,
       dto,
       user.userId,
-      user.organizationId,
+      user.organizationId || "",
       user.role,
     );
   }
@@ -95,7 +95,7 @@ export class CoursesController {
       id,
       dto.isPublic,
       user.userId,
-      user.organizationId,
+      user.organizationId || "",
       user.role,
     );
   }
@@ -109,9 +109,9 @@ export class CoursesController {
   @Roles(Role.ADMIN)
   async remove(
     @Param('id') id: string,
-    @CurrentUser('organizationId') organizationId: string,
+    @CurrentUser('organizationId') organizationId: string | undefined,
   ): Promise<{ message: string }> {
-    return this.coursesService.remove(id, organizationId);
+    return this.coursesService.remove(id, organizationId || "");
   }
 
   /**
@@ -129,7 +129,7 @@ export class CoursesController {
     return this.coursesService.addPrerequisite(
       id,
       prerequisiteId,
-      user.organizationId,
+      user.organizationId || "",
       user.userId,
       user.role,
     );
@@ -150,7 +150,7 @@ export class CoursesController {
     return this.coursesService.removePrerequisite(
       id,
       prerequisiteId,
-      user.organizationId,
+      user.organizationId || "",
       user.userId,
       user.role,
     );

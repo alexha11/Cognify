@@ -28,10 +28,10 @@ export class BillingController {
   @Roles(Role.ADMIN)
   async createCheckout(
     @Body() dto: CreateCheckoutDto,
-    @CurrentUser('organizationId') organizationId: string,
+    @CurrentUser('organizationId') organizationId: string | undefined,
   ) {
     return this.billingService.createCheckoutSession(
-      organizationId,
+      organizationId || "",
       dto.plan,
       dto.successUrl,
       dto.cancelUrl,
@@ -60,8 +60,8 @@ export class BillingController {
    */
   @Get('status')
   @UseGuards(JwtAuthGuard)
-  async getStatus(@CurrentUser('organizationId') organizationId: string) {
-    return this.billingService.getSubscriptionStatus(organizationId);
+  async getStatus(@CurrentUser('organizationId') organizationId: string | undefined) {
+    return this.billingService.getSubscriptionStatus(organizationId || "");
   }
 
   /**
@@ -73,8 +73,8 @@ export class BillingController {
   @Roles(Role.ADMIN)
   async createPortal(
     @Body() dto: CreatePortalDto,
-    @CurrentUser('organizationId') organizationId: string,
+    @CurrentUser('organizationId') organizationId: string | undefined,
   ) {
-    return this.billingService.createPortalSession(organizationId, dto.returnUrl);
+    return this.billingService.createPortalSession(organizationId || "", dto.returnUrl);
   }
 }

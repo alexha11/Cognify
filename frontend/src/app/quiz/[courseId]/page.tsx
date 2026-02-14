@@ -311,7 +311,7 @@ export default function QuizPage() {
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
-              Course Progress
+              Quiz Progress
             </span>
             <div className="flex items-center gap-2">
               <span className="text-sm font-bold text-primary">
