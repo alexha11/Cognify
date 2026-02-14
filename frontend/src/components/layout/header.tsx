@@ -27,21 +27,10 @@ export function Header() {
             >
               Organizations
             </Link>
-            <Link
-              href="/courses"
-              className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Courses
-            </Link>
           </nav>
           <div className="flex items-center gap-4">
             {!user && !isLoading ? (
               <>
-                <Link href="/login">
-                  <Button variant="ghost" size="sm">
-                    Log in
-                  </Button>
-                </Link>
                 <Link href="/register">
                   <Button size="sm">Sign up</Button>
                 </Link>
