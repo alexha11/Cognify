@@ -129,7 +129,7 @@ export default function OrganizationDetailPage() {
                   href="/organizations"
                   className="hover:text-primary transition-colors"
                 >
-                  Directory
+                  Organizations
                 </Link>
               </li>
               <li className="opacity-40">/</li>
@@ -143,7 +143,7 @@ export default function OrganizationDetailPage() {
               className="text-[10px] font-bold uppercase tracking-widest gap-2"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Return to Directory
+              Return to Organizations
             </Button>
           </Link>
         </div>
