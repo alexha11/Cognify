@@ -20,8 +20,12 @@ export class RegisterDto {
   lastName: string;
 
   @IsString()
-  @IsNotEmpty()
-  organizationName: string;
+  @IsOptional()
+  organizationName?: string;
+
+  @IsEnum(Role)
+  @IsOptional()
+  role?: Role;
 }
 
 export class LoginDto {

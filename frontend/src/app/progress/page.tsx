@@ -93,7 +93,7 @@ export default function ProgressPage() {
             Learning Progress
           </h1>
           <p className="mt-2 text-muted-foreground font-serif text-lg leading-relaxed">
-            Monitor your intellectual trajectory and master your curriculum.
+            Monitor your intellectual trajectory and master your courses.
           </p>
         </div>
 
@@ -160,14 +160,14 @@ export default function ProgressPage() {
             {/* Course Progress */}
             <section className="space-y-6">
               <h2 className="text-xl font-semibold tracking-tight">
-                Curriculum Mastery
+                Course Mastery
               </h2>
               {courses.length === 0 ? (
                 <Card className="border-dashed py-16">
                   <CardContent className="text-center space-y-4">
                     <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/30" />
                     <p className="text-muted-foreground font-serif">
-                      No courses identified in your curriculum yet.
+                      No courses identified in your profile yet.
                     </p>
                   </CardContent>
                 </Card>

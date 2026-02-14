@@ -6,6 +6,45 @@ export class OrganizationsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Create a new organization
+   * Assigns the creator as the owner (INSTRUCTOR/ADMIN)
+   */
+  async create(userId: string, data: { name: string; description?: string; logoUrl?: string }): Promise<any> {
+    // Generate slug
+    const slug = data.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '')
+      .substring(0, 50);
+
+    // Check if slug exists
+    const existing = await this.prisma.organization.findUnique({ where: { slug } });
+    if (existing) {
+      throw new ForbiddenException('Organization name already taken');
+    }
+
+    // Create org and update user in transaction
+    return this.prisma.$transaction(async (tx) => {
+      const org = await tx.organization.create({
+        data: {
+          name: data.name,
+          slug,
+          description: data.description,
+          logoUrl: data.logoUrl,
+        },
+      });
+
+      // Update user to belong to this org
+      await tx.user.update({
+        where: { id: userId },
+        data: { organizationId: org.id },
+      });
+
+      return org;
+    });
+  }
+
+  /**
    * Get all public organizations (for discovery)
    * No authentication required
    */

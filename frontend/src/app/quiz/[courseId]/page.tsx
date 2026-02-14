@@ -96,14 +96,14 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentIndex];
 
-  const handleSubmit = async () => {
-    if (!selectedAnswer || !currentQuestion) return;
+  const submitAnswer = async (answerId: string) => {
+    if (!currentQuestion || isSubmitting || result) return;
+
+    setSelectedAnswer(answerId);
 
     if (isDemoMode) {
       // Simulate result for guest
-      const selected = currentQuestion.answers.find(
-        (a) => a.id === selectedAnswer,
-      );
+      const selected = currentQuestion.answers.find((a) => a.id === answerId);
       const guestResult = {
         isCorrect: selected?.isCorrect || false,
         selectedAnswer: selected!,
@@ -119,11 +119,12 @@ export default function QuizPage() {
       try {
         const data = await apiPost<AttemptResult>("/attempts", {
           questionId: currentQuestion.id,
-          selectedAnswerId: selectedAnswer,
+          selectedAnswerId: answerId,
         });
         setResult(data);
       } catch (error) {
         console.error("Failed to submit answer", error);
+        setSelectedAnswer(null);
       } finally {
         setIsSubmitting(false);
       }
@@ -307,21 +308,27 @@ export default function QuizPage() {
         </div>
 
         {/* Progress Tracker */}
-        <div className="space-y-4">
-          <div className="flex items-center justify-between text-xs font-medium text-muted-foreground uppercase tracking-wider">
-            <span>Progress</span>
-            <span className="text-foreground">
-              {Math.round(
-                ((currentIndex + (result ? 1 : 0)) / questions.length) * 100,
-              )}
-              %
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              Course Progress
             </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-bold text-primary">
+                {Math.round(
+                  ((currentIndex + (result ? 1 : 0)) / questions.length) * 100,
+                )}
+                %
+              </span>
+            </div>
           </div>
-          <div className="h-1.5 bg-secondary/40 rounded-full overflow-hidden">
+          <div className="h-3 w-full bg-secondary rounded-full overflow-hidden p-[2px]">
             <div
-              className="h-full bg-primary transition-all duration-700 ease-out"
+              className="h-full bg-primary rounded-full transition-all duration-700 ease-out shadow-sm"
               style={{
-                width: `${((currentIndex + (result ? 1 : 0)) / questions.length) * 100}%`,
+                width: `${
+                  ((currentIndex + (result ? 1 : 0)) / questions.length) * 100
+                }%`,
               }}
             />
           </div>
@@ -387,8 +394,8 @@ export default function QuizPage() {
                   <Button
                     key={answer.id}
                     variant="ghost"
-                    onClick={() => !result && setSelectedAnswer(answer.id)}
-                    disabled={!!result}
+                    onClick={() => submitAnswer(answer.id)}
+                    disabled={!!result || isSubmitting}
                     className={cn(
                       "group w-full h-auto text-left p-4 rounded-xl border-2 transition-all duration-200",
                       isSelected
@@ -484,22 +491,13 @@ export default function QuizPage() {
             )}
           </CardContent>
 
-          <div className="px-10 pb-10">
-            {!result ? (
+          {/* Footer Actions - Only show when result is there (for next question) */}
+          {result && (
+            <div className="px-10 pb-10">
               <Button
-                onClick={handleSubmit}
-                disabled={!selectedAnswer || isSubmitting}
-                className="w-full h-14 text-base font-semibold rounded-xl"
-                size="lg"
+                onClick={handleNext}
+                className="w-full h-12 text-base rounded-xl"
               >
-                {isSubmitting ? (
-                  <Loader2 className="h-6 w-6 animate-spin" />
-                ) : (
-                  "Check answer"
-                )}
-              </Button>
-            ) : (
-              <Button onClick={handleNext}>
                 {currentIndex < questions.length - 1 ? (
                   <>
                     Next question
@@ -509,8 +507,8 @@ export default function QuizPage() {
                   "Finish quiz"
                 )}
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </Card>
       </div>
     </DashboardLayout>

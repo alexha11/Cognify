@@ -65,7 +65,7 @@ export default function AdminPage() {
                   Administrative Control
                 </h1>
                 <p className="text-muted-foreground font-serif text-lg leading-relaxed">
-                  Unified platform governance and curriculum management.
+                  Unified platform governance and course management.
                 </p>
               </div>
             </div>
@@ -81,7 +81,7 @@ export default function AdminPage() {
         {/* Quick Stats Grid */}
         <div className="grid gap-6 md:grid-cols-4">
           {[
-            { label: "Total Curriculum", icon: BookOpen, value: "--" },
+            { label: "Total Courses", icon: BookOpen, value: "--" },
             { label: "Synthesis Units", icon: FileQuestion, value: "--" },
             { label: "Platform Members", icon: Users, value: "--" },
             { label: "Active Sessions", icon: BarChart3, value: "--" },
@@ -127,7 +127,7 @@ export default function AdminPage() {
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
               {
-                title: "Curriculum Oversight",
+                title: "Course Oversight",
                 desc: "Monitor and organize all institutional course structures.",
                 href: "/courses",
                 icon: BookOpen,

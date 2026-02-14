@@ -118,7 +118,7 @@ export default function CourseDetailPage() {
                   href="/courses"
                   className="hover:text-primary transition-colors"
                 >
-                  Curriculum
+                  Course
                 </Link>
               </li>
               <li className="opacity-40">/</li>
@@ -132,7 +132,7 @@ export default function CourseDetailPage() {
               className="text-[10px] font-bold uppercase tracking-widest gap-2"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Institutional Curriculum
+              Institutional Course
             </Button>
           </Link>
         </div>
@@ -163,7 +163,7 @@ export default function CourseDetailPage() {
                   </div>
                   <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
                     {course.description ||
-                      "Synthesizing deep-domain knowledge through structured curriculum integration."}
+                      "Synthesizing deep-domain knowledge through structured course integration."}
                   </p>
                 </div>
 
@@ -199,7 +199,7 @@ export default function CourseDetailPage() {
               <div className="flex-1 p-10 md:p-12 bg-secondary/5 flex flex-col justify-between">
                 <div className="space-y-2">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-8">
-                    Curriculum Metrics
+                    Course Metrics
                   </p>
                   <div className="grid grid-cols-2 gap-12">
                     <div className="space-y-1">
@@ -352,8 +352,7 @@ export default function CourseDetailPage() {
                   <CardContent className="p-20 text-center space-y-6">
                     <FileQuestion className="mx-auto h-12 w-12 text-muted-foreground/20" />
                     <p className="text-muted-foreground font-serif italic leading-relaxed">
-                      The curriculum database contains no active assessment
-                      units.
+                      The course database contains no active assessment units.
                     </p>
                     {canEdit && (
                       <Link href={`/ai-generate?courseId=${course.id}`}>
@@ -431,7 +430,7 @@ export default function CourseDetailPage() {
                         </div>
                         <FeatureGate
                           variant="prompt"
-                          title="Curriculum Expansion"
+                          title="Course Expansion"
                           description="Expand your archival permissions to include full assessment units, explanatory synthesis, and progression tracking."
                         >
                           <Button
@@ -490,7 +489,7 @@ export default function CourseDetailPage() {
                         <FeatureGate
                           variant="prompt"
                           title="Archival Retrieval"
-                          description="Full identity verification is required to extract curriculum assets."
+                          description="Full identity verification is required to extract course assets."
                         >
                           <Button
                             variant="ghost"

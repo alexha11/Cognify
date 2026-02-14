@@ -24,7 +24,8 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  organizationName: string;
+  organizationName?: string;
+  role?: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
 }
 
 // Organization types

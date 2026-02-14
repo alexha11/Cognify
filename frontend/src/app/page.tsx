@@ -108,13 +108,6 @@ export default function HomePage() {
               </Card>
             ))}
           </div>
-
-          {/* Social Proof / Trust Section */}
-          <div className="mt-40 pt-20 border-t border-border/60 text-center">
-            <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-12">
-              Built for students and educators worldwide
-            </h2>
-          </div>
         </div>
       </main>
 
@@ -124,6 +117,9 @@ export default function HomePage() {
           <div className="text-sm font-semibold tracking-tight">
             Cognify
             <span className="text-muted-foreground font-normal">.ai</span>
+          </div>
+          <div className="text-sm font-normal tracking-tight text-muted-foreground">
+            Built for students and educators worldwide
           </div>
           <div className="flex gap-8 text-sm text-muted-foreground">
             <Link href="#" className="hover:text-foreground transition-colors">
@@ -137,7 +133,7 @@ export default function HomePage() {
             </Link>
           </div>
           <div className="text-xs text-muted-foreground/60 font-serif">
-            © 2026 Cognify Engineering. All rights reserved.
+            © 2026 Cognify. All rights reserved.
           </div>
         </div>
       </footer>

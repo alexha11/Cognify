@@ -187,7 +187,7 @@ export default function OrganizationDetailPage() {
                   </p>
                   <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
                     {organization.description ||
-                      "Synthesizing educational excellence with advanced curriculum pathways."}
+                      "Synthesizing educational excellence with advanced course pathways."}
                   </p>
                 </div>
 
@@ -207,7 +207,7 @@ export default function OrganizationDetailPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      Curriculum
+                      Courses
                     </p>
                     <div className="flex items-end gap-2">
                       <p className="text-2xl font-semibold text-foreground tracking-tighter">
@@ -254,7 +254,7 @@ export default function OrganizationDetailPage() {
             <div className="p-20 text-center bg-card rounded-[40px] border border-dashed border-border/60">
               <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/30 mb-6" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                Curriculum processing...
+                Course processing...
               </h3>
               <p className="text-muted-foreground font-serif leading-relaxed italic">
                 This organization is currently formulating its educational

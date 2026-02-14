@@ -1,10 +1,11 @@
-import { Controller, Get, Put, Patch, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Patch, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
 import { JwtAuthGuard, OptionalJwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
 import { UpdateOrganizationDto } from './dto/update-organization.dto';
+import { CreateOrganizationDto } from './dto/create-organization.dto';
 
 @Controller('organizations')
 export class OrganizationsController {
@@ -43,6 +44,19 @@ export class OrganizationsController {
   // ============================================
   // AUTHENTICATED ENDPOINTS
   // ============================================
+
+  /**
+   * Create a new organization
+   * POST /organizations
+   */
+  @Post()
+  @UseGuards(JwtAuthGuard)
+  async create(
+    @CurrentUser('userId') userId: string,
+    @Body() dto: CreateOrganizationDto,
+  ): Promise<any> {
+    return this.organizationsService.create(userId || '', dto);
+  }
 
   /**
    * Get current organization details

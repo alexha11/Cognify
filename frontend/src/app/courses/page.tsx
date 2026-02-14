@@ -85,9 +85,7 @@ export default function CoursesPage() {
               Courses
             </h1>
             <p className="text-muted-foreground font-serif">
-              {canCreate
-                ? "Manage your curriculum"
-                : "Explore available pathways"}
+              {canCreate ? "Manage your course" : "Explore available pathways"}
             </p>
           </div>
           {canCreate && !showCreate && (

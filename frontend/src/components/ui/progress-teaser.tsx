@@ -65,7 +65,7 @@ export function ProgressTeaser() {
                 Visualize Your Intellect
               </h2>
               <p className="text-muted-foreground font-serif text-lg leading-relaxed">
-                Track your performance across curriculum pathways, identify
+                Track your performance across course pathways, identify
                 cognitive gaps, and master any domain with data-driven
                 synthesis.
               </p>

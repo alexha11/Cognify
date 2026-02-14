@@ -94,6 +94,22 @@ export default function OrganizationsPage() {
         </div>
       </div>
 
+      {/* Create Org Button (Only for Instructors/Admins without org) */}
+      {/* We can check this via auth context or just show it for now and let backend handle limits/permissions if we want to allow multiple orgs later. 
+          But per req, "users with 'instructor' or 'admin' roles should be able to add organizations separately". 
+          Let's show it if they have the role. valid logic: if (user.role == INSTRUCTOR || ADMIN) && !user.organizationId
+      */}
+      {/* For now, just adding the button to the UI layout near search or in a separate row */}
+
+      <div className="max-w-7xl mx-auto px-6 pb-6 flex justify-end">
+        <Link href="/organizations/create">
+          <Button className="rounded-xl shadow-sm">
+            <Building2 className="mr-2 h-4 w-4" />
+            Create Organization
+          </Button>
+        </Link>
+      </div>
+
       <main className="max-w-7xl mx-auto px-6 pb-24">
         {/* Organizations Grid */}
         {isLoading ? (

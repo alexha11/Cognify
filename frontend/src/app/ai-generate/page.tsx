@@ -117,7 +117,7 @@ function AIGenerateContent() {
                 </h2>
                 <p className="text-muted-foreground font-serif text-lg leading-relaxed">
                   Instantly generate assessments from any topic. Save hours of
-                  pedagogical prep and build comprehensive curricula for your
+                  pedagogical prep and build comprehensive courses for your
                   students.
                 </p>
               </div>
@@ -208,7 +208,7 @@ function AIGenerateContent() {
                   {isLoading ? (
                     <div className="flex items-center gap-2 text-muted-foreground italic text-sm">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      Loading curriculum...
+                      Loading course...
                     </div>
                   ) : courses.length === 0 ? (
                     <div className="flex items-center gap-2 text-muted-foreground italic text-sm">
@@ -297,7 +297,7 @@ function AIGenerateContent() {
                   {
                     step: "01",
                     title: "Identify",
-                    desc: "Select the target curriculum module.",
+                    desc: "Select the target course module.",
                   },
                   {
                     step: "02",

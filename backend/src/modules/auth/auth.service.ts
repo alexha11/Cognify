@@ -21,8 +21,9 @@ export class AuthService {
   ) {}
 
   /**
-   * Register a new organization with an admin user
-   * This creates both the organization and the first admin user
+   * Register a new user.
+   * If organizationName is provided, creates a new organization and assigns the user as INSTRUCTOR (Admin).
+   * If organizationName is NOT provided, creates a standalone user (Student/Instructor) without an organization.
    */
   async register(dto: RegisterDto): Promise<AuthResponseDto> {
     // Check if email already exists
@@ -34,60 +35,86 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
-    // Generate organization slug from name
-    const slug = this.generateSlug(dto.organizationName);
-
-    // Check if slug already exists
-    const existingOrg = await this.prisma.organization.findUnique({
-      where: { slug },
-    });
-
-    if (existingOrg) {
-      throw new ConflictException('Organization name already taken');
-    }
-
     // Hash password
     const passwordHash = await bcrypt.hash(dto.password, 12);
 
-    // Create organization and admin user in a transaction
-    const result = await this.prisma.$transaction(async (tx) => {
-      const organization = await tx.organization.create({
-        data: {
-          name: dto.organizationName,
-          slug,
-        },
+    let user;
+    let organization;
+
+    if (dto.organizationName) {
+      // Flow 1: Create Organization + User (Instructor/Admin)
+      
+      // Generate organization slug from name
+      const slug = this.generateSlug(dto.organizationName);
+
+      // Check if slug already exists
+      const existingOrg = await this.prisma.organization.findUnique({
+        where: { slug },
       });
 
-      const user = await tx.user.create({
+      if (existingOrg) {
+        throw new ConflictException('Organization name already taken');
+      }
+
+      // Create organization and admin user in a transaction
+      const result = await this.prisma.$transaction(async (tx) => {
+        const newOrg = await tx.organization.create({
+          data: {
+            name: dto.organizationName!,
+            slug,
+          },
+        });
+
+        const newUser = await tx.user.create({
+          data: {
+            email: dto.email,
+            passwordHash,
+            firstName: dto.firstName,
+            lastName: dto.lastName,
+            role: Role.INSTRUCTOR, // Organization creator gets INSTRUCTOR role
+            organizationId: newOrg.id,
+          },
+          include: {
+            organization: true,
+          },
+        });
+
+        return { user: newUser, organization: newOrg };
+      });
+      
+      user = result.user;
+      organization = result.organization;
+
+    } else {
+      // Flow 2: Create User Only (No Organization)
+      user = await this.prisma.user.create({
         data: {
           email: dto.email,
           passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
-          role: Role.INSTRUCTOR, // Organization creator gets INSTRUCTOR role (ADMIN requires payment)
-          organizationId: organization.id,
-        },
+          role: dto.role || Role.STUDENT, // Use provided role or default to STUDENT
+        } as any,
         include: {
           organization: true,
         },
       });
-
-      return { user, organization };
-    });
+      organization = null;
+    }
 
     // Generate JWT token
-    const token = this.generateToken(result.user);
+    const token = this.generateToken(user as any);
 
     return {
       accessToken: token,
       user: {
-        id: result.user.id,
-        email: result.user.email,
-        firstName: result.user.firstName,
-        lastName: result.user.lastName,
-        role: result.user.role,
-        organizationId: result.user.organizationId,
-        organizationName: result.organization.name,
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        organizationId: user.organizationId || '',
+        organizationName: (user as any).organization?.name || '',
       },
     };
   }
@@ -125,8 +152,8 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        organizationId: user.organizationId,
-        organizationName: user.organization.name,
+        organizationId: user.organizationId || '',
+        organizationName: (user as any).organization?.name || '',
       },
     };
   }
@@ -194,19 +221,19 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      organizationId: user.organizationId,
-      organizationName: user.organization.name,
+      organizationId: user.organizationId || '',
+      organizationName: user.organization?.name || '',
     };
   }
 
   /**
    * Generate JWT token with organization context
    */
-  private generateToken(user: { id: string; email: string; organizationId: string; role: Role }): string {
+  private generateToken(user: { id: string; email: string; organizationId: string | null; role: Role }): string {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
-      organizationId: user.organizationId,
+      organizationId: user.organizationId || undefined,
       role: user.role,
     };
 

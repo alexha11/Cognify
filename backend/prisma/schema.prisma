@@ -80,8 +80,8 @@ model User {
   updatedAt      DateTime @updatedAt
 
   // Organization relation (tenant isolation)
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
 
   // Relations
   createdCourses  Course[]    @relation("CourseCreator")
