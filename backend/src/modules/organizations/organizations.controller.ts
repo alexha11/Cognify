@@ -65,6 +65,9 @@ export class OrganizationsController {
   @Get('me')
   @UseGuards(JwtAuthGuard)
   async getMyOrganization(@CurrentUser() user: AuthenticatedUser): Promise<any> {
+    if (!user.organizationId) {
+      return null;
+    }
     return this.organizationsService.findOne(user.organizationId);
   }
 

@@ -90,37 +90,6 @@ export default function RegisterPage() {
                 )}
 
                 <div className="flex flex-col gap-4">
-                  {/* Role Selection */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      type="button"
-                      onClick={() => setValue("role", "STUDENT")}
-                      className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                        selectedRole === "STUDENT"
-                          ? "border-primary bg-primary/5 text-primary"
-                          : "border-muted bg-transparent text-muted-foreground hover:border-primary/50 hover:bg-muted/50"
-                      }`}
-                    >
-                      <span className="text-sm font-semibold">Student</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setValue("role", "INSTRUCTOR")}
-                      className={`relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl border-2 transition-all duration-200 ${
-                        selectedRole === "INSTRUCTOR"
-                          ? "border-primary bg-primary/5 text-primary"
-                          : "border-muted bg-transparent text-muted-foreground hover:border-primary/50 hover:bg-muted/50"
-                      }`}
-                    >
-                      <span className="text-sm font-semibold">Instructor</span>
-                    </button>
-                  </div>
-                  {errors.role && (
-                    <p className="text-xs font-medium text-destructive ml-1">
-                      {errors.role.message}
-                    </p>
-                  )}
-
                   {/* Name Fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -170,7 +139,6 @@ export default function RegisterPage() {
                       )}
                     </div>
                   </div>
-
                   {/* Email */}
                   <div className="space-y-2">
                     <Label
@@ -196,7 +164,6 @@ export default function RegisterPage() {
                       </p>
                     )}
                   </div>
-
                   {/* Password */}
                   <div className="space-y-2">
                     <Label
