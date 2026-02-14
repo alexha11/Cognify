@@ -176,7 +176,7 @@ export default function CourseDetailPage() {
                         className="shadow-xl shadow-black/5 px-10"
                       >
                         <Play className="h-4 w-4 mr-3 fill-current" />
-                        {user ? "Initialize Assessment" : "Trial Assessment"}
+                        Start Quiz
                       </Button>
                     </Link>
                   )}

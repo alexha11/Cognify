@@ -183,7 +183,7 @@ export default function OrganizationDetailPage() {
               <div className="flex-1 p-10 md:p-12 bg-secondary/5 flex flex-col justify-between gap-12">
                 <div className="space-y-4">
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    Contextual Overview
+                    Organization Overview
                   </p>
                   <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
                     {organization.description ||
