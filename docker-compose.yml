@@ -1,6 +1,5 @@
 
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:16-alpine
     container_name: cognify-db
@@ -18,7 +17,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Backend API
   backend:
     build:
       context: ./backend
@@ -41,7 +39,6 @@ services:
     command: >
       sh -c "npx prisma migrate deploy && node dist/src/main"
 
-  # Frontend (development with hot reload)
   frontend:
     build:
       context: ./frontend
