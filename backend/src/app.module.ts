@@ -13,6 +13,7 @@ import { MaterialsModule } from './modules/materials';
 import { AiModule } from './modules/ai';
 import { BillingModule } from './modules/billing';
 import { AccessControlModule } from './modules/access-control';
+import { EmbeddingModule } from './modules/embedding';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { AccessControlModule } from './modules/access-control';
     AiModule,
     BillingModule,
     AccessControlModule,
+    EmbeddingModule,
   ],
 })
 export class AppModule {}

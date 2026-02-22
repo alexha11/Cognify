@@ -71,4 +71,11 @@ export const apiDelete = async <T>(url: string): Promise<T> => {
   return response.data.data;
 };
 
+export const apiUpload = async <T>(url: string, formData: FormData): Promise<T> => {
+  const response = await api.post(url, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data.data;
+};
+
 export default api;

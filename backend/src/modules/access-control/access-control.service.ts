@@ -1,7 +1,15 @@
-import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+  BadRequestException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { Role, RequestStatus } from '@prisma/client';
-import { CreateRoleRequestDto, UpdateRoleRequestStatusDto } from './dto/role-request.dto';
+import {
+  CreateRoleRequestDto,
+  UpdateRoleRequestStatusDto,
+} from './dto/role-request.dto';
 
 @Injectable()
 export class AccessControlService {
@@ -57,7 +65,10 @@ export class AccessControlService {
   /**
    * Update request status (Admin only)
    */
-  async updateRequestStatus(requestId: string, dto: UpdateRoleRequestStatusDto) {
+  async updateRequestStatus(
+    requestId: string,
+    dto: UpdateRoleRequestStatusDto,
+  ) {
     const request = await (this.prisma as any).roleRequest.findUnique({
       where: { id: requestId },
     });

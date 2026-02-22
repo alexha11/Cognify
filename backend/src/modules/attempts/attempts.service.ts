@@ -32,7 +32,9 @@ export class AttemptsService {
     }
 
     // Verify answer belongs to question
-    const answer = question.answers.find((a: any) => a.id === dto.selectedAnswerId);
+    const answer = question.answers.find(
+      (a: any) => a.id === dto.selectedAnswerId,
+    );
     if (!answer) {
       throw new ForbiddenException('Invalid answer for this question');
     }
@@ -87,7 +89,6 @@ export class AttemptsService {
     if (attempt.isCorrect) {
       await this.checkAndMarkCompletion(userId, question.courseId);
     }
-
 
     return {
       id: attempt.id,
@@ -200,8 +201,9 @@ export class AttemptsService {
     const answered = attempts.length;
     const correct = attempts.filter((a) => a.isCorrect).length;
 
-    const percentage = totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
-    
+    const percentage =
+      totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
+
     // Also check if they officially have a completion record
     const completion = await (this.prisma as any).courseCompletion.findUnique({
       where: { userId_courseId: { userId, courseId } },
@@ -244,7 +246,9 @@ export class AttemptsService {
       select: { questionId: true },
     });
 
-    const uniqueCorrectQuestions = new Set(correctAttempts.map((a: any) => a.questionId));
+    const uniqueCorrectQuestions = new Set(
+      correctAttempts.map((a: any) => a.questionId),
+    );
 
     if (uniqueCorrectQuestions.size === course.questions.length) {
       // Mark as complete

@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { QuestionsService } from '../questions';
 import { OrganizationsService } from '../organizations';
+import { RagService } from './rag.service';
 import { Config } from '../../config';
 
 interface GeneratedQuestion {
@@ -20,6 +21,7 @@ export class AiService {
     private readonly configService: ConfigService<Config>,
     private readonly questionsService: QuestionsService,
     private readonly organizationsService: OrganizationsService,
+    private readonly ragService: RagService,
   ) {}
 
   /**
@@ -31,9 +33,14 @@ export class AiService {
     count: number,
     userId: string,
     organizationId: string,
+    materialId?: string,
   ): Promise<{ message: string; questionsCreated: number }> {
-    const apiKey = this.configService.get('app.openRouterApiKey', { infer: true });
-    const model = this.configService.get('app.openRouterModel', { infer: true });
+    const apiKey = this.configService.get('app.openRouterApiKey', {
+      infer: true,
+    });
+    const model = this.configService.get('app.openRouterModel', {
+      infer: true,
+    });
 
     if (!apiKey) {
       throw new BadRequestException('OpenRouter API key not configured');
@@ -51,9 +58,29 @@ export class AiService {
       );
     }
 
-    const prompt = this.buildPrompt(topic, count);
+    // Retrieve RAG context if materialId is provided
+    let context: string | undefined;
+    if (materialId) {
+      const chunks = await this.ragService.similaritySearch(
+        topic,
+        materialId,
+        5,
+      );
+      if (chunks.length > 0) {
+        context = chunks.join('\n\n');
+        this.logger.log(
+          `RAG: Using ${chunks.length} context chunks for generation`,
+        );
+      }
+    }
+
+    const prompt = this.buildPrompt(topic, count, context);
 
     try {
+      const systemMessage = context
+        ? `You are an expert exam question generator. Generate high-quality multiple choice questions based on the provided course material. Each question should have exactly 4 options with one correct answer. Base your questions strictly on the material provided — do not fabricate information beyond the source text.`
+        : `You are an expert exam question generator. Generate high-quality multiple choice questions for educational purposes. Each question should have exactly 4 options with one correct answer.`;
+
       const response = await axios.post(
         this.apiUrl,
         {
@@ -61,7 +88,7 @@ export class AiService {
           messages: [
             {
               role: 'system',
-              content: `You are an expert exam question generator. Generate high-quality multiple choice questions for educational purposes. Each question should have exactly 4 options with one correct answer.`,
+              content: systemMessage,
             },
             {
               role: 'user',
@@ -121,10 +148,21 @@ export class AiService {
   }
 
   /**
-   * Build prompt for question generation
+   * Build prompt for question generation, optionally with RAG context
    */
-  private buildPrompt(topic: string, count: number): string {
-    return `Generate ${count} multiple choice exam questions about: "${topic}"
+  private buildPrompt(topic: string, count: number, context?: string): string {
+    let contextBlock = '';
+    if (context) {
+      contextBlock = `--- COURSE MATERIAL ---
+${context}
+--- END COURSE MATERIAL ---
+
+Using the course material above as your primary source, generate`;
+    } else {
+      contextBlock = `Generate`;
+    }
+
+    return `${contextBlock} ${count} multiple choice exam questions about: "${topic}"
 
 For each question, use this exact format:
 
@@ -150,7 +188,7 @@ Important:
 - Each question must have exactly 4 options
 - Only one correct answer per question
 - Make questions challenging but fair
-- Include practical, real-world scenarios when relevant`;
+- Include practical, real-world scenarios when relevant${context ? '\n- Base all questions on the provided course material' : ''}`;
   }
 
   /**
@@ -158,7 +196,9 @@ Important:
    */
   private parseAiResponse(content: string): GeneratedQuestion[] {
     const questions: GeneratedQuestion[] = [];
-    const questionBlocks = content.split('---QUESTION---').filter((b) => b.trim());
+    const questionBlocks = content
+      .split('---QUESTION---')
+      .filter((b) => b.trim());
 
     for (const block of questionBlocks) {
       try {
@@ -208,7 +248,9 @@ Important:
 
     // Extract hint
     const hintMatch = block.match(/---HINT---\s*([\s\S]*?)(?:---END---|$)/);
-    const hint = hintMatch ? hintMatch[1].trim() : 'Review the course material for this topic.';
+    const hint = hintMatch
+      ? hintMatch[1].trim()
+      : 'Review the course material for this topic.';
 
     // Build answers array
     const answers = options.map((opt) => ({

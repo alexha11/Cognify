@@ -16,22 +16,27 @@ export const appConfigValidationSchema = Joi.object({
   SUPABASE_URL: Joi.string().optional().allow(''),
   SUPABASE_ANON_KEY: Joi.string().optional().allow(''),
   SUPABASE_SERVICE_KEY: Joi.string().optional().allow(''),
-  NODE_ENV: Joi.string().valid('development', 'production', 'test').default('development'),
+  NODE_ENV: Joi.string()
+    .valid('development', 'production', 'test')
+    .default('development'),
 });
 
-export const appConfig = registerAs('app', (): AppConfig => ({
-  port: parseInt(process.env.PORT || '3001', 10),
-  databaseUrl: process.env.DATABASE_URL || '',
-  jwtSecret: process.env.JWT_SECRET || '',
-  jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
-  openRouterApiKey: process.env.OPENROUTER_API_KEY || '',
-  openRouterModel: process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash',
-  stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
-  stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
-  stripePriceIdPro: process.env.STRIPE_PRICE_ID_PRO || '',
-  stripePriceIdEnterprise: process.env.STRIPE_PRICE_ID_ENTERPRISE || '',
-  supabaseUrl: process.env.SUPABASE_URL || '',
-  supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
-  supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
-  nodeEnv: process.env.NODE_ENV || 'development',
-}));
+export const appConfig = registerAs(
+  'app',
+  (): AppConfig => ({
+    port: parseInt(process.env.PORT || '3001', 10),
+    databaseUrl: process.env.DATABASE_URL || '',
+    jwtSecret: process.env.JWT_SECRET || '',
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+    openRouterApiKey: process.env.OPENROUTER_API_KEY || '',
+    openRouterModel: process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash',
+    stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
+    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    stripePriceIdPro: process.env.STRIPE_PRICE_ID_PRO || '',
+    stripePriceIdEnterprise: process.env.STRIPE_PRICE_ID_ENTERPRISE || '',
+    supabaseUrl: process.env.SUPABASE_URL || '',
+    supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
+    supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
+    nodeEnv: process.env.NODE_ENV || 'development',
+  }),
+);

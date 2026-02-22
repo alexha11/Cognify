@@ -16,7 +16,8 @@ import { Config } from '../../config';
       useFactory: (configService: ConfigService<Config>) => ({
         secret: configService.get('app.jwtSecret', { infer: true }),
         signOptions: {
-          expiresIn: configService.get('app.jwtExpiresIn', { infer: true }) || '7d',
+          expiresIn:
+            configService.get('app.jwtExpiresIn', { infer: true }) || '7d',
         },
       }),
     }),

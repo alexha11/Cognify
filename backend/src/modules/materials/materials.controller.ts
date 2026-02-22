@@ -6,9 +6,15 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { MaterialsService } from './materials.service';
-import { CreateMaterialDto } from './dto';
+import { CreateMaterialDto, UploadMaterialDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -28,7 +34,42 @@ export class MaterialsController {
     @Body() dto: CreateMaterialDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.materialsService.create(dto, user.userId, user.organizationId || "");
+    return this.materialsService.create(
+      dto,
+      user.userId,
+      user.organizationId || '',
+    );
+  }
+
+  /**
+   * Upload a PDF file, extract text, chunk, embed, and store
+   */
+  @Post('upload')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  @UseInterceptors(FileInterceptor('file'))
+  async upload(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new FileTypeValidator({ fileType: 'application/pdf' }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() dto: UploadMaterialDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.materialsService.uploadAndProcess(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      file.size,
+      dto.courseId,
+      user.userId,
+      user.organizationId || '',
+    );
   }
 
   /**
@@ -52,6 +93,6 @@ export class MaterialsController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.materialsService.remove(id, user.organizationId || "");
+    return this.materialsService.remove(id, user.organizationId || '');
   }
 }

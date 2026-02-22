@@ -77,6 +77,7 @@ export interface Material {
   fileUrl: string;
   fileType: string;
   fileSize: number;
+  chunkCount: number;
   courseId: string;
   createdAt: string;
   uploadedBy: {
@@ -121,6 +122,7 @@ export interface GenerateQuestionsData {
   courseId: string;
   topic: string;
   count?: number;
+  materialId?: string;
 }
 
 // Attempt types

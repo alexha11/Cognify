@@ -19,7 +19,11 @@ export class QuestionsService {
    * Create a new question with answers
    * Enforces organization plan limits
    */
-  async create(dto: CreateQuestionDto, userId: string, organizationId: string): Promise<any> {
+  async create(
+    dto: CreateQuestionDto,
+    userId: string,
+    organizationId: string,
+  ): Promise<any> {
     // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
       where: { id: dto.courseId, organizationId },
@@ -44,7 +48,9 @@ export class QuestionsService {
     // Ensure exactly one correct answer
     const correctAnswers = dto.answers.filter((a) => a.isCorrect);
     if (correctAnswers.length !== 1) {
-      throw new ForbiddenException('Exactly one answer must be marked as correct');
+      throw new ForbiddenException(
+        'Exactly one answer must be marked as correct',
+      );
     }
 
     return this.prisma.question.create({
@@ -104,12 +110,16 @@ export class QuestionsService {
    * Get questions for a course
    * Students only see approved questions
    */
-  async findByCourse(courseId: string, organizationId?: string, userRole?: Role) {
+  async findByCourse(
+    courseId: string,
+    organizationId?: string,
+    userRole?: Role,
+  ) {
     return this.prisma.question.findMany({
       where: {
         courseId,
         ...(organizationId && { organizationId }),
-        ...((userRole === Role.STUDENT || !userRole) ? { approved: true } : {}),
+        ...(userRole === Role.STUDENT || !userRole ? { approved: true } : {}),
       },
       include: {
         answers: true,
@@ -157,7 +167,11 @@ export class QuestionsService {
   /**
    * Update question
    */
-  async update(id: string, dto: UpdateQuestionDto, organizationId: string): Promise<any> {
+  async update(
+    id: string,
+    dto: UpdateQuestionDto,
+    organizationId: string,
+  ): Promise<any> {
     const question = await this.prisma.question.findFirst({
       where: {
         id,
@@ -205,7 +219,10 @@ export class QuestionsService {
   /**
    * Delete question
    */
-  async remove(id: string, organizationId: string): Promise<{ message: string }> {
+  async remove(
+    id: string,
+    organizationId: string,
+  ): Promise<{ message: string }> {
     const question = await this.prisma.question.findFirst({
       where: {
         id,

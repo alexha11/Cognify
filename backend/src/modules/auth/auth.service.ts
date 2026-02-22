@@ -43,7 +43,7 @@ export class AuthService {
 
     if (dto.organizationName) {
       // Flow 1: Create Organization + User (Instructor/Admin)
-      
+
       // Generate organization slug from name
       const slug = this.generateSlug(dto.organizationName);
 
@@ -81,10 +81,9 @@ export class AuthService {
 
         return { user: newUser, organization: newOrg };
       });
-      
+
       user = result.user;
       organization = result.organization;
-
     } else {
       // Flow 2: Create User Only (No Organization)
       user = await this.prisma.user.create({
@@ -136,7 +135,10 @@ export class AuthService {
       throw new UnauthorizedException('Account is deactivated');
     }
 
-    const isPasswordValid = await bcrypt.compare(dto.password, user.passwordHash);
+    const isPasswordValid = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
 
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
@@ -229,7 +231,12 @@ export class AuthService {
   /**
    * Generate JWT token with organization context
    */
-  private generateToken(user: { id: string; email: string; organizationId: string | null; role: Role }): string {
+  private generateToken(user: {
+    id: string;
+    email: string;
+    organizationId: string | null;
+    role: Role;
+  }): string {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,

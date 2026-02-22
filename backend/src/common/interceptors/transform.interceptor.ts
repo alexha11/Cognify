@@ -9,14 +9,16 @@ import { map } from 'rxjs/operators';
 import { ApiResponse } from '../interfaces/response.interface';
 
 @Injectable()
-export class TransformInterceptor<T>
-  implements NestInterceptor<T, ApiResponse<T>> {
+export class TransformInterceptor<T> implements NestInterceptor<
+  T,
+  ApiResponse<T>
+> {
   intercept(
     context: ExecutionContext,
     next: CallHandler,
   ): Observable<ApiResponse<T>> {
     const response = context.switchToHttp().getResponse();
-    
+
     return next.handle().pipe(
       map((data) => ({
         success: true,
