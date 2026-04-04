@@ -19,13 +19,13 @@ export class CoursesService {
    * Create a new course
    * Enforces organization plan limits
    */
-  async create(
-    dto: CreateCourseDto,
-    userId: string,
-    organizationId: string,
-  ) {
-    console.log('[CoursesService] Creating course:', { dto, userId, organizationId });
-    
+  async create(dto: CreateCourseDto, userId: string, organizationId: string) {
+    console.log('[CoursesService] Creating course:', {
+      dto,
+      userId,
+      organizationId,
+    });
+
     // Check plan limits
     const canCreate = await this.organizationsService.checkPlanLimit(
       organizationId,
@@ -62,7 +62,10 @@ export class CoursesService {
         },
       },
     });
-    console.log('[CoursesService] Course created successfully:', { id: course.id, name: course.name });
+    console.log('[CoursesService] Course created successfully:', {
+      id: course.id,
+      name: course.name,
+    });
     return course;
   }
 
@@ -101,12 +104,19 @@ export class CoursesService {
    * Get single course by ID
    * Enforces organization isolation
    */
-  async findOne(id: string, organizationId?: string, userRole?: Role, userId?: string) {
+  async findOne(
+    id: string,
+    organizationId?: string,
+    userRole?: Role,
+    userId?: string,
+  ) {
     const course = await this.prisma.course.findFirst({
       where: {
         id,
         ...(organizationId && { organizationId }),
-        ...(userRole === Role.STUDENT || !userRole ? { isPublished: true } : {}),
+        ...(userRole === Role.STUDENT || !userRole
+          ? { isPublished: true }
+          : {}),
       },
       include: {
         createdBy: {
@@ -120,7 +130,8 @@ export class CoursesService {
           orderBy: { createdAt: 'desc' },
         },
         questions: {
-          where: (userRole === Role.STUDENT || !userRole) ? { approved: true } : {},
+          where:
+            userRole === Role.STUDENT || !userRole ? { approved: true } : {},
           include: {
             answers: true,
           },
@@ -146,7 +157,7 @@ export class CoursesService {
     // Role-based access control for Student
     if (userRole === Role.STUDENT && userId) {
       const prerequisitesMet = await this.checkPrerequisites(id, userId);
-      
+
       if (!prerequisitesMet) {
         // Hide materials and correct answers if prerequisites not met
         return {
@@ -232,7 +243,9 @@ export class CoursesService {
 
     // Instructors can only update their own courses
     if (role === Role.INSTRUCTOR && course.createdById !== userId) {
-      throw new ForbiddenException('You can only change visibility of courses you created');
+      throw new ForbiddenException(
+        'You can only change visibility of courses you created',
+      );
     }
 
     const updated = await this.prisma.course.update({
@@ -251,7 +264,9 @@ export class CoursesService {
    * Check if user has completed all prerequisites for a course
    */
   async checkPrerequisites(courseId: string, userId: string): Promise<boolean> {
-    const prerequisites = await (this.prisma as any).coursePrerequisite.findMany({
+    const prerequisites = await (
+      this.prisma as any
+    ).coursePrerequisite.findMany({
       where: { courseId },
       select: { requiresCourseId: true },
     });
@@ -271,10 +286,16 @@ export class CoursesService {
   /**
    * Add a prerequisite to a course
    */
-  async addPrerequisite(courseId: string, prerequisiteId: string, organizationId: string, userId: string, role: Role) {
+  async addPrerequisite(
+    courseId: string,
+    prerequisiteId: string,
+    organizationId: string,
+    userId: string,
+    role: Role,
+  ) {
     // Verify course access
     await this.verifyCourseAccess(courseId, organizationId, userId, role);
-    
+
     // Verify prerequisite exists
     const prerequisite = await this.prisma.course.findFirst({
       where: { id: prerequisiteId, organizationId },
@@ -285,7 +306,9 @@ export class CoursesService {
     }
 
     if (courseId === prerequisiteId) {
-      throw new ForbiddenException('A course cannot be a prerequisite of itself');
+      throw new ForbiddenException(
+        'A course cannot be a prerequisite of itself',
+      );
     }
 
     return (this.prisma as any).coursePrerequisite.upsert({
@@ -306,7 +329,13 @@ export class CoursesService {
   /**
    * Remove a prerequisite from a course
    */
-  async removePrerequisite(courseId: string, prerequisiteId: string, organizationId: string, userId: string, role: Role) {
+  async removePrerequisite(
+    courseId: string,
+    prerequisiteId: string,
+    organizationId: string,
+    userId: string,
+    role: Role,
+  ) {
     await this.verifyCourseAccess(courseId, organizationId, userId, role);
 
     await (this.prisma as any).coursePrerequisite.delete({
@@ -324,7 +353,12 @@ export class CoursesService {
   /**
    * Helper to verify if user can manage a course
    */
-  private async verifyCourseAccess(courseId: string, organizationId: string, userId: string, role: Role) {
+  private async verifyCourseAccess(
+    courseId: string,
+    organizationId: string,
+    userId: string,
+    role: Role,
+  ) {
     const course = await this.prisma.course.findFirst({
       where: { id: courseId, organizationId },
     });
@@ -342,7 +376,10 @@ export class CoursesService {
    * Delete course
    * Only admin can delete
    */
-  async remove(id: string, organizationId: string): Promise<{ message: string }> {
+  async remove(
+    id: string,
+    organizationId: string,
+  ): Promise<{ message: string }> {
     const course = await this.prisma.course.findFirst({
       where: { id, organizationId },
     });

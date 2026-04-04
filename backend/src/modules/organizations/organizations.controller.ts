@@ -1,6 +1,19 @@
-import { Controller, Get, Put, Patch, Post, Body, Param, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Put,
+  Patch,
+  Post,
+  Body,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { OrganizationsService } from './organizations.service';
-import { JwtAuthGuard, OptionalJwtAuthGuard, RolesGuard } from '../../common/guards';
+import {
+  JwtAuthGuard,
+  OptionalJwtAuthGuard,
+  RolesGuard,
+} from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
@@ -64,7 +77,9 @@ export class OrganizationsController {
    */
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async getMyOrganization(@CurrentUser() user: AuthenticatedUser): Promise<any> {
+  async getMyOrganization(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
     if (!user.organizationId) {
       return null;
     }
@@ -78,7 +93,9 @@ export class OrganizationsController {
   @Get('users')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN)
-  async getUsers(@CurrentUser('organizationId') organizationId: string): Promise<any[]> {
+  async getUsers(
+    @CurrentUser('organizationId') organizationId: string,
+  ): Promise<any[]> {
     return this.organizationsService.getUsers(organizationId);
   }
 
@@ -107,7 +124,10 @@ export class OrganizationsController {
     @CurrentUser('organizationId') organizationId: string,
     @Body() dto: { isPublic: boolean },
   ): Promise<any> {
-    return this.organizationsService.updateVisibility(organizationId, dto.isPublic);
+    return this.organizationsService.updateVisibility(
+      organizationId,
+      dto.isPublic,
+    );
   }
 
   /**
@@ -117,7 +137,8 @@ export class OrganizationsController {
   @Get('limits')
   @UseGuards(JwtAuthGuard)
   async getPlanLimits(@CurrentUser('organizationId') organizationId: string) {
-    const org = await this.organizationsService.getMyOrganization(organizationId);
+    const org =
+      await this.organizationsService.getMyOrganization(organizationId);
     return this.organizationsService.getPlanLimits(org.plan);
   }
 }

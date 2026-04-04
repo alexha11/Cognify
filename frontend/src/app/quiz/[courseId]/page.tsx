@@ -397,7 +397,7 @@ export default function QuizPage() {
                     onClick={() => submitAnswer(answer.id)}
                     disabled={!!result || isSubmitting}
                     className={cn(
-                      "group w-full h-auto text-left p-4 rounded-xl border-2 transition-all duration-200",
+                      "group w-full h-auto text-left p-4 rounded-xl border-2 transition-all duration-200 whitespace-normal",
                       isSelected
                         ? "border-primary bg-primary/5 shadow-sm"
                         : "border-border hover:border-primary/50 hover:bg-muted/50",
@@ -436,7 +436,7 @@ export default function QuizPage() {
                           letter
                         )}
                       </span>
-                      <span className="text-base font-medium leading-relaxed flex-1">
+                      <span className="text-base font-medium leading-relaxed flex-1 whitespace-normal break-words">
                         {answer.content}
                       </span>
                       {showResult && isCorrect && (

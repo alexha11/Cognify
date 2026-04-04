@@ -4,21 +4,27 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
 
 @Injectable()
-export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
+export class PrismaService
+  extends PrismaClient
+  implements OnModuleInit, OnModuleDestroy
+{
   private pool: Pool;
 
   constructor() {
     const connectionString = process.env.DATABASE_URL;
-    
+
     // Remote connections (like Supabase) REQUIRE SSL
     // Local connections (localhost/127.0.0.1) should NOT use SSL
-    const isLocal = connectionString?.includes('localhost') || 
-                   connectionString?.includes('127.0.0.1') ||
-                   connectionString?.includes('postgres:5432'); // Docker internal
-    
-    console.log(`[Database] Connecting to: ${connectionString?.split('@')[1] || 'Unknown'} (SSL: ${isLocal ? 'OFF' : 'ON'})`);
+    const isLocal =
+      connectionString?.includes('localhost') ||
+      connectionString?.includes('127.0.0.1') ||
+      connectionString?.includes('postgres:5432'); // Docker internal
 
-    const pool = new Pool({ 
+    console.log(
+      `[Database] Connecting to: ${connectionString?.split('@')[1] || 'Unknown'} (SSL: ${isLocal ? 'OFF' : 'ON'})`,
+    );
+
+    const pool = new Pool({
       connectionString,
       // Increased timeouts for slow/IPv6 connections
       connectionTimeoutMillis: 60000, // 60 seconds (Prisma Studio can connect, so we need more time)
@@ -29,7 +35,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
       // Keep-alive to prevent connection drops
       keepAlive: true,
       keepAliveInitialDelayMillis: 10000,
-      ssl: isLocal ? false : { rejectUnauthorized: false }
+      ssl: isLocal ? false : { rejectUnauthorized: false },
     });
 
     pool.on('error', (err) => {
@@ -39,7 +45,7 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     pool.on('connect', () => {
       console.log('[Database] New client connected to pool');
     });
-    
+
     const adapter = new PrismaPg(pool);
     super({ adapter });
     this.pool = pool;

@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsOptional, IsNumber, Min, Max } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsNumber,
+  Min,
+  Max,
+} from 'class-validator';
 
 export class GenerateQuestionsDto {
   @IsString()
@@ -14,4 +21,8 @@ export class GenerateQuestionsDto {
   @Min(1)
   @Max(10)
   count?: number = 5;
+
+  @IsString()
+  @IsOptional()
+  materialId?: string;
 }

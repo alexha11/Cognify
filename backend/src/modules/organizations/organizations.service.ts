@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 
 @Injectable()
@@ -9,7 +13,10 @@ export class OrganizationsService {
    * Create a new organization
    * Assigns the creator as the owner (INSTRUCTOR/ADMIN)
    */
-  async create(userId: string, data: { name: string; description?: string; logoUrl?: string }): Promise<any> {
+  async create(
+    userId: string,
+    data: { name: string; description?: string; logoUrl?: string },
+  ): Promise<any> {
     // Generate slug
     const slug = data.name
       .toLowerCase()
@@ -18,7 +25,9 @@ export class OrganizationsService {
       .substring(0, 50);
 
     // Check if slug exists
-    const existing = await this.prisma.organization.findUnique({ where: { slug } });
+    const existing = await this.prisma.organization.findUnique({
+      where: { slug },
+    });
     if (existing) {
       throw new ForbiddenException('Organization name already taken');
     }
@@ -61,7 +70,7 @@ export class OrganizationsService {
       orderBy: { createdAt: 'desc' },
     });
 
-    return organizations.map(org => ({
+    return organizations.map((org) => ({
       id: org.id,
       name: org.name,
       slug: org.slug,
@@ -76,7 +85,11 @@ export class OrganizationsService {
    * Get organization by slug (for public discovery)
    * Returns org with its public courses
    */
-  async findBySlug(slug: string, userId?: string, userOrgId?: string): Promise<any> {
+  async findBySlug(
+    slug: string,
+    userId?: string,
+    userOrgId?: string,
+  ): Promise<any> {
     const organization = await this.prisma.organization.findUnique({
       where: { slug },
       include: {
@@ -90,7 +103,9 @@ export class OrganizationsService {
           where: {
             OR: [
               { isPublic: true },
-              ...(userOrgId === undefined ? [] : [{ organizationId: userOrgId }]),
+              ...(userOrgId === undefined
+                ? []
+                : [{ organizationId: userOrgId }]),
               ...(userId === undefined ? [] : [{ createdById: userId }]),
             ],
           },
@@ -125,7 +140,7 @@ export class OrganizationsService {
       createdAt: organization.createdAt,
       userCount: organization._count.users,
       courseCount: organization._count.courses,
-      courses: organization.courses.map(course => ({
+      courses: organization.courses.map((course) => ({
         id: course.id,
         name: course.name,
         description: course.description,
@@ -226,7 +241,11 @@ export class OrganizationsService {
   /**
    * Get plan limits based on organization plan
    */
-  getPlanLimits(plan: string): { maxCourses: number; maxQuestions: number; maxUsers: number } {
+  getPlanLimits(plan: string): {
+    maxCourses: number;
+    maxQuestions: number;
+    maxUsers: number;
+  } {
     const limits = {
       FREE: { maxCourses: 5, maxQuestions: 200, maxUsers: 10 },
       PRO: { maxCourses: 25, maxQuestions: 1000, maxUsers: 100 },
@@ -258,7 +277,7 @@ export class OrganizationsService {
     if (!org) return false;
 
     const limits = this.getPlanLimits(org.plan);
-    
+
     if (limitType === 'courses') {
       return limits.maxCourses === -1 || org._count.courses < limits.maxCourses;
     }

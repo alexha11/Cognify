@@ -30,7 +30,11 @@ export class QuestionsController {
     @Body() dto: CreateQuestionDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.questionsService.create(dto, user.userId, user.organizationId || "");
+    return this.questionsService.create(
+      dto,
+      user.userId,
+      user.organizationId || '',
+    );
   }
 
   /**
@@ -42,7 +46,11 @@ export class QuestionsController {
     @Param('courseId') courseId: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any[]> {
-    return this.questionsService.findByCourse(courseId, user?.organizationId, user?.role);
+    return this.questionsService.findByCourse(
+      courseId,
+      user?.organizationId,
+      user?.role,
+    );
   }
 
   /**
@@ -52,7 +60,9 @@ export class QuestionsController {
   @Get('pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async getPendingApproval(@CurrentUser('organizationId') organizationId: string) {
+  async getPendingApproval(
+    @CurrentUser('organizationId') organizationId: string,
+  ) {
     return this.questionsService.getPendingApproval(organizationId);
   }
 
@@ -80,7 +90,7 @@ export class QuestionsController {
     @Body() dto: UpdateQuestionDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.questionsService.update(id, dto, user.organizationId || "");
+    return this.questionsService.update(id, dto, user.organizationId || '');
   }
 
   /**
@@ -94,7 +104,7 @@ export class QuestionsController {
     @Param('id') id: string,
     @CurrentUser('organizationId') organizationId: string | undefined,
   ) {
-    return this.questionsService.approve(id, organizationId || "");
+    return this.questionsService.approve(id, organizationId || '');
   }
 
   /**
@@ -108,6 +118,6 @@ export class QuestionsController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.questionsService.remove(id, user.organizationId || "");
+    return this.questionsService.remove(id, user.organizationId || '');
   }
 }

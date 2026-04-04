@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiUpload } from "@/lib/api";
 import { Course, Question, Material } from "@/types";
 import { cn, formatDate, formatFileSize } from "@/lib/utils";
 import {
@@ -43,6 +43,8 @@ export default function CourseDetailPage() {
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState("");
 
   useEffect(() => {
     setIsMounted(true);
@@ -80,6 +82,29 @@ export default function CourseDetailPage() {
       fetchCourse();
     } catch (error) {
       console.error("Failed to approve question", error);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !course) return;
+
+    setIsUploading(true);
+    setUploadError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("courseId", course.id);
+      await apiUpload<Material>("/materials/upload", formData);
+      fetchCourse();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      setUploadError(error.response?.data?.message || "Failed to upload file");
+    } finally {
+      setIsUploading(false);
+      // Reset the input so the same file can be re-selected
+      e.target.value = "";
     }
   };
 
@@ -482,7 +507,7 @@ export default function CourseDetailPage() {
                               {material.fileName}
                             </p>
                             <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                              {formatFileSize(material.fileSize)} • Doc
+                              {formatFileSize(material.fileSize)} • {material.chunkCount > 0 ? `${material.chunkCount} chunks` : "Doc"}
                             </p>
                           </div>
                         </div>
@@ -502,6 +527,45 @@ export default function CourseDetailPage() {
                       </CardContent>
                     </Card>
                   ))}
+                </div>
+              )}
+
+              {canEdit && (
+                <div className="mt-4">
+                  {uploadError && (
+                    <div className="rounded bg-destructive/10 p-3 text-xs text-destructive mb-3">
+                      {uploadError}
+                    </div>
+                  )}
+                  <label
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-border/60 bg-secondary/5 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-300",
+                      isUploading && "opacity-60 pointer-events-none",
+                    )}
+                  >
+                    <input
+                      type="file"
+                      accept="application/pdf"
+                      className="hidden"
+                      onChange={handleFileUpload}
+                      disabled={isUploading}
+                    />
+                    {isUploading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                          Processing PDF...
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-5 w-5 text-muted-foreground/40" />
+                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                          Upload PDF
+                        </span>
+                      </>
+                    )}
+                  </label>
                 </div>
               )}
             </div>

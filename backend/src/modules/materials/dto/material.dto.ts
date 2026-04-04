@@ -20,3 +20,9 @@ export class CreateMaterialDto {
   @IsNotEmpty()
   courseId: string;
 }
+
+export class UploadMaterialDto {
+  @IsString()
+  @IsNotEmpty()
+  courseId: string;
+}

@@ -19,7 +19,9 @@ export class BillingService {
     private readonly configService: ConfigService<Config>,
     private readonly prisma: PrismaService,
   ) {
-    const stripeKey = this.configService.get('app.stripeSecretKey', { infer: true });
+    const stripeKey = this.configService.get('app.stripeSecretKey', {
+      infer: true,
+    });
     if (stripeKey) {
       this.stripe = new Stripe(stripeKey);
     } else {
@@ -68,7 +70,9 @@ export class BillingService {
     const priceId =
       plan === 'PRO'
         ? this.configService.get('app.stripePriceIdPro', { infer: true })
-        : this.configService.get('app.stripePriceIdEnterprise', { infer: true });
+        : this.configService.get('app.stripePriceIdEnterprise', {
+            infer: true,
+          });
 
     if (!priceId) {
       throw new BadRequestException('Price not configured for selected plan');
@@ -109,14 +113,20 @@ export class BillingService {
       throw new BadRequestException('Stripe not configured');
     }
 
-    const webhookSecret = this.configService.get('app.stripeWebhookSecret', { infer: true });
+    const webhookSecret = this.configService.get('app.stripeWebhookSecret', {
+      infer: true,
+    });
     if (!webhookSecret) {
       throw new BadRequestException('Webhook secret not configured');
     }
 
     let event: Stripe.Event;
     try {
-      event = this.stripe.webhooks.constructEvent(payload, signature, webhookSecret);
+      event = this.stripe.webhooks.constructEvent(
+        payload,
+        signature,
+        webhookSecret,
+      );
     } catch (err) {
       this.logger.error('Webhook signature verification failed', err);
       throw new BadRequestException('Invalid signature');
@@ -125,10 +135,10 @@ export class BillingService {
     switch (event.type) {
       case 'customer.subscription.created':
       case 'customer.subscription.updated':
-        await this.handleSubscriptionUpdate(event.data.object as Stripe.Subscription);
+        await this.handleSubscriptionUpdate(event.data.object);
         break;
       case 'customer.subscription.deleted':
-        await this.handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        await this.handleSubscriptionDeleted(event.data.object);
         break;
       default:
         this.logger.log(`Unhandled event type: ${event.type}`);
@@ -140,7 +150,9 @@ export class BillingService {
   /**
    * Handle subscription created/updated
    */
-  private async handleSubscriptionUpdate(subscription: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionUpdate(
+    subscription: Stripe.Subscription,
+  ): Promise<void> {
     const customerId = subscription.customer as string;
 
     const organization = await this.prisma.organization.findFirst({
@@ -165,7 +177,10 @@ export class BillingService {
     // Determine plan from price
     const priceId = subscription.items.data[0]?.price.id;
     let plan: Plan = Plan.PRO;
-    if (priceId === this.configService.get('app.stripePriceIdEnterprise', { infer: true })) {
+    if (
+      priceId ===
+      this.configService.get('app.stripePriceIdEnterprise', { infer: true })
+    ) {
       plan = Plan.ENTERPRISE;
     }
 
@@ -176,15 +191,27 @@ export class BillingService {
         stripeSubscriptionId: subscription.id,
         stripePriceId: priceId || '',
         status,
-        currentPeriodStart: new Date((subscription.items.data[0]?.current_period_start ?? Math.floor(Date.now() / 1000)) * 1000),
-        currentPeriodEnd: new Date((subscription.items.data[0]?.current_period_end ?? Math.floor(Date.now() / 1000)) * 1000),
+        currentPeriodStart: new Date(
+          (subscription.items.data[0]?.current_period_start ??
+            Math.floor(Date.now() / 1000)) * 1000,
+        ),
+        currentPeriodEnd: new Date(
+          (subscription.items.data[0]?.current_period_end ??
+            Math.floor(Date.now() / 1000)) * 1000,
+        ),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         organizationId: organization.id,
       },
       update: {
         status,
-        currentPeriodStart: new Date((subscription.items.data[0]?.current_period_start ?? Math.floor(Date.now() / 1000)) * 1000),
-        currentPeriodEnd: new Date((subscription.items.data[0]?.current_period_end ?? Math.floor(Date.now() / 1000)) * 1000),
+        currentPeriodStart: new Date(
+          (subscription.items.data[0]?.current_period_start ??
+            Math.floor(Date.now() / 1000)) * 1000,
+        ),
+        currentPeriodEnd: new Date(
+          (subscription.items.data[0]?.current_period_end ??
+            Math.floor(Date.now() / 1000)) * 1000,
+        ),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
       },
     });
@@ -195,13 +222,17 @@ export class BillingService {
       data: { plan },
     });
 
-    this.logger.log(`Updated subscription for org ${organization.id} to ${plan}`);
+    this.logger.log(
+      `Updated subscription for org ${organization.id} to ${plan}`,
+    );
   }
 
   /**
    * Handle subscription deleted
    */
-  private async handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
+  private async handleSubscriptionDeleted(
+    subscription: Stripe.Subscription,
+  ): Promise<void> {
     const existingSub = await this.prisma.subscription.findUnique({
       where: { stripeSubscriptionId: subscription.id },
     });
@@ -220,13 +251,17 @@ export class BillingService {
       data: { plan: Plan.FREE },
     });
 
-    this.logger.log(`Subscription canceled for org ${existingSub.organizationId}`);
+    this.logger.log(
+      `Subscription canceled for org ${existingSub.organizationId}`,
+    );
   }
 
   /**
    * Get subscription status for organization
    */
-  async getSubscriptionStatus(organizationId: string): Promise<{ plan: Plan; subscription: any }> {
+  async getSubscriptionStatus(
+    organizationId: string,
+  ): Promise<{ plan: Plan; subscription: any }> {
     const subscription = await this.prisma.subscription.findFirst({
       where: { organizationId },
       orderBy: { createdAt: 'desc' },

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { apiGet, apiPost } from "@/lib/api";
-import { Course } from "@/types";
+import { Course, Material } from "@/types";
 import { useAuth } from "@/lib/auth";
 import {
   Sparkles,
@@ -23,6 +23,7 @@ import {
   BookOpen,
   Lock,
   ArrowRight,
+  FileText,
 } from "lucide-react";
 import { FeatureGate } from "@/components/ui";
 
@@ -37,6 +38,9 @@ function AIGenerateContent() {
   );
   const [topic, setTopic] = useState("");
   const [count, setCount] = useState(5);
+  const [materials, setMaterials] = useState<Material[]>([]);
+  const [selectedMaterial, setSelectedMaterial] = useState("");
+  const [materialsLoading, setMaterialsLoading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState<{
     message: string;
@@ -63,6 +67,27 @@ function AIGenerateContent() {
     fetchCourses();
   }, [user, authLoading]);
 
+  useEffect(() => {
+    const fetchMaterials = async () => {
+      if (!selectedCourse) {
+        setMaterials([]);
+        setSelectedMaterial("");
+        return;
+      }
+      setMaterialsLoading(true);
+      try {
+        const data = await apiGet<Material[]>(`/materials/course/${selectedCourse}`);
+        setMaterials((data || []).filter((m) => m.chunkCount > 0));
+      } catch (error) {
+        console.error("Failed to fetch materials", error);
+        setMaterials([]);
+      } finally {
+        setMaterialsLoading(false);
+      }
+    };
+    fetchMaterials();
+  }, [selectedCourse]);
+
   const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsGenerating(true);
@@ -76,6 +101,7 @@ function AIGenerateContent() {
           courseId: selectedCourse,
           topic,
           count,
+          ...(selectedMaterial && { materialId: selectedMaterial }),
         },
       );
       setResult(data);
@@ -244,6 +270,39 @@ function AIGenerateContent() {
                   />
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                     Be specific for higher quality output.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <Label htmlFor="material">
+                    <span className="flex items-center gap-2">
+                      <FileText className="h-3.5 w-3.5" />
+                      Source material
+                      <span className="text-muted-foreground font-normal">(optional)</span>
+                    </span>
+                  </Label>
+                  {materialsLoading ? (
+                    <div className="flex items-center gap-2 text-muted-foreground italic text-sm">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Loading materials...
+                    </div>
+                  ) : (
+                    <select
+                      id="material"
+                      value={selectedMaterial}
+                      onChange={(e) => setSelectedMaterial(e.target.value)}
+                      className="flex h-12 w-full rounded-lg border border-border bg-background px-4 py-2 text-sm transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20"
+                    >
+                      <option value="">Generate from topic only...</option>
+                      {materials.map((material) => (
+                        <option key={material.id} value={material.id}>
+                          {material.fileName} ({material.chunkCount} chunks)
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    Select a processed PDF to ground questions in course material.
                   </p>
                 </div>
 
