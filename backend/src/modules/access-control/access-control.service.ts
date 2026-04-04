@@ -5,7 +5,7 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
-import { Role, RequestStatus } from '@prisma/client';
+import { Role } from '@prisma/client';
 import {
   CreateRoleRequestDto,
   UpdateRoleRequestStatusDto,

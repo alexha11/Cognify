@@ -131,14 +131,14 @@ export interface Attempt {
   isCorrect: boolean;
   createdAt: string;
   question: Question;
-  selectedAnswer: Answer;
+  selectedAnswerIds: string[];
 }
 
 export interface AttemptResult {
   id: string;
   isCorrect: boolean;
-  selectedAnswer: Answer;
-  correctAnswer: Answer;
+  selectedAnswerIds: string[];
+  correctAnswerIds: string[];
   hint?: string;
   question: {
     id: string;
