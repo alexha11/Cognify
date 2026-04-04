@@ -108,7 +108,6 @@ model Answer {
   isCorrect  Boolean   @default(false)
   questionId String
   question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  attempts   Attempt[]
 
   @@index([questionId])
 }
@@ -119,9 +118,8 @@ model Attempt {
   createdAt        DateTime @default(now())
   userId           String
   questionId       String
-  selectedAnswerId String
+  selectedAnswerIds String[]
   question         Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  selectedAnswer   Answer   @relation(fields: [selectedAnswerId], references: [id], onDelete: Cascade)
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
