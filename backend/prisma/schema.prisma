@@ -1,20 +1,150 @@
-// Prisma schema for Cognify - Multi-tenant SaaS Platform
-// All tables include organizationId for tenant isolation
-
 generator client {
   provider        = "prisma-client-js"
-  engineType      = "library"
   previewFeatures = ["postgresqlExtensions"]
+  engineType      = "library"
 }
 
 datasource db {
-  provider   = "postgresql"
-  extensions = [vector]
+  provider = "postgresql"
 }
 
-// ============================================
-// ENUMS
-// ============================================
+model Organization {
+  id               String         @id @default(uuid())
+  name             String
+  slug             String         @unique
+  plan             Plan           @default(FREE)
+  stripeCustomerId String?        @unique
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  description      String?
+  isPublic         Boolean        @default(false)
+  logoUrl          String?
+  courses          Course[]
+  subscriptions    Subscription[]
+  users            User[]
+
+  @@index([slug])
+  @@index([isPublic])
+}
+
+model User {
+  id                String       @id @default(uuid())
+  email             String       @unique
+  passwordHash      String
+  firstName         String
+  lastName          String
+  role              Role         @default(STUDENT)
+  isActive          Boolean      @default(true)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+  organizationId    String
+  attempts          Attempt[]
+  createdCourses    Course[]     @relation("CourseCreator")
+  uploadedMaterials Material[]   @relation("MaterialUploader")
+  createdQuestions  Question[]   @relation("QuestionCreator")
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([email])
+  @@index([organizationId])
+}
+
+model Course {
+  id             String       @id @default(uuid())
+  name           String
+  description    String?
+  isPublished    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organizationId String
+  createdById    String
+  isPublic       Boolean      @default(false)
+  createdBy      User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  materials      Material[]
+  questions      Question[]
+
+  @@index([organizationId])
+  @@index([createdById])
+  @@index([isPublic])
+}
+
+model Material {
+  id           String   @id @default(uuid())
+  fileName     String
+  fileUrl      String
+  fileType     String
+  fileSize     Int
+  createdAt    DateTime @default(now())
+  courseId     String
+  uploadedById String
+  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  uploadedBy   User     @relation("MaterialUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+}
+
+model Question {
+  id          String    @id @default(uuid())
+  content     String
+  hint        String?
+  aiGenerated Boolean   @default(false)
+  approved    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  courseId    String
+  createdById String
+  answers     Answer[]
+  attempts    Attempt[]
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdBy   User      @relation("QuestionCreator", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([courseId])
+  @@index([approved])
+}
+
+model Answer {
+  id         String    @id @default(uuid())
+  content    String
+  isCorrect  Boolean   @default(false)
+  questionId String
+  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  attempts   Attempt[]
+
+  @@index([questionId])
+}
+
+model Attempt {
+  id               String   @id @default(uuid())
+  isCorrect        Boolean
+  createdAt        DateTime @default(now())
+  userId           String
+  questionId       String
+  selectedAnswerId String
+  question         Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedAnswer   Answer   @relation(fields: [selectedAnswerId], references: [id], onDelete: Cascade)
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([questionId])
+  @@index([createdAt])
+}
+
+model Subscription {
+  id                   String             @id @default(uuid())
+  stripeSubscriptionId String             @unique
+  stripePriceId        String
+  status               SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart   DateTime
+  currentPeriodEnd     DateTime
+  cancelAtPeriodEnd    Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  organizationId       String
+  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId])
+  @@index([stripeSubscriptionId])
+}
 
 enum Role {
   ADMIN
@@ -33,286 +163,4 @@ enum SubscriptionStatus {
   CANCELED
   PAST_DUE
   TRIALING
-}
-
-enum RequestStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-// ============================================
-// ORGANIZATION (Multi-tenant root)
-// ============================================
-
-model Organization {
-  id               String    @id @default(uuid())
-  name             String
-  slug             String    @unique
-  description      String?   // Organization description for discovery
-  logoUrl          String?   // Organization logo for branding
-  isPublic         Boolean   @default(false) // Visibility toggle for discovery
-  plan             Plan      @default(FREE)
-  stripeCustomerId String?   @unique
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-
-  // Relations
-  users         User[]
-  courses       Course[]
-  subscriptions Subscription[]
-
-  @@index([slug])
-  @@index([isPublic])
-}
-
-// ============================================
-// USER (belongs to one organization)
-// ============================================
-
-model User {
-  id             String   @id @default(uuid())
-  email          String   @unique
-  passwordHash   String
-  firstName      String
-  lastName       String
-  role           Role     @default(STUDENT)
-  isActive       Boolean  @default(true)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  // Organization relation (tenant isolation)
-  organizationId String?
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
-
-  // Relations
-  createdCourses  Course[]    @relation("CourseCreator")
-  uploadedMaterials Material[] @relation("MaterialUploader")
-  createdQuestions Question[] @relation("QuestionCreator")
-  attempts         Attempt[]
-  completions      CourseCompletion[]
-  roleRequests     RoleRequest[]
-
-  @@index([email])
-  @@index([organizationId])
-}
-
-// ============================================
-// COURSE (belongs to organization)
-// ============================================
-
-model Course {
-  id          String   @id @default(uuid())
-  name        String
-  description String?
-  isPublic    Boolean  @default(false) // Visibility toggle for discovery
-  isPublished Boolean  @default(false) // Internal publish state
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Organization relation (tenant isolation)
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  // Creator relation
-  createdById String
-  createdBy   User   @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
-
-  // Relations
-  materials     Material[]
-  questions     Question[]
-  prerequisites CoursePrerequisite[] @relation("CourseDependencies")
-  requiredFor   CoursePrerequisite[] @relation("RequiredFor")
-  completions   CourseCompletion[]
-
-  @@index([organizationId])
-  @@index([createdById])
-  @@index([isPublic])
-}
-
-// ============================================
-// MATERIAL (course attachments)
-// ============================================
-
-model Material {
-  id         String   @id @default(uuid())
-  fileName   String
-  fileUrl    String
-  fileType   String
-  fileSize   Int
-  chunkCount Int      @default(0)
-  createdAt  DateTime @default(now())
-
-  // Course relation
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  // Uploader relation
-  uploadedById String
-  uploadedBy   User   @relation("MaterialUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
-
-  // Chunks relation
-  chunks MaterialChunk[]
-
-  @@index([courseId])
-}
-
-// ============================================
-// MATERIAL CHUNK (vector embeddings for RAG)
-// ============================================
-
-model MaterialChunk {
-  id         String                         @id @default(uuid())
-  content    String
-  chunkIndex Int
-  embedding  Unsupported("vector(384)")?
-  createdAt  DateTime                       @default(now())
-
-  // Material relation
-  materialId String
-  material   Material @relation(fields: [materialId], references: [id], onDelete: Cascade)
-
-  @@index([materialId])
-}
-
-// ============================================
-// QUESTION (exam questions)
-// ============================================
-
-model Question {
-  id          String   @id @default(uuid())
-  content     String
-  hint        String?
-  aiGenerated Boolean  @default(false)
-  approved    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Course relation
-  courseId String
-  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  // Creator relation
-  createdById String
-  createdBy   User   @relation("QuestionCreator", fields: [createdById], references: [id], onDelete: Cascade)
-
-  // Relations
-  answers  Answer[]
-  attempts Attempt[]
-
-  @@index([courseId])
-  @@index([approved])
-}
-
-// ============================================
-// ANSWER (question options)
-// ============================================
-
-model Answer {
-  id        String  @id @default(uuid())
-  content   String
-  isCorrect Boolean @default(false)
-
-  // Question relation
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  // Relations
-  attempts Attempt[]
-
-  @@index([questionId])
-}
-
-// ============================================
-// ATTEMPT (student quiz attempts)
-// ============================================
-
-model Attempt {
-  id        String   @id @default(uuid())
-  isCorrect Boolean
-  createdAt DateTime @default(now())
-
-  // User relation
-  userId String
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  // Question relation
-  questionId String
-  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-
-  // Selected answer relation
-  selectedAnswerId String
-  selectedAnswer   Answer @relation(fields: [selectedAnswerId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([questionId])
-  @@index([createdAt])
-}
-
-// ============================================
-// SUBSCRIPTION (Stripe billing)
-// ============================================
-
-model Subscription {
-  id                   String             @id @default(uuid())
-  stripeSubscriptionId String             @unique
-  stripePriceId        String
-  status               SubscriptionStatus @default(ACTIVE)
-  currentPeriodStart   DateTime
-  currentPeriodEnd     DateTime
-  cancelAtPeriodEnd    Boolean            @default(false)
-  createdAt            DateTime           @default(now())
-  updatedAt            DateTime           @updatedAt
-
-  // Organization relation
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-
-  @@index([organizationId])
-  @@index([stripeSubscriptionId])
-}
-
-// ============================================
-// RBAC & PROGRESS
-// ============================================
-
-model CoursePrerequisite {
-  id              String @id @default(uuid())
-  courseId        String
-  requiresCourseId String
-  
-  course          Course @relation("CourseDependencies", fields: [courseId], references: [id], onDelete: Cascade)
-  prerequisite    Course @relation("RequiredFor", fields: [requiresCourseId], references: [id], onDelete: Cascade)
-
-  @@unique([courseId, requiresCourseId])
-  @@index([courseId])
-  @@index([requiresCourseId])
-}
-
-model CourseCompletion {
-  id        String   @id @default(uuid())
-  userId    String
-  courseId  String
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, courseId])
-  @@index([userId])
-  @@index([courseId])
-}
-
-model RoleRequest {
-  id        String   @id @default(uuid())
-  userId    String
-  reason    String
-  status    RequestStatus @default(PENDING)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-  @@index([status])
 }
