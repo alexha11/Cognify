@@ -39,7 +39,7 @@ api.interceptors.response.use(
         // Only redirect if we are NOT on a public route
         const publicRoutes = ['/', '/login', '/register', '/courses'];
         const isPublicRoute = publicRoutes.some(route => 
-          window.location.pathname === route || window.location.pathname.startsWith('/courses/')
+          window.location.pathname === route || window.location.pathname.startsWith('/courses/') || window.location.pathname.startsWith('/quiz/share/')
         );
         
         if (!isPublicRoute) {

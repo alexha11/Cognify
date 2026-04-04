@@ -54,6 +54,18 @@ export class QuestionsController {
   }
 
   /**
+   * Get questions for a course publicly (no auth)
+   * Returns questions with answers but strips isCorrect for anti-cheat
+   * GET /questions/course/:courseId/public
+   */
+  @Get('course/:courseId/public')
+  async findByCoursePublic(
+    @Param('courseId') courseId: string,
+  ): Promise<any> {
+    return this.questionsService.findByCoursePublic(courseId);
+  }
+
+  /**
    * Get pending approval questions
    * GET /questions/pending
    */

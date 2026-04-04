@@ -31,6 +31,8 @@ import {
   Play,
   Lock,
   ArrowRight,
+  Share2,
+  Link as LinkIcon,
 } from "lucide-react";
 import { FeatureGate, AuthPromptModal } from "@/components/ui";
 
@@ -45,6 +47,15 @@ export default function CourseDetailPage() {
   const [isMounted, setIsMounted] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  const handleShareLink = () => {
+    const url = `${window.location.origin}/quiz/share/${params.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
 
   useEffect(() => {
     setIsMounted(true);
@@ -204,6 +215,26 @@ export default function CourseDetailPage() {
                         Start Quiz
                       </Button>
                     </Link>
+                  )}
+                  {approvedQuestions.length > 0 && (
+                    <Button
+                      variant="outline"
+                      size="lg"
+                      className="rounded-full border-border hover:bg-secondary/50"
+                      onClick={handleShareLink}
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="h-4 w-4 mr-3 text-green-500" />
+                          Link Copied!
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="h-4 w-4 mr-3 text-primary/60" />
+                          Share Quiz
+                        </>
+                      )}
+                    </Button>
                   )}
                   {canEdit && (
                     <Link href={`/ai-generate?courseId=${course.id}`}>
@@ -507,7 +538,10 @@ export default function CourseDetailPage() {
                               {material.fileName}
                             </p>
                             <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                              {formatFileSize(material.fileSize)} • {material.chunkCount > 0 ? `${material.chunkCount} chunks` : "Doc"}
+                              {formatFileSize(material.fileSize)} •{" "}
+                              {material.chunkCount > 0
+                                ? `${material.chunkCount} chunks`
+                                : "Doc"}
                             </p>
                           </div>
                         </div>
