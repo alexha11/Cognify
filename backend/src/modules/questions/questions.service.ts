@@ -136,6 +136,34 @@ export class QuestionsService {
   }
 
   /**
+   * Get questions for a course publicly (no auth required).
+   * Returns course name + all approved questions with answers.
+   */
+  async findByCoursePublic(courseId: string) {
+    const course = await this.prisma.course.findUnique({
+      where: { id: courseId },
+      select: { id: true, name: true, description: true },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    const questions = await this.prisma.question.findMany({
+      where: {
+        courseId,
+        approved: true,
+      },
+      include: {
+        answers: true,
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return { course, questions };
+  }
+
+  /**
    * Get single question
    */
   async findOne(id: string, organizationId?: string) {

@@ -31,13 +31,16 @@ export class AttemptsService {
       throw new NotFoundException('Question not found');
     }
 
-    // Verify answer belongs to question
-    const answer = question.answers.find(
-      (a: any) => a.id === dto.selectedAnswerId,
-    );
-    if (!answer) {
-      throw new ForbiddenException('Invalid answer for this question');
+    // Verify all submitted answers belong to question
+    const validAnswerIds = question.answers.map((a: any) => a.id);
+    const isValid = dto.selectedAnswerIds.every(id => validAnswerIds.includes(id));
+    if (!isValid || dto.selectedAnswerIds.length === 0) {
+      throw new ForbiddenException('Invalid answers selected for this question');
     }
+
+    const correctAnswers = question.answers.filter((a: any) => a.isCorrect);
+    const isCorrect = correctAnswers.length === dto.selectedAnswerIds.length && 
+                      correctAnswers.every((a: any) => dto.selectedAnswerIds.includes(a.id));
 
     // Check if already answered - if so, update the attempt instead of throwing
     const existingAttempt = await this.prisma.attempt.findFirst({
@@ -53,8 +56,8 @@ export class AttemptsService {
       attempt = await this.prisma.attempt.update({
         where: { id: existingAttempt.id },
         data: {
-          selectedAnswerId: dto.selectedAnswerId,
-          isCorrect: answer.isCorrect,
+          selectedAnswerIds: dto.selectedAnswerIds,
+          isCorrect: isCorrect,
         },
         include: {
           question: {
@@ -62,7 +65,6 @@ export class AttemptsService {
               answers: true,
             },
           },
-          selectedAnswer: true,
         },
       });
     } else {
@@ -71,8 +73,8 @@ export class AttemptsService {
         data: {
           userId,
           questionId: dto.questionId,
-          selectedAnswerId: dto.selectedAnswerId,
-          isCorrect: answer.isCorrect,
+          selectedAnswerIds: dto.selectedAnswerIds,
+          isCorrect: isCorrect,
         },
         include: {
           question: {
@@ -80,7 +82,6 @@ export class AttemptsService {
               answers: true,
             },
           },
-          selectedAnswer: true,
         },
       });
     }
@@ -93,8 +94,8 @@ export class AttemptsService {
     return {
       id: attempt.id,
       isCorrect: attempt.isCorrect,
-      selectedAnswer: attempt.selectedAnswer,
-      correctAnswer: question.answers.find((a: any) => a.isCorrect),
+      selectedAnswerIds: attempt.selectedAnswerIds,
+      correctAnswerIds: correctAnswers.map((a: any) => a.id),
       hint: question.hint,
       question: {
         id: question.id,
@@ -111,7 +112,6 @@ export class AttemptsService {
       where: { userId },
       include: {
         question: true,
-        selectedAnswer: true,
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -205,9 +205,7 @@ export class AttemptsService {
       totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
 
     // Also check if they officially have a completion record
-    const completion = await (this.prisma as any).courseCompletion.findUnique({
-      where: { userId_courseId: { userId, courseId } },
-    });
+    const isCompleted = percentage === 100;
 
     return {
       courseId,
@@ -217,7 +215,7 @@ export class AttemptsService {
       correct,
       remaining: totalQuestions - answered,
       percentage,
-      isCompleted: !!completion,
+      isCompleted,
     };
   }
 
@@ -252,16 +250,17 @@ export class AttemptsService {
 
     if (uniqueCorrectQuestions.size === course.questions.length) {
       // Mark as complete
-      await (this.prisma as any).courseCompletion.upsert({
-        where: {
-          userId_courseId: { userId, courseId },
-        },
-        create: {
-          userId,
-          courseId,
-        },
-        update: {},
-      });
+      // Removed until CourseCompletion table is re-added
+      // await (this.prisma as any).courseCompletion.upsert({
+      //   where: {
+      //     userId_courseId: { userId, courseId },
+      //   },
+      //   create: {
+      //     userId,
+      //     courseId,
+      //   },
+      //   update: {},
+      // });
     }
   }
 }

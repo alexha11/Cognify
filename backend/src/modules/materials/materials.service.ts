@@ -98,7 +98,6 @@ export class MaterialsService {
           fileUrl,
           fileType: contentType,
           fileSize,
-          chunkCount: chunks.length,
           courseId,
           uploadedById: userId,
         },

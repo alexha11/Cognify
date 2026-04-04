@@ -1,11 +1,12 @@
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsArray, IsNotEmpty, IsString } from 'class-validator';
 
 export class CreateAttemptDto {
   @IsString()
   @IsNotEmpty()
   questionId: string;
 
-  @IsString()
+  @IsArray()
+  @IsString({ each: true })
   @IsNotEmpty()
-  selectedAnswerId: string;
+  selectedAnswerIds: string[];
 }

@@ -33,7 +33,7 @@ export default function QuizPage() {
   const { user, isLoading: authLoading } = useAuth();
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [selectedAnswers, setSelectedAnswers] = useState<string[]>([]);
   const [result, setResult] = useState<AttemptResult | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -96,18 +96,38 @@ export default function QuizPage() {
 
   const currentQuestion = questions[currentIndex];
 
-  const submitAnswer = async (answerId: string) => {
-    if (!currentQuestion || isSubmitting || result) return;
+  const toggleAnswer = (answerId: string) => {
+    if (result || isSubmitting) return;
+    setSelectedAnswers((prev) =>
+      prev.includes(answerId)
+        ? prev.filter((id) => id !== answerId)
+        : [...prev, answerId],
+    );
+  };
 
-    setSelectedAnswer(answerId);
+  const submitAnswer = async () => {
+    if (
+      !currentQuestion ||
+      isSubmitting ||
+      result ||
+      selectedAnswers.length === 0
+    )
+      return;
 
     if (isDemoMode) {
       // Simulate result for guest
-      const selected = currentQuestion.answers.find((a) => a.id === answerId);
+      const correctAnswers = currentQuestion.answers.filter((a) => a.isCorrect);
+      const isCorrect =
+        correctAnswers.length === selectedAnswers.length &&
+        correctAnswers.every((a) => selectedAnswers.includes(a.id));
+
       const guestResult = {
-        isCorrect: selected?.isCorrect || false,
-        selectedAnswer: selected!,
+        id: "demo",
+        isCorrect,
+        selectedAnswerIds: selectedAnswers,
+        correctAnswerIds: correctAnswers.map((a) => a.id),
         hint: currentQuestion.hint,
+        question: { id: currentQuestion.id, content: currentQuestion.content },
       };
       setResult(guestResult as AttemptResult);
       setDemoStats((prev) => ({
@@ -119,12 +139,12 @@ export default function QuizPage() {
       try {
         const data = await apiPost<AttemptResult>("/attempts", {
           questionId: currentQuestion.id,
-          selectedAnswerId: answerId,
+          selectedAnswerIds: selectedAnswers,
         });
         setResult(data);
       } catch (error) {
         console.error("Failed to submit answer", error);
-        setSelectedAnswer(null);
+        setSelectedAnswers([]);
       } finally {
         setIsSubmitting(false);
       }
@@ -134,7 +154,7 @@ export default function QuizPage() {
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
-      setSelectedAnswer(null);
+      setSelectedAnswers([]);
       setResult(null);
     } else {
       setCompleted(true);
@@ -144,7 +164,7 @@ export default function QuizPage() {
   const handleRetry = async () => {
     // Reset all quiz state
     setCurrentIndex(0);
-    setSelectedAnswer(null);
+    setSelectedAnswers([]);
     setResult(null);
     setCompleted(false);
     setDemoStats({ correct: 0, total: 0 });
@@ -335,17 +355,34 @@ export default function QuizPage() {
         </div>
 
         {/* Question & Interaction Unit */}
-        <Card className="bg-card overflow-hidden">
-          <CardHeader className="p-10 pb-6">
-            <div className="space-y-8">
-              <div className="flex items-start justify-between gap-6">
-                <CardTitle className="text-2xl md:text-3xl font-semibold leading-normal tracking-tight text-foreground">
-                  {currentQuestion.content}
-                </CardTitle>
-              </div>
-              <div className="flex items-center gap-6">
+        <Card className="bg-card overflow-hidden shadow-sm border-border/50">
+          <CardHeader className="p-8 md:p-10 pb-6 border-b border-border/40 bg-muted/10">
+            <div className="space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex-1 space-y-3">
+                  {/* Question Number & Hits */}
+                  <div className="flex items-center gap-3">
+                    <span className="inline-flex items-center justify-center bg-primary/10 text-primary font-bold px-3 py-1 rounded-md text-sm">
+                      Question {currentIndex + 1}
+                    </span>
+                    {currentQuestion.answers.filter((a) => a.isCorrect).length >
+                      1 &&
+                      !result && (
+                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-md">
+                          <Check className="h-3.5 w-3.5" />
+                          Select all that apply
+                        </span>
+                      )}
+                  </div>
+
+                  {/* The actual question */}
+                  <CardTitle className="text-2xl md:text-3xl font-semibold leading-normal tracking-tight text-foreground font-sans">
+                    {currentQuestion.content}
+                  </CardTitle>
+                </div>
+
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
                   onClick={() => {
                     const query = encodeURIComponent(currentQuestion.content);
@@ -354,99 +391,150 @@ export default function QuizPage() {
                       "_blank",
                     );
                   }}
-                  className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground"
+                  className="flex items-center gap-2 text-xs font-medium shrink-0 shadow-sm whitespace-nowrap"
                 >
-                  <Search className="h-4 w-4" />
+                  <Search className="h-3.5 w-3.5" />
                   Search topic
                 </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent className="p-10 pt-4 space-y-6">
+          <CardContent className="p-8 md:p-10 pt-8 space-y-8 bg-card">
             <div className="grid gap-3">
               {currentQuestion.answers.map((answer, index) => {
                 const letter = String.fromCharCode(65 + index);
-                const isSelected = selectedAnswer === answer.id;
+                const isSelected = selectedAnswers.includes(answer.id);
                 const showResult = result !== null;
-                const isCorrect = answer.isCorrect;
-                const wasSelected = result?.selectedAnswer.id === answer.id;
-
-                let stateClasses =
-                  "bg-background border-border hover:border-primary/40";
-
-                if (showResult) {
-                  if (isCorrect) {
-                    stateClasses =
-                      "bg-green-500/5 border-green-500/40 text-green-700 shadow-[0_0_20px_rgba(34,197,94,0.05)]";
-                  } else if (wasSelected && !isCorrect) {
-                    stateClasses =
-                      "bg-destructive/5 border-destructive/40 text-destructive";
-                  } else {
-                    stateClasses =
-                      "bg-background/40 border-border/40 opacity-50";
-                  }
-                } else if (isSelected) {
-                  stateClasses =
-                    "bg-primary/5 border-primary shadow-[0_0_20px_rgba(0,0,0,0.05)]";
-                }
+                const isCorrect = result
+                  ? result.correctAnswerIds.includes(answer.id)
+                  : answer.isCorrect;
+                const wasSelected = result?.selectedAnswerIds.includes(
+                  answer.id,
+                );
 
                 return (
-                  <Button
+                  <button
                     key={answer.id}
-                    variant="ghost"
-                    onClick={() => submitAnswer(answer.id)}
+                    type="button"
+                    onClick={() => toggleAnswer(answer.id)}
                     disabled={!!result || isSubmitting}
                     className={cn(
-                      "group w-full h-auto text-left p-4 rounded-xl border-2 transition-all duration-200 whitespace-normal",
-                      isSelected
-                        ? "border-primary bg-primary/5 shadow-sm"
-                        : "border-border hover:border-primary/50 hover:bg-muted/50",
+                      "group w-full text-left p-4 rounded-xl border-2 transition-all duration-200 whitespace-normal cursor-pointer",
+                      // Default unselected state
+                      !isSelected &&
+                        !showResult &&
+                        "bg-background border-border hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm",
+                      // Selected state (before submission) — vivid, unmistakable
+                      isSelected &&
+                        !showResult &&
+                        "bg-primary/10 border-primary ring-2 ring-primary/20 shadow-md scale-[1.01]",
+                      // Result states
                       showResult &&
                         isCorrect &&
-                        "border-green-500 bg-green-500/5",
+                        "bg-green-500/10 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.1)]",
                       showResult &&
                         wasSelected &&
                         !isCorrect &&
-                        "border-destructive bg-destructive/5",
+                        "bg-red-500/10 border-red-500",
                       showResult &&
                         !isCorrect &&
                         !wasSelected &&
-                        "opacity-50 grayscale",
+                        "opacity-40 grayscale border-border/40",
+                      // Disabled styling
+                      (!!result || isSubmitting) && "cursor-default",
                     )}
                   >
-                    <div className="flex items-center gap-5 w-full">
+                    <div className="flex items-center gap-4 w-full">
+                      {/* Checkbox / Letter indicator */}
                       <span
                         className={cn(
-                          "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200",
-                          isSelected
-                            ? "bg-primary text-primary-foreground"
-                            : "bg-secondary text-muted-foreground group-hover:bg-primary/20 group-hover:text-primary",
+                          "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold transition-all duration-200",
+                          // Default
+                          !isSelected &&
+                            !showResult &&
+                            "bg-secondary text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary",
+                          // Selected — solid primary fill
+                          isSelected &&
+                            !showResult &&
+                            "bg-primary text-white shadow-sm",
+                          // Result correct
                           showResult && isCorrect && "bg-green-500 text-white",
+                          // Result wrong selected
                           showResult &&
                             wasSelected &&
                             !isCorrect &&
-                            "bg-destructive text-white",
+                            "bg-red-500 text-white",
                         )}
                       >
                         {showResult && isCorrect ? (
                           <Check className="h-5 w-5" />
                         ) : showResult && wasSelected && !isCorrect ? (
                           <X className="h-5 w-5" />
+                        ) : isSelected && !showResult ? (
+                          <Check className="h-5 w-5" />
                         ) : (
                           letter
                         )}
                       </span>
-                      <span className="text-base font-medium leading-relaxed flex-1 whitespace-normal break-words">
+
+                      {/* Answer text */}
+                      <span
+                        className={cn(
+                          "text-base font-medium leading-relaxed flex-1 whitespace-normal break-words transition-colors duration-200",
+                          isSelected && !showResult && "text-foreground",
+                          !isSelected &&
+                            !showResult &&
+                            "text-muted-foreground group-hover:text-foreground",
+                          showResult &&
+                            isCorrect &&
+                            "text-green-800 dark:text-green-300",
+                          showResult &&
+                            wasSelected &&
+                            !isCorrect &&
+                            "text-red-700 dark:text-red-300",
+                        )}
+                      >
                         {answer.content}
                       </span>
+
+                      {/* Trailing indicator */}
                       {showResult && isCorrect && (
-                        <Check className="h-5 w-5 text-green-600 animate-in zoom-in" />
+                        <Check className="h-5 w-5 text-green-600 flex-shrink-0 animate-in zoom-in" />
+                      )}
+                      {showResult && wasSelected && !isCorrect && (
+                        <X className="h-5 w-5 text-red-500 flex-shrink-0 animate-in zoom-in" />
                       )}
                     </div>
-                  </Button>
+                  </button>
                 );
               })}
             </div>
+
+            {/* Check Answer Button */}
+            {!result && (
+              <div className="mt-8 flex items-center justify-between">
+                {selectedAnswers.length > 0 && (
+                  <span className="text-sm text-muted-foreground">
+                    {selectedAnswers.length} selected
+                  </span>
+                )}
+                <div className={selectedAnswers.length === 0 ? "ml-auto" : ""}>
+                  <Button
+                    onClick={submitAnswer}
+                    disabled={selectedAnswers.length === 0 || isSubmitting}
+                    className="rounded-xl px-8 h-12 text-base font-semibold shadow-sm"
+                    size="lg"
+                  >
+                    {isSubmitting ? (
+                      <Loader2 className="h-5 w-5 animate-spin mr-2" />
+                    ) : (
+                      <Check className="h-5 w-5 mr-2" />
+                    )}
+                    Check Answer
+                  </Button>
+                </div>
+              </div>
+            )}
 
             {/* In-Card Result Notification */}
             {result && (

@@ -137,16 +137,7 @@ export class CoursesService {
           },
           orderBy: { createdAt: 'desc' },
         },
-        prerequisites: {
-          include: {
-            prerequisite: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
+
       } as any,
     });
 

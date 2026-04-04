@@ -2,8 +2,8 @@ import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 const isServer = typeof window === 'undefined';
 const API_URL = isServer 
-  ? (process.env.INTERNAL_API_URL || 'http://backend:3001/api')
-  : (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api');
+  ? (process.env.INTERNAL_API_URL || 'http://localhost:3001/api')
+  : (process.env.NEXT_PUBLIC_API_URL || '/api');
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -39,7 +39,7 @@ api.interceptors.response.use(
         // Only redirect if we are NOT on a public route
         const publicRoutes = ['/', '/login', '/register', '/courses'];
         const isPublicRoute = publicRoutes.some(route => 
-          window.location.pathname === route || window.location.pathname.startsWith('/courses/')
+          window.location.pathname === route || window.location.pathname.startsWith('/courses/') || window.location.pathname.startsWith('/quiz/share/')
         );
         
         if (!isPublicRoute) {
