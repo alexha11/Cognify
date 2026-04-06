@@ -278,9 +278,9 @@ export default function SharedQuizPage() {
               </span>
             </div>
           </div>
-          <div className="h-3 w-full bg-secondary rounded-full overflow-hidden p-[2px]">
+          <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden shadow-inner ring-1 ring-inset ring-black/5 dark:ring-white/5">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-700 ease-out shadow-sm"
+              className="h-full bg-[#FAF9F5] rounded-full transition-all duration-700 ease-out shadow-md"
               style={{
                 width: `${
                   ((currentIndex + (result ? 1 : 0)) / questions.length) * 100
