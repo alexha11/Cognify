@@ -67,36 +67,6 @@ cd ../frontend && npm run dev
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:3001/api
 
-## Project Structure
-
-```
-Cognify/
-├── backend/                 # NestJS API
-│   ├── src/
-│   │   ├── modules/        # Feature modules
-│   │   │   ├── auth/       # JWT authentication
-│   │   │   ├── organizations/
-│   │   │   ├── courses/
-│   │   │   ├── questions/
-│   │   │   ├── attempts/
-│   │   │   ├── materials/
-│   │   │   ├── ai/         # OpenRouter integration
-│   │   │   └── billing/    # Stripe integration
-│   │   ├── common/         # Guards, decorators
-│   │   └── prisma/         # Database service
-│   └── prisma/
-│       └── schema.prisma   # Data models
-│
-├── frontend/               # Next.js 14 App
-│   └── src/
-│       ├── app/           # App Router pages
-│       ├── components/    # React components
-│       ├── lib/           # Utilities, API client
-│       └── types/         # TypeScript types
-│
-└── docker-compose.yml     # Local development
-```
-
 ## Features
 
 ### Multi-Tenant Architecture
