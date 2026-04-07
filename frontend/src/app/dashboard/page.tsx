@@ -87,12 +87,6 @@ export default function DashboardPage() {
         {!user ? (
           <Card className="p-10 md:p-16 border-border/60 overflow-hidden relative">
             <div className="relative z-10 max-w-3xl space-y-8">
-              <Badge
-                variant="outline"
-                className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-              >
-                AI-Powered Synthesis
-              </Badge>
               <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-foreground leading-[1.05]">
                 Master any subject with{" "}
                 <span className="font-serif italic font-normal text-muted-foreground/80">

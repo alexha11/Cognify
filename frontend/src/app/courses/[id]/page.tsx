@@ -424,13 +424,13 @@ export default function CourseDetailPage() {
                 <div className="space-y-4">
                   {(user
                     ? approvedQuestions
-                    : approvedQuestions.slice(0, 5)
+                    : approvedQuestions.slice(0, 10)
                   ).map((question, index) => (
                     <div
                       key={question.id}
                       className={cn(
                         "group p-6 rounded-3xl border border-border/50 bg-card/30 hover:bg-card hover:border-primary/10 transition-all duration-500",
-                        !user && index >= 3
+                        !user && index >= 10
                           ? "opacity-30 grayscale blur-[1px]"
                           : "",
                       )}
@@ -478,10 +478,9 @@ export default function CourseDetailPage() {
                           <p className="text-muted-foreground font-serif italic max-w-sm mx-auto leading-relaxed">
                             A total of{" "}
                             <span className="text-primary font-bold not-italic">
-                              {approvedQuestions.length} units
+                              {approvedQuestions.length} questions
                             </span>{" "}
-                            are archived. Initialize your identity to gain full
-                            archival access.
+                            are archived. Login to view all questions.
                           </p>
                         </div>
                         <FeatureGate
@@ -489,14 +488,7 @@ export default function CourseDetailPage() {
                           title="Course Expansion"
                           description="Expand your archival permissions to include full assessment units, explanatory synthesis, and progression tracking."
                         >
-                          <Button
-                            variant="pill"
-                            size="lg"
-                            className="shadow-xl shadow-black/5"
-                          >
-                            Authorize Identity
-                            <ArrowRight className="h-4 w-4 ml-3" />
-                          </Button>
+                          {" "}
                         </FeatureGate>
                       </CardContent>
                     </Card>

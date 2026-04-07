@@ -59,8 +59,8 @@ export default function QuizPage() {
         );
 
         if (isDemoMode) {
-          // In demo mode, just take first 3 questions
-          setQuestions((allQuestions || []).slice(0, 3));
+          // In demo mode, just take first 10 questions
+          setQuestions((allQuestions || []).slice(0, 10));
         } else {
           // For auth users, get progress and filter answered
           const [progressData, attemptsData] = await Promise.all([
