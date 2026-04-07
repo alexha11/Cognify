@@ -35,9 +35,6 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-8">
           {/* Hero Section */}
           <div className="text-center max-w-4xl mx-auto space-y-10">
-            <Badge variant="outline" className="px-4 py-1.5 text-sm">
-              AI-powered learning
-            </Badge>
             <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-foreground leading-[1.05]">
               Master any subject with{" "}
               <span className="font-serif italic font-normal text-muted-foreground/80">
@@ -111,32 +108,17 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="border-t border-border/40 py-16 bg-card/10">
-        <div className="mx-auto max-w-7xl px-8 flex flex-col md:flex-row justify-between items-center gap-8">
-          <div className="text-sm font-semibold tracking-tight">
-            Cognify
-            <span className="text-muted-foreground font-normal">.ai</span>
-          </div>
-          <div className="text-sm font-normal tracking-tight text-muted-foreground">
-            Built for students and educators worldwide
-          </div>
-          <div className="flex gap-8 text-sm text-muted-foreground">
-            <Link href="#" className="hover:text-foreground transition-colors">
-              Privacy
-            </Link>
-            <Link href="#" className="hover:text-foreground transition-colors">
-              Terms
-            </Link>
-            <Link href="#" className="hover:text-foreground transition-colors">
-              Contact
-            </Link>
-          </div>
-          <div className="text-xs text-muted-foreground/60 font-serif">
+      {/* Bottom Bar */}
+      <div className="border-t border-border/30">
+        <div className="mx-auto max-w-7xl px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-muted-foreground/50 font-serif">
             © 2026 Cognify. All rights reserved.
-          </div>
+          </p>
+          <p className="text-xs text-muted-foreground/40 font-serif italic">
+            Built for students and educators worldwide
+          </p>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }

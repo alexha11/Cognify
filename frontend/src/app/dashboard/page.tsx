@@ -409,12 +409,6 @@ export default function DashboardPage() {
             </div>
 
             <div className="relative z-10 max-w-2xl mx-auto space-y-10">
-              <Badge
-                variant="outline"
-                className="px-6 py-2 border-primary-foreground/30 text-primary-foreground text-[10px] font-bold uppercase tracking-[0.3em] bg-primary-foreground/5"
-              >
-                AI-powered learning
-              </Badge>
               <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1]">
                 Revolutionize your{" "}
                 <span className="font-serif italic font-normal text-primary-foreground/70">
