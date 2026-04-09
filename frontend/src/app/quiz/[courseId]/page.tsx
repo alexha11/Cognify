@@ -12,6 +12,9 @@ import { useAuth } from "@/lib/auth";
 import { Question, AttemptResult, CourseProgress } from "@/types";
 import { AuthPromptModal } from "@/components/ui/auth-prompt-modal";
 import { cn } from "@/lib/utils";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import {
   ArrowLeft,
   Check,
@@ -376,8 +379,13 @@ export default function QuizPage() {
                   </div>
 
                   {/* The actual question */}
-                  <CardTitle className="text-2xl md:text-3xl font-semibold leading-normal tracking-tight text-foreground font-sans">
-                    {currentQuestion.content}
+                  <CardTitle className="text-2xl md:text-3xl font-semibold leading-normal tracking-tight text-foreground font-sans [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                    >
+                      {currentQuestion.content}
+                    </ReactMarkdown>
                   </CardTitle>
                 </div>
 
@@ -480,7 +488,7 @@ export default function QuizPage() {
                       {/* Answer text */}
                       <span
                         className={cn(
-                          "text-base font-medium leading-relaxed flex-1 whitespace-normal break-words transition-colors duration-200",
+                          "text-base font-medium leading-relaxed flex-1 whitespace-normal break-words transition-colors duration-200 [&>p]:mb-2 [&>p:last-child]:mb-0",
                           isSelected && !showResult && "text-foreground",
                           !isSelected &&
                             !showResult &&
@@ -494,7 +502,12 @@ export default function QuizPage() {
                             "text-red-700 dark:text-red-300",
                         )}
                       >
-                        {answer.content}
+                        <ReactMarkdown
+                          remarkPlugins={[remarkMath]}
+                          rehypePlugins={[rehypeKatex]}
+                        >
+                          {answer.content}
+                        </ReactMarkdown>
                       </span>
 
                       {/* Trailing indicator */}
