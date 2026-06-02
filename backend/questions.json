@@ -1,0 +1,171 @@
+[
+  {
+    "content": "Let $x$ be chosen from the interval $[-1,+1]$, and the labels, $y$, from the set $\\{0,1\\}$. We are given the following conditional probabilities for all $x$ and $y$:\n\n$$P(1|x) = \\frac{2x+1}{2}$$\n\n$$P(0|x) = \\frac{-2x+1}{2}$$\n\nWhat is the Bayes error of the Bayes classifier relating to this model if $x$ is uniformly distributed on $[-1,1]$?",
+    "answers": [
+      { "content": "0.25", "isCorrect": true },
+      { "content": "0.5", "isCorrect": false },
+      { "content": "0.125", "isCorrect": false },
+      { "content": "0.4", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Which preference order does Cohen’s algorithm give with the following graph?\n\n![Cohen Algorithm Graph](/images/questions/Dec_p0_0.png)",
+    "answers": [
+      { "content": "D > A > C > B", "isCorrect": true },
+      { "content": "D > C > A > B", "isCorrect": false },
+      { "content": "C > B > D > A", "isCorrect": false },
+      { "content": "A > D > B > C", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "On the figure, \"Losses\", 6 curves represent 6 different loss functions. Question: Assign to each curve the corresponding loss function.",
+    "answers": [
+      { "content": "Exponential", "isCorrect": false },
+      { "content": "Logistic", "isCorrect": false },
+      { "content": "0/1", "isCorrect": false },
+      { "content": "Hinge", "isCorrect": false },
+      { "content": "Perceptron", "isCorrect": false },
+      { "content": "Squared", "isCorrect": true }
+    ]
+  },
+  {
+    "content": "Let a polynomial kernel $k_{pol}(x, z)$ be represented explicitly as $(x^T z + c)^q$, where $q$ is the degree. Let the dimension of the explicit feature space be 35. What are the degree of the polynomial and the dimension of the vector space on which the polynomial kernel is defined?",
+    "answers": [
+      { "content": "(3, 4), (4, 3)", "isCorrect": true },
+      { "content": "(2, 5), (5, 2)", "isCorrect": false },
+      { "content": "(2, 2), (3, 3)", "isCorrect": false },
+      { "content": "(6, 2), (2, 6)", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider PAC learnability for hypothesis $h_S \\in \\mathcal{H}$ with training sample $S$:\n\n$$Pr(R(h_S) \\le \\epsilon) \\ge 1 - \\delta$$\n\nIf the bound holds for $\\epsilon = 0.15$ and $\\delta = 0.1$, which one of the following claims is true?",
+    "answers": [
+      { "content": "We are interested in 90% expected accuracy", "isCorrect": false },
+      { "content": "15% of the time it is possible to obtain error larger than 10%", "isCorrect": false },
+      { "content": "It is possible to obtain a hypothesis with worse generalization error than 15%", "isCorrect": true }
+    ]
+  },
+  {
+    "content": "In each iteration of AdaBoost, the examples weights are modified to increase the weights on the mistakes made by:",
+    "answers": [
+      { "content": "the last weak learner", "isCorrect": true },
+      { "content": "the ensemble up to the last iteration", "isCorrect": false },
+      { "content": "all the previous weak learners", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider the Bayes classifier with posterior probabilities:\n\n$$p(1|x) = \\begin{cases} 0.5(x+ 1) & x \\in [-1,0] \\\\ 0.5(1-x) & x \\in [0,1] \\end{cases}$$\n\n$$p(0|x) = 1 - p(1|x)$$\n\nWhat does it predict for $x$?",
+    "answers": [
+      { "content": "1 for all $x \\in [-1,1]$", "isCorrect": false },
+      { "content": "0 for $x > 0$", "isCorrect": false },
+      { "content": "1 for $x > 0$", "isCorrect": false },
+      { "content": "0 for all $x \\in [-1,1]$", "isCorrect": true }
+    ]
+  },
+  {
+    "content": "What is the Bayes error for the aforementioned Bayes classifier?",
+    "answers": [
+      { "content": "0.75", "isCorrect": false },
+      { "content": "0.5", "isCorrect": false },
+      { "content": "0.25", "isCorrect": true },
+      { "content": "0.125", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider a 5-class classification problem where each class is encoded by a 6-bit binary codeword. What is the maximum number of bit errors this code can guarantee to correct?",
+    "answers": [
+      { "content": "0", "isCorrect": true },
+      { "content": "1", "isCorrect": false },
+      { "content": "2", "isCorrect": false },
+      { "content": "3", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider the (unnormalized) Gaussian kernel defined on $R^d$ by $$k(x,z) = \\exp\\Big(-\\frac{||x-z||^2}{2\\sigma^2}\\Big)$$\n\nLet $\\theta$ be a feature mapping and define a modified similarity function:\n\n$$k_{tilde}(x,z) = \\exp\\Big(-\\frac{||\\theta(x)-\\theta(z)||^2}{2\\sigma^2}\\Big)$$\n\nWhich of the following statements about $k_{tilde}$ is correct?",
+    "answers": [
+      { "content": "For any choice of mapping $\\theta$, $k_{tilde}$ is always a positive semidefinite kernel.", "isCorrect": true },
+      { "content": "$k_{tilde}$ is a positive semidefinite kernel only when $\\theta$ is a polynomial feature mapping.", "isCorrect": false },
+      { "content": "$k_{tilde}$ defines a positive semidefinite kernel only under additional conditions on $\\theta$.", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider the soft-margin support vector machine (SVM) decision boundary shown in the figure below.\n\n![SVM Boundary](/images/questions/Dec_p1_0.png)\n\nHow many training points have $\\epsilon_i > 0$, and how many are support vectors?",
+    "answers": [
+      { "content": "(8, 14)", "isCorrect": false },
+      { "content": "(8, 8)", "isCorrect": false },
+      { "content": "(5, 14)", "isCorrect": true },
+      { "content": "(5, 8)", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "In (supervised) statistical machine learning, which of the following statements is true?",
+    "answers": [
+      { "content": "The purpose of statistical machine learning is to minimize the generalization error.", "isCorrect": true },
+      { "content": "Squared loss is the primary loss function used for binary classification tasks.", "isCorrect": false },
+      { "content": "The learning algorithm chooses the best hypothesis from a hypothesis class H.", "isCorrect": false },
+      { "content": "The data-generating distribution D over input–output pairs is assumed to be known.", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider PAC learnability for a hypothesis $h_S \\in \\mathcal{H}$ trained on a sample $S$, with guarantee:\n\n$$Pr(R(h_S) \\le \\epsilon) \\ge 1 - \\delta$$\n\nIf this bound holds for $\\epsilon=0.1$ and $\\delta=0.05$, which of the following claims is true?",
+    "answers": [
+      { "content": "We are interested in an expected accuracy of 95%.", "isCorrect": false },
+      { "content": "With probability at least 95%, the generalization error of $h_S$ is at most 10%.", "isCorrect": true },
+      { "content": "With probability at most 5%, the generalization error of $h_S$ is at most 10%.", "isCorrect": false },
+      { "content": "For every possible training sample $S$, the generalization error of $h_S$ is at most 10%.", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider the online perceptron algorithm with learning rate $\\eta = 1$. The initial weight vector is $w = (1,-1)$. We process three training examples. What is the value of the loss on the third example?",
+    "answers": [
+      { "content": "0", "isCorrect": false },
+      { "content": "0.5", "isCorrect": false },
+      { "content": "1", "isCorrect": true },
+      { "content": "2", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider a simple neural network. The hidden neuron $h$ has the activation function $ReLU(z) = \\max(0,z)$. The loss function is $$L = \\frac{1}{2}(\\hat{y}-y)^2$$. Assume the following values: $w_1 = 1.5, w_2 = -1, w_3 = 2, x_1 = 2, x_2 = 1, y = 5$. What is $\\frac{\\partial L}{\\partial w_1}$?\n\n```text\n  (x1) ----- w1 -----> (h) ----- w3 -----> (ŷ)\n  (x2) ----- w2 -------^\n```",
+    "answers": [
+      { "content": "0", "isCorrect": false },
+      { "content": "-2", "isCorrect": false },
+      { "content": "-4", "isCorrect": true },
+      { "content": "-8", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Which preference order does Cohen's algorithm give with the following graph?\n\n![Cohen Algorithm](/images/questions/Dec_p3_0.png)",
+    "answers": [
+      { "content": "D > A > C > B", "isCorrect": false },
+      { "content": "D > C > A > B", "isCorrect": false },
+      { "content": "C > B > D > A", "isCorrect": true }
+    ]
+  },
+  {
+    "content": "Consider the hypothesis class of one-dimensional classifiers: $h(x) = 1$ if $a_1 < x < a_2$, else $0$. What is the VC dimension of this hypothesis class?",
+    "answers": [
+      { "content": "1", "isCorrect": false },
+      { "content": "2", "isCorrect": true },
+      { "content": "3", "isCorrect": false },
+      { "content": "67", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Which option is a valid statement regarding ensemble learning?\n\n![Ensemble Learning Statement](/images/questions/Dec_p4_0.png)",
+    "answers": [
+      { "content": "A random forest as a weak learner can not be used in the AdaBoost algorithm.", "isCorrect": false },
+      { "content": "In the AdaBoost algorithm, the weight of a learner, $\\alpha_t$, could be negative if the error... $> 0.5$.", "isCorrect": true },
+      { "content": "The sum of the weights of the data examples, $D_t(i)$, could be greater than 1.", "isCorrect": false },
+      { "content": "An ensemble which is combined from base learners of a given hypothesis class can only learn patterns...", "isCorrect": false }
+    ]
+  },
+  {
+    "content": "Consider linear models with regularization term $\\Omega(w)$ built from different norms. Which of the following statements is true?",
+    "answers": [
+      { "content": "The L0 norm is convex and can be optimized efficiently with gradient tools.", "isCorrect": false },
+      { "content": "Replacing the L0 norm with the L1 norm makes the problem convex and yields sparse solutions.", "isCorrect": true },
+      { "content": "The L2 norm regularizer sets many coefficients exactly to 0.", "isCorrect": false },
+      { "content": "For any p > 0, the Lp norm is convex.", "isCorrect": false }
+    ]
+  }
+]
