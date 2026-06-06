@@ -46,23 +46,83 @@ export default function HomePage() {
               giving students and educators actionable insights.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-6 pt-4">
-              <Button asChild size="xl" variant="pill">
+              {/* <Button asChild size="xl" variant="pill">
                 <Link href="/register">
                   Get started free
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
-              </Button>
-              <Button
-                asChild
-                size="xl"
-                variant="outline"
-                className="rounded-full"
-              >
-                <Link href="/organizations" className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Browse organizations
+              </Button> */}
+              <div className="relative inline-flex items-center justify-center gap-4 group">
+                <div className="absolute inset-0 duration-1000 opacity-60 transitiona-all bg-gradient-to-r from-indigo-500 via-pink-500 to-yellow-400 rounded-xl blur-lg filter group-hover:opacity-100 group-hover:duration-200"></div>
+                <Link
+                  role="button"
+                  className="group relative inline-flex items-center justify-center text-base rounded-xl bg-gray-900 px-8 py-3 font-semibold text-white transition-all duration-200 hover:bg-gray-800 hover:shadow-lg hover:-translate-y-0.5 hover:shadow-gray-600/30"
+                  title="payment"
+                  href="/register"
+                >
+                  Get Started For Free
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 10 10"
+                    height="10"
+                    width="10"
+                    fill="none"
+                    className="mt-0.5 ml-2 -mr-1 stroke-white stroke-2"
+                  >
+                    <path
+                      d="M0 5h7"
+                      className="transition opacity-0 group-hover:opacity-100"
+                    ></path>
+                    <path
+                      d="M1 1l4 4-4 4"
+                      className="transition group-hover:translate-x-[3px]"
+                    ></path>
+                  </svg>
                 </Link>
-              </Button>
+              </div>
+
+              <button
+                role="button"
+                className="group relative inline-flex overflow-hidden rounded-full p-[2px] focus:outline-none focus:ring-2 focus:ring-slate-400 focus:ring-offset-2 focus:ring-offset-slate-50"
+              >
+                <Link role="button" title="payment" href="/organizations">
+                  <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-gradient-to-r from-pink-600 via-purple-600 to-blue-600"></span>
+
+                  <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-full bg-slate-950 px-8 py-3 text-sm font-medium backdrop-blur-3xl transition-all duration-300 group-hover:bg-slate-950/90">
+                    <svg
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="mr-2 h-5 w-5 text-pink-500 transition-transform duration-300 group-hover:-translate-x-1"
+                    >
+                      <path
+                        d="M11 19l-7-7 7-7m8 14l-7-7 7-7"
+                        stroke-width="2"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                      ></path>
+                    </svg>
+
+                    <span className="relative bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent font-semibold">
+                      Browse Organization
+                    </span>
+
+                    <svg
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      className="ml-2 h-5 w-5 text-blue-500 transition-transform duration-300 group-hover:translate-x-1"
+                    >
+                      <path
+                        d="M13 5l7 7-7 7M5 5l7 7-7 7"
+                        stroke-width="2"
+                        stroke-linejoin="round"
+                        stroke-linecap="round"
+                      ></path>
+                    </svg>
+                  </span>
+                </Link>
+              </button>
             </div>
           </div>
 
