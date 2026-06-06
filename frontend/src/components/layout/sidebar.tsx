@@ -29,17 +29,14 @@ const navItems = {
     { href: "/admin", label: "Admin Panel", icon: Shield },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/questions", label: "Questions", icon: FileQuestion },
-    { href: "/ai-generate", label: "AI Generate", icon: Sparkles },
     { href: "/users", label: "Users", icon: Users },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/billing", label: "Billing", icon: CreditCard },
     { href: "/settings", label: "Settings", icon: Settings },
   ],
   INSTRUCTOR: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/questions", label: "Questions", icon: FileQuestion },
-    { href: "/ai-generate", label: "AI Generate", icon: Sparkles },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ],
   STUDENT: [
@@ -68,12 +65,6 @@ export function Sidebar() {
           href: "/progress",
           label: "My Progress",
           icon: BarChart3,
-          gated: true,
-        },
-        {
-          href: "/ai-generate",
-          label: "AI Generate",
-          icon: Sparkles,
           gated: true,
         },
       ];

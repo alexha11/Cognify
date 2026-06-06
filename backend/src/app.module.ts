@@ -11,7 +11,6 @@ import { QuestionsModule } from './modules/questions';
 import { AttemptsModule } from './modules/attempts';
 import { MaterialsModule } from './modules/materials';
 import { AiModule } from './modules/ai';
-import { BillingModule } from './modules/billing';
 import { AccessControlModule } from './modules/access-control';
 import { EmbeddingModule } from './modules/embedding';
 
@@ -39,7 +38,6 @@ import { EmbeddingModule } from './modules/embedding';
     AttemptsModule,
     MaterialsModule,
     AiModule,
-    BillingModule,
     AccessControlModule,
     EmbeddingModule,
   ],

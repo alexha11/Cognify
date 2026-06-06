@@ -236,18 +236,6 @@ export default function CourseDetailPage() {
                       )}
                     </Button>
                   )}
-                  {canEdit && (
-                    <Link href={`/ai-generate?courseId=${course.id}`}>
-                      <Button
-                        variant="outline"
-                        size="lg"
-                        className="rounded-full border-border hover:bg-secondary/50"
-                      >
-                        <Sparkles className="h-4 w-4 mr-3 text-primary/60" />
-                        Synthesize Units
-                      </Button>
-                    </Link>
-                  )}
                 </div>
               </div>
 
@@ -410,14 +398,6 @@ export default function CourseDetailPage() {
                     <p className="text-muted-foreground font-serif italic leading-relaxed">
                       The course database contains no active assessment units.
                     </p>
-                    {canEdit && (
-                      <Link href={`/ai-generate?courseId=${course.id}`}>
-                        <Button variant="pill">
-                          <Sparkles className="h-4 w-4 mr-3" />
-                          Generate Initial Units
-                        </Button>
-                      </Link>
-                    )}
                   </CardContent>
                 </Card>
               ) : (

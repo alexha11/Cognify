@@ -7,8 +7,7 @@ A production-ready, multi-tenant SaaS platform for Cognify is a modern, full-sta
 **Frontend:** Next.js 14, TypeScript, TailwindCSS  
 **Backend:** NestJS, TypeScript, Prisma ORM  
 **Database:** PostgreSQL  
-**AI:** OpenRouter API (Gemini 2.0 Flash)  
-**Billing:** Stripe
+**AI:** OpenRouter API (Gemini 2.0 Flash)
 
 ## Quick Start
 
@@ -17,7 +16,6 @@ A production-ready, multi-tenant SaaS platform for Cognify is a modern, full-sta
 - Node.js 20+
 - Docker & Docker Compose
 - OpenRouter API key (for AI features)
-- Stripe keys (for billing)
 
 ### Setup
 
@@ -87,12 +85,6 @@ cd ../frontend && npm run dev
 - Real-time answer feedback
 - Progress tracking per course
 
-### Billing
-
-- Stripe integration
-- Plan-based feature limits
-- Customer portal for subscription management
-
 ## API Endpoints
 
 | Endpoint                      | Description                 |
@@ -103,7 +95,6 @@ cd ../frontend && npm run dev
 | `POST /ai/generate-questions` | Generate AI questions       |
 | `POST /attempts`              | Submit quiz answer          |
 | `GET /attempts/stats`         | Get user statistics         |
-| `POST /billing/checkout`      | Start subscription          |
 
 ## Environment Variables
 
