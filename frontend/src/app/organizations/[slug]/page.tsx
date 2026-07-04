@@ -9,8 +9,6 @@ import {
   Building2,
   BookOpen,
   ArrowLeft,
-  Users,
-  Calendar,
   HelpCircle,
   Play,
   Lock,
@@ -47,7 +45,6 @@ interface Organization {
 export default function OrganizationDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
-  const { user } = useAuth();
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);

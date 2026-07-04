@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Brain, BarChart3 } from "lucide-react";
+import { BookOpen, Brain, BarChart3, ArrowRight, Sparkles } from "lucide-react";
 import { Header } from "@/components/layout";
 import { useAuth } from "@/lib/auth";
 
@@ -22,11 +23,17 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/10">
       <Header />
 
-      {/* Main content grows to fill remaining screen height */}
       <main className="flex-1 pt-32 pb-32">
         <div className="mx-auto max-w-7xl px-8">
           {/* Hero Section */}
-          <div className="mx-auto max-w-4xl space-y-10 text-center">
+          <div className="mx-auto max-w-4xl space-y-8 text-center">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1.5">
+              <Sparkles className="h-3.5 w-3.5 text-primary" />
+              <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground">
+                AI-GENERATED ASSESSMENTS
+              </span>
+            </div>
+
             <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
               Learn faster with{" "}
               <span className="font-serif font-normal italic text-muted-foreground/80">
@@ -38,6 +45,20 @@ export default function HomePage() {
               Cognify turns your learning materials into smart assessments,
               giving students and educators actionable insights.
             </p>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <Link href="/register">
+                <Button size="lg" className="rounded-full">
+                  Start learning — it&apos;s free
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link href="#features">
+                <Button size="lg" variant="ghost" className="rounded-full">
+                  Organizations
+                </Button>
+              </Link>
+            </div>
           </div>
 
           {/* Feature Grid */}
@@ -61,8 +82,9 @@ export default function HomePage() {
             ].map((feature, i) => (
               <Card
                 key={i}
-                className="group bg-card transition-all duration-300 hover:border-primary/20"
+                className="group relative overflow-hidden bg-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md"
               >
+                <div className="absolute inset-x-0 top-0 h-0.5 bg-primary/0 transition-colors duration-300 group-hover:bg-primary/40" />
                 <CardContent className="space-y-8 p-10">
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary transition-transform group-hover:scale-110">
                     <feature.icon className="h-6 w-6" />
@@ -84,13 +106,11 @@ export default function HomePage() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="border-t border-border/30">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
           <p className="text-xs font-serif text-muted-foreground/50">
             © 2026 Cognify. All rights reserved.
           </p>
-
           <p className="text-xs font-serif italic text-muted-foreground/40">
             Built for students and educators worldwide
           </p>
