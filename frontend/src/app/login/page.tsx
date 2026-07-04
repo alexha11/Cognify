@@ -2,13 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Sparkles, Loader2 } from "lucide-react";
-import { AuthPromptModal } from "@/components/ui/auth-prompt-modal";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +18,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { Header } from "@/components/layout";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -33,7 +29,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [error, setError] = useState("");
   const { login } = useAuth();
-  const router = useRouter();
 
   const {
     register,
@@ -78,7 +73,7 @@ export default function LoginPage() {
                 className="gap-8 flex flex-col"
               >
                 {error && (
-                  <div className="rounded-2xl bg-destructive/5 border border-destructive/20 p-4 text-[10px] font-bold text-destructive uppercase tracking-widest text-center animate-in fade-in slide-in-from-top-2">
+                  <div className="rounded-xl bg-destructive/5 border border-destructive/20 p-4 text-xs font-medium text-destructive text-center animate-in fade-in slide-in-from-top-2">
                     {error}
                   </div>
                 )}
@@ -103,7 +98,7 @@ export default function LoginPage() {
                       }`}
                     />
                     {errors.email && (
-                      <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                      <p className="text-xs font-medium text-destructive ml-1 pt-1">
                         {errors.email.message}
                       </p>
                     )}
@@ -137,7 +132,7 @@ export default function LoginPage() {
                       }`}
                     />
                     {errors.password && (
-                      <p className="text-[10px] font-bold text-destructive uppercase tracking-[0.2em] ml-1 pt-1">
+                      <p className="text-xs font-medium text-destructive ml-1 pt-1">
                         {errors.password.message}
                       </p>
                     )}

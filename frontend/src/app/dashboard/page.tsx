@@ -6,6 +6,7 @@ import { DashboardLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatCard, EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { Organization, Course, AttemptStats, PlanLimits } from "@/types";
@@ -28,12 +29,6 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<AttemptStats | null>(null);
   const [limits, setLimits] = useState<PlanLimits | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -74,15 +69,13 @@ export default function DashboardPage() {
     fetchData();
   }, [user, authLoading]);
 
-  if (!isMounted) return null;
-
   const isAdmin = user?.role === "ADMIN";
   const isInstructor = user?.role === "INSTRUCTOR";
   const isStudent = user?.role === "STUDENT" || !user;
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in duration-500">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Navigation & Welcome */}
         {!user ? (
           <Card className="p-10 md:p-16 border-border/60 overflow-hidden relative">
@@ -118,10 +111,10 @@ export default function DashboardPage() {
         ) : (
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div className="space-y-4">
-              <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
                 Dashboard
               </h1>
-              <div className="flex items-center gap-3 text-muted-foreground font-serif text-lg">
+              <div className="flex items-center gap-3 text-muted-foreground font-serif text-base">
                 <span className="text-foreground font-semibold font-sans">
                   {user.firstName} {user.lastName}
                 </span>
@@ -157,82 +150,30 @@ export default function DashboardPage() {
 
         {/* Audit Metrics */}
         <div className="grid gap-6 md:grid-cols-4">
-          <Card className="hover:bg-secondary/20 transition-all duration-300">
-            <CardContent className="p-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                  <BookOpen className="h-5 w-5" />
-                </div>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-bold tracking-widest uppercase"
-                >
-                  Library
-                </Badge>
-              </div>
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                  Courses
-                </p>
-                <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                  {organization?.courseCount || 0}
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            icon={BookOpen}
+            label="Courses"
+            value={organization?.courseCount || 0}
+            badge="Library"
+          />
 
           {(isAdmin || isInstructor) && (
             <>
-              <Card className="hover:bg-secondary/20 transition-all duration-300">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                      <FileQuestion className="h-5 w-5" />
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] font-bold tracking-widest uppercase"
-                    >
-                      Bank
-                    </Badge>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Questions
-                    </p>
-                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                      {courses.reduce(
-                        (acc, c) => acc + (c._count?.questions || 0),
-                        0,
-                      )}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="hover:bg-secondary/20 transition-all duration-300">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                      <Users className="h-5 w-5" />
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] font-bold tracking-widest uppercase"
-                    >
-                      Staff
-                    </Badge>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Members
-                    </p>
-                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                      {organization?.userCount || 0}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                icon={FileQuestion}
+                label="Questions"
+                value={courses.reduce(
+                  (acc, c) => acc + (c._count?.questions || 0),
+                  0,
+                )}
+                badge="Bank"
+              />
+              <StatCard
+                icon={Users}
+                label="Members"
+                value={organization?.userCount || 0}
+                badge="Staff"
+              />
             </>
           )}
 
@@ -267,34 +208,13 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
 
-              <Card className="relative group hover:bg-secondary/20 transition-all duration-300">
-                {!user && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Lock className="h-4 w-4 text-muted-foreground/40" />
-                  </div>
-                )}
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                      <TrendingUp className="h-5 w-5" />
-                    </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] font-bold tracking-widest uppercase"
-                    >
-                      Recall
-                    </Badge>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Accuracy
-                    </p>
-                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                      {user && stats ? `${stats.overall.percentage}%` : "92%"}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
+              <StatCard
+                icon={TrendingUp}
+                label="Accuracy"
+                value={user && stats ? `${stats.overall.percentage}%` : "92%"}
+                badge="Recall"
+                className={!user ? "relative" : ""}
+              />
             </>
           )}
 
@@ -329,7 +249,7 @@ export default function DashboardPage() {
         <section className="space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight">
-              {isStudent ? "Your courses" : "Your courses"}
+              Your courses
             </h2>
             <Link href="/courses">
               <Button
@@ -352,19 +272,17 @@ export default function DashboardPage() {
               ))}
             </div>
           ) : courses.length === 0 ? (
-            <Card className="border-dashed py-24 bg-card/50">
-              <CardContent className="text-center space-y-6 pt-0 p-8">
-                <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/20" />
-                <p className="text-muted-foreground font-serif text-lg italic">
-                  No courses yet.
-                </p>
-                {(isAdmin || isInstructor) && (
+            <EmptyState
+              icon={BookOpen}
+              message="No courses yet."
+              action={
+                (isAdmin || isInstructor) ? (
                   <Button asChild variant="pill">
                     <Link href="/courses">Create a course</Link>
                   </Button>
-                )}
-              </CardContent>
-            </Card>
+                ) : undefined
+              }
+            />
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {(courses || []).slice(0, 6).map((course) => (

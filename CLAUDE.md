@@ -83,7 +83,6 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 - **attempts/** — records student answer submissions, computes `isCorrect`
 - **materials/** — file uploads associated with courses (optional Supabase storage)
 - **ai/** — calls OpenRouter API (Gemini 2.0 Flash), parses JSON into questions, enforces plan limits
-- **billing/** — Stripe checkout, webhooks, customer portal, syncs `Organization.plan`
 - **access-control/** — role request workflow (STUDENT → INSTRUCTOR requests)
 - **users/** — user profile management
 
@@ -93,7 +92,6 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 - `User.organizationId` is nullable (users without an org can exist)
 - `Question.approved` gates whether students see AI-generated questions
 - `Attempt` records one answer per question attempt; `isCorrect` is stored
-- `Subscription` links Stripe subscription state to an organization
 - `Plan` enum: `FREE | PRO | ENTERPRISE` — controls AI generation limits
 
 ### Frontend Structure (`frontend/src/`)
@@ -113,7 +111,7 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 
 ### Role-Based Access
 
-Roles: `ADMIN > INSTRUCTOR > STUDENT`. Guards (`RolesGuard` + `@Roles()` decorator) protect endpoints. Students can only read approved questions and submit attempts. Instructors can create/edit courses and questions. Admins manage org settings and billing.
+Roles: `ADMIN > INSTRUCTOR > STUDENT`. Guards (`RolesGuard` + `@Roles()` decorator) protect endpoints. Students can only read approved questions and submit attempts. Instructors can create/edit courses and questions. Admins manage org settings.
 
 ## Agent Rules
 

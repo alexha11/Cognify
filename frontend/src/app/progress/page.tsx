@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { StatCard, SectionHeader, EmptyState, ProgressBar } from "@/components/ui";
 import { apiGet } from "@/lib/api";
 import { AttemptStats, Attempt, Course, CourseProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
@@ -77,7 +78,7 @@ export default function ProgressPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center h-64">
+        <div className="flex justify-center items-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
@@ -86,13 +87,13 @@ export default function ProgressPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-12">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div>
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             Learning Progress
           </h1>
-          <p className="mt-2 text-muted-foreground font-serif text-lg leading-relaxed">
+          <p className="mt-2 text-muted-foreground font-serif text-base leading-relaxed">
             Monitor your intellectual trajectory and master your courses.
           </p>
         </div>
@@ -124,53 +125,26 @@ export default function ProgressPage() {
                     desc: "Verifiable correct responses",
                   },
                 ].map((item, i) => (
-                  <Card
+                  <StatCard
                     key={i}
-                    className="hover:bg-secondary/20 transition-colors"
-                  >
-                    <CardContent className="p-8">
-                      <div className="flex items-center justify-between mb-8">
-                        <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                          <item.icon className="h-5 w-5" />
-                        </div>
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] font-bold uppercase tracking-widest"
-                        >
-                          Metrics
-                        </Badge>
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                          {item.label}
-                        </p>
-                        <p className="text-4xl font-semibold text-foreground tracking-tighter">
-                          {item.value}
-                        </p>
-                      </div>
-                      <p className="mt-4 text-xs text-muted-foreground font-serif italic">
-                        {item.desc}
-                      </p>
-                    </CardContent>
-                  </Card>
+                    icon={item.icon}
+                    label={item.label}
+                    value={item.value}
+                    badge="Metrics"
+                    description={item.desc}
+                  />
                 ))}
               </div>
             )}
 
             {/* Course Progress */}
             <section className="space-y-6">
-              <h2 className="text-xl font-semibold tracking-tight">
-                Course Mastery
-              </h2>
+              <SectionHeader title="Course Mastery" />
               {courses.length === 0 ? (
-                <Card className="border-dashed py-16">
-                  <CardContent className="text-center space-y-4">
-                    <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/30" />
-                    <p className="text-muted-foreground font-serif">
-                      No courses identified in your profile yet.
-                    </p>
-                  </CardContent>
-                </Card>
+                <EmptyState
+                  icon={BookOpen}
+                  message="No courses identified in your profile yet."
+                />
               ) : (
                 <div className="grid gap-6">
                   {courses.map((course) => {
@@ -203,22 +177,7 @@ export default function ProgressPage() {
                             </Badge>
                           </div>
 
-                          <div className="space-y-4">
-                            <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
-                              <div
-                                className="h-full bg-primary transition-all duration-1000 ease-out"
-                                style={{ width: `${percentage}%` }}
-                              />
-                            </div>
-                            <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                              <span className="text-muted-foreground">
-                                Progression
-                              </span>
-                              <span className="text-primary">
-                                {percentage}% Complete
-                              </span>
-                            </div>
-                          </div>
+                          <ProgressBar percentage={percentage} label="Progression" />
 
                           {progress && progress.remaining > 0 && (
                             <div className="mt-8 pt-8 border-t border-border/40 flex justify-end">
@@ -240,9 +199,7 @@ export default function ProgressPage() {
 
             {/* Recent Attempts */}
             <section className="space-y-6">
-              <h2 className="text-xl font-semibold tracking-tight">
-                Recent Activity
-              </h2>
+              <SectionHeader title="Recent Activity" />
               {attempts.length === 0 ? (
                 <Card className="border-0 bg-secondary/20">
                   <CardContent className="py-12 text-center space-y-6">

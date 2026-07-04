@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import {
   Plus,
@@ -23,9 +24,9 @@ import {
   X,
   HelpCircle,
   Lightbulb,
-  BookOpen,
   ArrowRight,
   Filter,
+  Loader2,
 } from "lucide-react";
 
 interface Answer {
@@ -58,7 +59,6 @@ export default function QuestionsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
 
   // New question form state
   const [newQuestion, setNewQuestion] = useState({
@@ -69,10 +69,6 @@ export default function QuestionsPage() {
     { content: "", isCorrect: true },
     { content: "", isCorrect: false },
   ]);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const canManage = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
@@ -215,18 +211,16 @@ export default function QuestionsPage() {
     }
   };
 
-  if (!isMounted) return null;
-
   return (
     <DashboardLayout>
-      <div className="max-w-6xl mx-auto space-y-12">
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4">
-            <h1 className="text-4xl font-semibold tracking-tight text-foreground">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               Question Bank
             </h1>
-            <p className="text-muted-foreground text-lg leading-relaxed max-w-xl">
+            <p className="text-muted-foreground text-base leading-relaxed max-w-xl">
               Manage and review questions for your courses.
             </p>
           </div>
@@ -278,25 +272,18 @@ export default function QuestionsPage() {
         {/* Questions List */}
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : questions.length === 0 ? (
-          <Card className="border-dashed py-20 bg-transparent">
-            <CardContent className="text-center space-y-8">
-              <div className="mx-auto h-16 w-16 flex items-center justify-center rounded-2xl bg-secondary text-muted-foreground/40">
-                <HelpCircle className="h-8 w-8" />
-              </div>
-              <div className="space-y-2">
-                <h3 className="text-2xl font-semibold tracking-tight">
-                  No questions yet
-                </h3>
-                <p className="text-muted-foreground text-lg leading-relaxed">
-                  {selectedCourse
-                    ? "Add your first question to get started."
-                    : "Select a course above to see its questions."}
-                </p>
-              </div>
-              {canManage && selectedCourse && (
+          <EmptyState
+            icon={HelpCircle}
+            message={
+              selectedCourse
+                ? "Add your first question to get started."
+                : "Select a course above to see its questions."
+            }
+            action={
+              canManage && selectedCourse ? (
                 <Button
                   onClick={() => setShowCreate(true)}
                   variant="outline"
@@ -304,9 +291,9 @@ export default function QuestionsPage() {
                 >
                   Add question
                 </Button>
-              )}
-            </CardContent>
-          </Card>
+              ) : undefined
+            }
+          />
         ) : (
           <div className="grid gap-6">
             <div className="flex items-center justify-between px-2">
@@ -404,7 +391,7 @@ export default function QuestionsPage() {
           </div>
         )}
 
-        {/* Create Question Modal - Redesigned as Overlay */}
+        {/* Create Question Modal */}
         {showCreate && (
           <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
             <Card className="max-w-3xl w-full shadow-2xl bg-card animate-in fade-in zoom-in-95 duration-300">
@@ -431,7 +418,7 @@ export default function QuestionsPage() {
               <form onSubmit={handleCreate}>
                 <div className="p-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
                   {error && (
-                    <div className="p-4 bg-destructive/5 border border-destructive/20 text-destructive rounded-xl text-sm font-serif italic">
+                    <div className="p-4 bg-destructive/5 border border-destructive/20 text-destructive rounded-xl text-xs font-medium">
                       {error}
                     </div>
                   )}

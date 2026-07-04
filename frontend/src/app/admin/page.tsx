@@ -12,7 +12,7 @@ import {
   CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { PageHeader, StatCard, SectionHeader, EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import {
   BookOpen,
@@ -24,6 +24,7 @@ import {
   BarChart3,
   Shield,
   ArrowRight,
+  Loader2,
 } from "lucide-react";
 
 export default function AdminPage() {
@@ -40,7 +41,7 @@ export default function AdminPage() {
     return (
       <DashboardLayout>
         <div className="flex justify-center items-center min-h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
     );
@@ -53,76 +54,34 @@ export default function AdminPage() {
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-                <Shield className="h-7 w-7" />
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                  Administrative Control
-                </h1>
-                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
-                  Unified platform governance and course management.
-                </p>
-              </div>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 h-fit text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-          >
-            Systems Administrator
-          </Badge>
-        </div>
+        <PageHeader
+          icon={Shield}
+          title="Administrative Control"
+          description="Unified platform governance and course management."
+          badge="Systems Administrator"
+        />
 
         {/* Quick Stats Grid */}
         <div className="grid gap-6 md:grid-cols-4">
           {[
-            { label: "Total Courses", icon: BookOpen, value: "--" },
-            { label: "Synthesis Units", icon: FileQuestion, value: "--" },
-            { label: "Platform Members", icon: Users, value: "--" },
-            { label: "Active Sessions", icon: BarChart3, value: "--" },
+            { label: "Total Courses", icon: BookOpen, value: "--", badge: "Audit" },
+            { label: "Synthesis Units", icon: FileQuestion, value: "--", badge: "Audit" },
+            { label: "Platform Members", icon: Users, value: "--", badge: "Audit" },
+            { label: "Active Sessions", icon: BarChart3, value: "--", badge: "Audit" },
           ].map((stat, i) => (
-            <Card
+            <StatCard
               key={i}
-              className="hover:bg-secondary/20 transition-colors duration-300"
-            >
-              <CardContent className="p-8 space-y-6">
-                <div className="flex items-center justify-between">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                    <stat.icon className="h-5 w-5" />
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-bold tracking-widest uppercase bg-background"
-                  >
-                    Audit
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    {stat.label}
-                  </p>
-                  <p className="text-3xl font-semibold tracking-tighter text-foreground">
-                    {stat.value}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              icon={stat.icon}
+              label={stat.label}
+              value={stat.value}
+              badge={stat.badge}
+            />
           ))}
         </div>
 
         {/* Admin Actions Grid */}
         <div className="space-y-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Platform Governance
-            </h2>
-            <div className="h-[1px] flex-1 mx-8 bg-border/40" />
-          </div>
+          <SectionHeader title="Platform Governance" />
 
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {[
@@ -176,12 +135,6 @@ export default function AdminPage() {
                       <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-secondary text-primary group-hover:bg-primary/10 transition-colors">
                         <tool.icon className="h-6 w-6" />
                       </div>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] font-bold tracking-widest uppercase"
-                      >
-                        {tool.label}
-                      </Badge>
                     </div>
                     <CardTitle className="text-xl font-semibold mb-3 tracking-tight group-hover:text-primary transition-colors">
                       {tool.title}

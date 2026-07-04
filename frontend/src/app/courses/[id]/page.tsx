@@ -13,8 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiUpload } from "@/lib/api";
 import { Course, Question, Material } from "@/types";
@@ -32,7 +31,6 @@ import {
   Lock,
   ArrowRight,
   Share2,
-  Link as LinkIcon,
 } from "lucide-react";
 import { FeatureGate, AuthPromptModal } from "@/components/ui";
 
@@ -44,7 +42,6 @@ export default function CourseDetailPage() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [materials, setMaterials] = useState<Material[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isMounted, setIsMounted] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [copied, setCopied] = useState(false);
@@ -56,10 +53,6 @@ export default function CourseDetailPage() {
       setTimeout(() => setCopied(false), 2500);
     });
   };
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const canEdit = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
   const isStudent = user?.role === "STUDENT";
@@ -119,12 +112,10 @@ export default function CourseDetailPage() {
     }
   };
 
-  if (!isMounted) return null;
-
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center items-center min-h-[60vh]">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </DashboardLayout>
@@ -137,10 +128,10 @@ export default function CourseDetailPage() {
   const approvedQuestions = questions.filter((q) => q.approved);
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-7xl mx-auto px-6 py-12">
+    <DashboardLayout>
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Navigation / Return */}
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between">
           <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
             <ol className="flex items-center gap-2">
               <li>
@@ -154,7 +145,7 @@ export default function CourseDetailPage() {
                   href="/courses"
                   className="hover:text-primary transition-colors"
                 >
-                  Course
+                  Courses
                 </Link>
               </li>
               <li className="opacity-40">/</li>
@@ -168,13 +159,13 @@ export default function CourseDetailPage() {
               className="text-[10px] font-bold uppercase tracking-widest gap-2"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
-              Institutional Course
+              Back to Courses
             </Button>
           </Link>
         </div>
 
         {/* Course Core Header */}
-        <Card className="mb-16 border-border overflow-hidden">
+        <Card className="border-border overflow-hidden">
           <CardContent className="p-0">
             <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border/40">
               {/* Info Section */}
@@ -193,8 +184,8 @@ export default function CourseDetailPage() {
                       }
                     >
                       {course.isPublished
-                        ? "Published Path"
-                        : "Developmental Draft"}
+                        ? "Published"
+                        : "Draft"}
                     </Badge>
                   </div>
                   <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
@@ -248,7 +239,7 @@ export default function CourseDetailPage() {
                   <div className="grid grid-cols-2 gap-12">
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        Synthesis Units
+                        Questions
                       </p>
                       <div className="flex items-end gap-2">
                         <p className="text-3xl font-semibold text-foreground tracking-tighter">
@@ -261,14 +252,14 @@ export default function CourseDetailPage() {
                     </div>
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        Supplemental
+                        Materials
                       </p>
                       <div className="flex items-end gap-2">
                         <p className="text-3xl font-semibold text-foreground tracking-tighter">
                           {materials.length}
                         </p>
                         <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
-                          Deep-dive Docs
+                          Documents
                         </span>
                       </div>
                     </div>
@@ -283,10 +274,10 @@ export default function CourseDetailPage() {
                       </div>
                       <div>
                         <p className="text-lg font-semibold text-foreground tracking-tight">
-                          {pendingQuestions.length} pending synthesis
+                          {pendingQuestions.length} pending review
                         </p>
                         <p className="text-[10px] font-bold text-yellow-700 uppercase tracking-widest">
-                          Awaiting human verification
+                          Awaiting verification
                         </p>
                       </div>
                     </div>
@@ -298,14 +289,14 @@ export default function CourseDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start mb-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
           <div className="lg:col-span-2 space-y-12">
             {/* Pending Questions */}
             {canEdit && pendingQuestions.length > 0 && (
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-semibold tracking-tight text-foreground">
-                    Awaiting Synthesis.
+                    Pending Review
                   </h3>
                   <Badge
                     variant="warning"
@@ -362,14 +353,14 @@ export default function CourseDetailPage() {
                               onClick={() => handleApprove(question.id)}
                               className="text-[10px] font-bold uppercase tracking-widest text-green-700 hover:bg-green-500/10 hover:text-green-800"
                             >
-                              Commit
+                              Approve
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
                               className="text-[10px] font-bold uppercase tracking-widest text-destructive/60 hover:bg-destructive/10 hover:text-destructive"
                             >
-                              Discord
+                              Reject
                             </Button>
                           </div>
                         </div>
@@ -384,22 +375,18 @@ export default function CourseDetailPage() {
             <div className="space-y-8">
               <div className="flex items-center justify-between">
                 <h3 className="text-xl font-semibold tracking-tight text-foreground">
-                  Active Units.
+                  Questions
                 </h3>
                 <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Verified Assessment Database
+                  {approvedQuestions.length} verified
                 </div>
               </div>
 
               {approvedQuestions.length === 0 ? (
-                <Card className="border-dashed border-2 border-border/60 bg-transparent">
-                  <CardContent className="p-20 text-center space-y-6">
-                    <FileQuestion className="mx-auto h-12 w-12 text-muted-foreground/20" />
-                    <p className="text-muted-foreground font-serif italic leading-relaxed">
-                      The course database contains no active assessment units.
-                    </p>
-                  </CardContent>
-                </Card>
+                <EmptyState
+                  icon={FileQuestion}
+                  message="No approved questions yet."
+                />
               ) : (
                 <div className="space-y-4">
                   {(user
@@ -453,20 +440,20 @@ export default function CourseDetailPage() {
                         </div>
                         <div className="space-y-3">
                           <h4 className="text-2xl font-semibold tracking-tight text-foreground">
-                            Unlock Institutional Access.
+                            Unlock Full Access
                           </h4>
                           <p className="text-muted-foreground font-serif italic max-w-sm mx-auto leading-relaxed">
                             A total of{" "}
                             <span className="text-primary font-bold not-italic">
                               {approvedQuestions.length} questions
                             </span>{" "}
-                            are archived. Login to view all questions.
+                            are available. Login to view all questions.
                           </p>
                         </div>
                         <FeatureGate
                           variant="prompt"
-                          title="Course Expansion"
-                          description="Expand your archival permissions to include full assessment units, explanatory synthesis, and progression tracking."
+                          title="Full Access"
+                          description="Sign in to access all assessment questions and track your progress."
                         >
                           {" "}
                         </FeatureGate>
@@ -483,7 +470,7 @@ export default function CourseDetailPage() {
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                  Resources.
+                  Resources
                 </h3>
               </div>
 
@@ -519,8 +506,8 @@ export default function CourseDetailPage() {
                         </div>
                         <FeatureGate
                           variant="prompt"
-                          title="Archival Retrieval"
-                          description="Full identity verification is required to extract course assets."
+                          title="Download Resource"
+                          description="Sign in to download course materials."
                         >
                           <Button
                             variant="ghost"
@@ -539,7 +526,7 @@ export default function CourseDetailPage() {
               {canEdit && (
                 <div className="mt-4">
                   {uploadError && (
-                    <div className="rounded bg-destructive/10 p-3 text-xs text-destructive mb-3">
+                    <div className="rounded-xl bg-destructive/5 border border-destructive/20 p-3 text-xs font-medium text-destructive mb-3">
                       {uploadError}
                     </div>
                   )}
@@ -577,7 +564,7 @@ export default function CourseDetailPage() {
             </div>
           </aside>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

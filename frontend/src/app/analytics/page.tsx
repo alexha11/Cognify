@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader, StatCard, SectionHeader, EmptyState, ProgressBar } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { AttemptStats, Course, CourseProgress } from "@/types";
@@ -13,11 +14,11 @@ import {
   TrendingUp,
   BookOpen,
   FileQuestion,
-  Users,
+  Activity,
   Target,
   Loader2,
-  Activity,
   Award,
+  Users,
 } from "lucide-react";
 
 export default function AnalyticsPage() {
@@ -104,31 +105,13 @@ export default function AnalyticsPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in duration-500">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-                <BarChart3 className="h-7 w-7" />
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                  Analytics
-                </h1>
-                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
-                  Platform performance metrics and learning trajectory insights.
-                </p>
-              </div>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 h-fit text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-          >
-            Real-time Data
-          </Badge>
-        </div>
+      <div className="max-w-7xl mx-auto space-y-12">
+        <PageHeader
+          icon={BarChart3}
+          title="Analytics"
+          description="Platform performance metrics and learning trajectory insights."
+          badge="Real-time Data"
+        />
 
         {/* Overview Metrics */}
         <div className="grid gap-6 md:grid-cols-4">
@@ -158,44 +141,20 @@ export default function AnalyticsPage() {
               badge: "Progress",
             },
           ].map((item, i) => (
-            <Card
+            <StatCard
               key={i}
-              className="hover:bg-secondary/20 transition-all duration-300"
-            >
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-bold tracking-widest uppercase"
-                  >
-                    {item.badge}
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    {item.label}
-                  </p>
-                  <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                    {item.value}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              icon={item.icon}
+              label={item.label}
+              value={item.value}
+              badge={item.badge}
+            />
           ))}
         </div>
 
         {/* Attempt Analytics */}
         {stats && (
           <section className="space-y-8">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Assessment Metrics
-              </h2>
-              <div className="h-[1px] flex-1 mx-8 bg-border/40" />
-            </div>
+            <SectionHeader title="Assessment Metrics" />
             <div className="grid gap-6 md:grid-cols-3">
               {[
                 {
@@ -217,35 +176,14 @@ export default function AnalyticsPage() {
                   desc: "Overall platform performance threshold",
                 },
               ].map((metric, i) => (
-                <Card
+                <StatCard
                   key={i}
-                  className="hover:bg-secondary/20 transition-colors"
-                >
-                  <CardContent className="p-8">
-                    <div className="flex items-center justify-between mb-8">
-                      <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                        <metric.icon className="h-5 w-5" />
-                      </div>
-                      <Badge
-                        variant="outline"
-                        className="text-[10px] font-bold uppercase tracking-widest"
-                      >
-                        Metrics
-                      </Badge>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                        {metric.label}
-                      </p>
-                      <p className="text-4xl font-semibold text-foreground tracking-tighter">
-                        {metric.value}
-                      </p>
-                    </div>
-                    <p className="mt-4 text-xs text-muted-foreground font-serif italic">
-                      {metric.desc}
-                    </p>
-                  </CardContent>
-                </Card>
+                  icon={metric.icon}
+                  label={metric.label}
+                  value={metric.value}
+                  badge="Metrics"
+                  description={metric.desc}
+                />
               ))}
             </div>
           </section>
@@ -253,22 +191,13 @@ export default function AnalyticsPage() {
 
         {/* Per-Course Breakdown */}
         <section className="space-y-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">
-              Course Performance
-            </h2>
-            <div className="h-[1px] flex-1 mx-8 bg-border/40" />
-          </div>
+          <SectionHeader title="Course Performance" />
 
           {courses.length === 0 ? (
-            <Card className="border-dashed py-16 bg-card/50">
-              <CardContent className="text-center space-y-4 pt-0">
-                <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/20" />
-                <p className="text-muted-foreground font-serif text-lg italic">
-                  No courses to analyze yet.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={BookOpen}
+              message="No courses to analyze yet."
+            />
           ) : (
             <div className="space-y-4">
               {courses.map((course) => {
@@ -307,20 +236,7 @@ export default function AnalyticsPage() {
                           {pct}% Mastery
                         </Badge>
                       </div>
-                      <div className="space-y-3">
-                        <div className="h-2 w-full bg-secondary/30 rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary transition-all duration-1000 ease-out"
-                            style={{ width: `${pct}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest">
-                          <span className="text-muted-foreground">
-                            Engagement
-                          </span>
-                          <span className="text-primary">{pct}% Complete</span>
-                        </div>
-                      </div>
+                      <ProgressBar percentage={pct} label="Engagement" />
                     </CardContent>
                   </Card>
                 );

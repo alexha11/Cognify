@@ -3,17 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PageHeader, SectionHeader } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPut } from "@/lib/api";
 import { Organization } from "@/types";
@@ -21,12 +16,9 @@ import { useToast } from "@/components/ui/toast";
 import {
   Settings,
   Building2,
-  Globe,
   Shield,
   Save,
   Loader2,
-  Eye,
-  EyeOff,
   User,
   Mail,
   Lock,
@@ -99,38 +91,17 @@ export default function SettingsPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in duration-500">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-                <Settings className="h-7 w-7" />
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                  Settings
-                </h1>
-                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
-                  Configure your organization and account preferences.
-                </p>
-              </div>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 h-fit text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-          >
-            Configuration
-          </Badge>
-        </div>
+      <div className="max-w-5xl mx-auto space-y-12">
+        <PageHeader
+          icon={Settings}
+          title="Settings"
+          description="Configure your organization and account preferences."
+          badge="Configuration"
+        />
 
         {/* Account Info (read-only) */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">Account</h2>
-            <div className="h-[1px] flex-1 mx-8 bg-border/40" />
-          </div>
+          <SectionHeader title="Account" />
           <Card>
             <CardContent className="p-8">
               <div className="grid gap-8 md:grid-cols-2">
@@ -178,12 +149,7 @@ export default function SettingsPage() {
         {/* Organization Settings */}
         {organization && (
           <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-semibold tracking-tight">
-                Organization
-              </h2>
-              <div className="h-[1px] flex-1 mx-8 bg-border/40" />
-            </div>
+            <SectionHeader title="Organization" />
 
             <Card>
               <CardHeader className="p-8 pb-4">
@@ -303,10 +269,7 @@ export default function SettingsPage() {
 
         {/* Security Section */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight">Security</h2>
-            <div className="h-[1px] flex-1 mx-8 bg-border/40" />
-          </div>
+          <SectionHeader title="Security" />
           <Card className="border-dashed bg-transparent">
             <CardContent className="p-8">
               <div className="flex items-center gap-6">
@@ -335,12 +298,7 @@ export default function SettingsPage() {
 
         {/* Danger Zone */}
         <section className="space-y-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight text-destructive">
-              Danger Zone
-            </h2>
-            <div className="h-[1px] flex-1 mx-8 bg-destructive/20" />
-          </div>
+          <SectionHeader title="Danger Zone" variant="destructive" />
           <Card className="border-destructive/20">
             <CardContent className="p-8">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">

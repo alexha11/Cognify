@@ -3,11 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PageHeader, StatCard, EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { getInitials, formatDate } from "@/lib/utils";
@@ -114,31 +113,13 @@ export default function UsersPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-12 animate-in fade-in duration-500">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-                <Users className="h-7 w-7" />
-              </div>
-              <div className="space-y-1">
-                <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                  User Management
-                </h1>
-                <p className="text-muted-foreground font-serif text-lg leading-relaxed">
-                  Manage organization members and role assignments.
-                </p>
-              </div>
-            </div>
-          </div>
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 h-fit text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-          >
-            {users.length} Members
-          </Badge>
-        </div>
+      <div className="max-w-7xl mx-auto space-y-12">
+        <PageHeader
+          icon={Users}
+          title="User Management"
+          description="Manage organization members and role assignments."
+          badge={`${users.length} Members`}
+        />
 
         {/* Stats Cards */}
         <div className="grid gap-6 md:grid-cols-4">
@@ -150,39 +131,14 @@ export default function UsersPage() {
               { key: "STUDENT", label: "Students", icon: Sparkles },
             ] as const
           ).map((stat) => (
-            <Card
+            <StatCard
               key={stat.key}
-              className={`cursor-pointer transition-all duration-300 ${
-                roleFilter === stat.key
-                  ? "border-primary/30 bg-secondary/30"
-                  : "hover:bg-secondary/20"
-              }`}
+              icon={stat.icon}
+              label={stat.label}
+              value={roleCounts[stat.key]}
               onClick={() => setRoleFilter(stat.key)}
-            >
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                    <stat.icon className="h-5 w-5" />
-                  </div>
-                  {roleFilter === stat.key && (
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] font-bold tracking-widest uppercase"
-                    >
-                      Active
-                    </Badge>
-                  )}
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    {stat.label}
-                  </p>
-                  <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                    {roleCounts[stat.key]}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+              active={roleFilter === stat.key}
+            />
           ))}
         </div>
 
@@ -201,14 +157,10 @@ export default function UsersPage() {
         {/* Users List */}
         <section className="space-y-4">
           {filteredUsers.length === 0 ? (
-            <Card className="border-dashed py-16 bg-card/50">
-              <CardContent className="text-center space-y-4 pt-0">
-                <UserCircle className="mx-auto h-12 w-12 text-muted-foreground/20" />
-                <p className="text-muted-foreground font-serif text-lg italic">
-                  No users match your criteria.
-                </p>
-              </CardContent>
-            </Card>
+            <EmptyState
+              icon={UserCircle}
+              message="No users match your criteria."
+            />
           ) : (
             <div className="space-y-3">
               {filteredUsers.map((member) => {

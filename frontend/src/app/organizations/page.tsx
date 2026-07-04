@@ -21,11 +21,7 @@ export default function OrganizationsPage() {
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   useEffect(() => {
     const fetchOrganizations = async () => {
@@ -48,7 +44,7 @@ export default function OrganizationsPage() {
       org.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  if (!isMounted) return null;
+
 
   return (
     <div className="min-h-screen bg-background">

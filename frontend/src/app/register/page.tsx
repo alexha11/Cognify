@@ -18,7 +18,6 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
-import { Header } from "@/components/layout";
 
 export default function RegisterPage() {
   const [error, setError] = useState("");
@@ -37,8 +36,6 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -46,8 +43,6 @@ export default function RegisterPage() {
       role: "STUDENT",
     },
   });
-
-  const selectedRole = watch("role");
 
   const onSubmit = async (values: RegisterFormValues) => {
     setError("");
@@ -103,7 +98,7 @@ export default function RegisterPage() {
                         id="firstName"
                         placeholder="John"
                         {...register("firstName")}
-                        className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
                           errors.firstName
                             ? "border-destructive/40 focus:ring-destructive/5"
                             : ""
@@ -126,7 +121,7 @@ export default function RegisterPage() {
                         id="lastName"
                         placeholder="Doe"
                         {...register("lastName")}
-                        className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
                           errors.lastName
                             ? "border-destructive/40 focus:ring-destructive/5"
                             : ""
@@ -152,7 +147,7 @@ export default function RegisterPage() {
                       type="email"
                       placeholder="name@example.com"
                       {...register("email")}
-                      className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                      className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
                         errors.email
                           ? "border-destructive/40 focus:ring-destructive/5"
                           : ""
@@ -177,7 +172,7 @@ export default function RegisterPage() {
                       type="password"
                       placeholder="••••••••"
                       {...register("password")}
-                      className={`h-11 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                      className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
                         errors.password
                           ? "border-destructive/40 focus:ring-destructive/5"
                           : ""
@@ -193,7 +188,7 @@ export default function RegisterPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-11 text-sm font-semibold rounded-xl mt-2"
+                  className="w-full h-12 text-sm font-semibold rounded-xl mt-2"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

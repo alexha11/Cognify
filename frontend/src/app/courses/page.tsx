@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
@@ -24,11 +25,6 @@ export default function CoursesPage() {
   const [creating, setCreating] = useState(false);
   const [newCourse, setNewCourse] = useState({ name: "", description: "" });
   const [error, setError] = useState("");
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const canCreate = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
@@ -55,14 +51,11 @@ export default function CoursesPage() {
     setError("");
 
     try {
-      console.log("[Courses] Creating course:", newCourse);
-      const result = await apiPost("/courses", newCourse);
-      console.log("[Courses] Course created:", result);
+      await apiPost("/courses", newCourse);
       setNewCourse({ name: "", description: "" });
       setShowCreate(false);
       await fetchCourses();
     } catch (err: unknown) {
-      console.error("[Courses] Creation failed:", err);
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage =
         error.response?.data?.message || "Failed to create course";
@@ -73,11 +66,9 @@ export default function CoursesPage() {
     }
   };
 
-  if (!isMounted) return null;
-
   return (
     <DashboardLayout>
-      <div className="space-y-8">
+      <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
         <div className="flex items-center justify-between pb-4">
           <div className="space-y-1">
@@ -113,7 +104,7 @@ export default function CoursesPage() {
             <CardContent>
               <form onSubmit={handleCreate} className="space-y-6 max-w-2xl">
                 {error && (
-                  <div className="rounded bg-destructive/10 p-3 text-sm text-destructive">
+                  <div className="rounded-xl bg-destructive/5 border border-destructive/20 p-3 text-xs font-medium text-destructive">
                     {error}
                   </div>
                 )}
@@ -174,25 +165,22 @@ export default function CoursesPage() {
             <Loader2 className="h-8 w-8 animate-spin text-muted" />
           </div>
         ) : courses.length === 0 ? (
-          <div className="py-24 text-center">
-            <div className="mx-auto h-16 w-16 text-muted/30 mb-6">
-              <BookOpen className="h-full w-full" />
-            </div>
-            <h3 className="text-xl font-semibold text-foreground">
-              No courses found.
-            </h3>
-            <p className="mt-2 text-muted-foreground font-serif">
-              {canCreate
+          <EmptyState
+            icon={BookOpen}
+            message={
+              canCreate
                 ? "Begin by creating your first educational pathway."
-                : "Check back later for newly published courses."}
-            </p>
-            {canCreate && (
-              <Button className="mt-8" onClick={() => setShowCreate(true)}>
-                <Plus className="h-4 w-4" />
-                Create course
-              </Button>
-            )}
-          </div>
+                : "Check back later for newly published courses."
+            }
+            action={
+              canCreate ? (
+                <Button onClick={() => setShowCreate(true)}>
+                  <Plus className="h-4 w-4" />
+                  Create course
+                </Button>
+              ) : undefined
+            }
+          />
         ) : (
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3 pb-12">
             {courses.map((course) => (

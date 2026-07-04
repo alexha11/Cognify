@@ -7,3 +7,8 @@ export { Avatar, AvatarImage, AvatarFallback } from './avatar';
 export { AuthPromptModal } from './auth-prompt-modal';
 export { FeatureGate } from './feature-gate';
 export { ProgressTeaser } from './progress-teaser';
+export { PageHeader } from './page-header';
+export { StatCard } from './stat-card';
+export { SectionHeader } from './section-header';
+export { EmptyState } from './empty-state';
+export { ProgressBar } from './progress-bar';

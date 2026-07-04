@@ -29,7 +29,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <main className="pl-64">
-        <div className="min-h-screen p-12">{children}</div>
+        <div className="min-h-screen p-12 animate-in fade-in duration-500">{children}</div>
       </main>
     </div>
   );
