@@ -8,7 +8,13 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Sparkles, Loader2 } from "lucide-react";
+import {
+  Sparkles,
+  Loader2,
+  ArrowLeft,
+  GraduationCap,
+  BookOpen,
+} from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -19,23 +25,25 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 
+const registerSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
+  role: z.enum(["STUDENT", "INSTRUCTOR"]),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
+
 export default function RegisterPage() {
   const [error, setError] = useState("");
   const { register: authRegister } = useAuth();
 
-  const registerSchema = z.object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().min(1, "Last name is required"),
-    email: z.string().email("Invalid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    role: z.enum(["STUDENT", "INSTRUCTOR"]),
-  });
-
-  type RegisterFormValues = z.infer<typeof registerSchema>;
-
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -43,6 +51,8 @@ export default function RegisterPage() {
       role: "STUDENT",
     },
   });
+
+  const role = watch("role");
 
   const onSubmit = async (values: RegisterFormValues) => {
     setError("");
@@ -61,10 +71,18 @@ export default function RegisterPage() {
     <div className="min-h-screen bg-background">
       <main className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-md">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to home
+          </Link>
+
           <Card className="border border-border p-1">
             <CardHeader className="text-center pt-10 pb-8">
-              <div className="mx-auto w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mb-6 animate-in zoom-in duration-500">
-                <Sparkles className="h-6 w-6" />
+              <div className="mx-auto mb-6 flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-950 animate-in zoom-in duration-500">
+                <Sparkles className="h-5 w-5 text-[#F2B84B]" />
               </div>
               <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
                 Create your account
@@ -85,6 +103,39 @@ export default function RegisterPage() {
                 )}
 
                 <div className="flex flex-col gap-4">
+                  {/* Role selector */}
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground ml-1">
+                      I am a
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setValue("role", "STUDENT")}
+                        className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
+                          role === "STUDENT"
+                            ? "border-zinc-950 bg-zinc-950 text-white"
+                            : "border-border text-muted-foreground hover:border-foreground/30"
+                        }`}
+                      >
+                        <GraduationCap className="h-4 w-4" />
+                        Student
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setValue("role", "INSTRUCTOR")}
+                        className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
+                          role === "INSTRUCTOR"
+                            ? "border-zinc-950 bg-zinc-950 text-white"
+                            : "border-border text-muted-foreground hover:border-foreground/30"
+                        }`}
+                      >
+                        <BookOpen className="h-4 w-4" />
+                        Instructor
+                      </button>
+                    </div>
+                  </div>
+
                   {/* Name Fields */}
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
@@ -188,7 +239,7 @@ export default function RegisterPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-sm font-semibold rounded-xl mt-2"
+                  className="w-full h-12 text-sm font-semibold rounded-full mt-2"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

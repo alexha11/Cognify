@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles, Loader2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -55,10 +55,18 @@ export default function LoginPage() {
     <div className="min-h-screen bg-background">
       <main className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-sm">
+          <Link
+            href="/"
+            className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <ArrowLeft className="h-3.5 w-3.5" />
+            Back to home
+          </Link>
+
           <Card className="border border-border p-1">
             <CardHeader className="text-center pt-10 pb-12">
-              <div className="mx-auto w-12 h-12 bg-primary/5 rounded-2xl flex items-center justify-center text-primary mb-8 animate-in zoom-in duration-500">
-                <Sparkles className="h-6 w-6" />
+              <div className="mx-auto mb-5 flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-950">
+                <Sparkles className="h-5 w-5 text-[#F2B84B]" />
               </div>
               <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
                 Welcome back
@@ -141,7 +149,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="w-full h-12 text-sm font-semibold rounded-xl"
+                  className="w-full h-12 text-sm font-semibold rounded-full"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
