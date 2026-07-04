@@ -27,11 +27,16 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// Response interceptor to handle auth errors
+import { toast } from '@/components/ui/toast';
+
+// Response interceptor to handle auth and other errors
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const status = error.response?.status;
+    const message = error.response?.data?.message || error.response?.data?.error?.message || error.message || "An unexpected error occurred";
+
+    if (status === 401) {
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
@@ -42,9 +47,25 @@ api.interceptors.response.use(
           window.location.pathname === route || window.location.pathname.startsWith('/courses/') || window.location.pathname.startsWith('/quiz/share/')
         );
         
-        if (!isPublicRoute) {
-          window.location.href = '/login';
+        const isAuthPage = window.location.pathname === '/login' || window.location.pathname === '/register';
+        if (!isAuthPage) {
+          toast.error("Session expired or unauthorized. Please sign in.");
+          if (!isPublicRoute) {
+            window.location.href = '/login';
+          }
         }
+      }
+    } else if (status === 403) {
+      toast.error("Access denied. You do not have permission to perform this action.");
+    } else if (status === 429) {
+      toast.warning("Too many requests. Please try again later.");
+    } else if (status >= 500) {
+      toast.error("Internal Server Error. Please contact support.");
+    } else {
+      // General errors (like 400 Bad Request)
+      const isAuthPage = typeof window !== 'undefined' && (window.location.pathname === '/login' || window.location.pathname === '/register');
+      if (!isAuthPage) {
+        toast.error(message);
       }
     }
     return Promise.reject(error);

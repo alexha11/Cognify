@@ -20,6 +20,7 @@ import {
 import { apiPost } from "@/lib/api";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth";
+import { toast } from "@/components/ui";
 
 const createOrgSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
@@ -46,6 +47,7 @@ export default function CreateOrganizationPage() {
     setError("");
     try {
       await apiPost("/organizations", values);
+      toast.success("Organization created successfully.");
       // Force a hard refresh or update auth context (for now, router push might be enough if we handle auth state update)
       // Since organizationId is in the token, we might need re-login or profile fetch.
       // For now, let's redirect to dashboard which might refetch profile if set up that way,
@@ -58,7 +60,9 @@ export default function CreateOrganizationPage() {
       router.push("/organizations");
       router.refresh();
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create organization");
+      const errMsg =
+        err.response?.data?.message || "Failed to create organization";
+      setError(errMsg);
     }
   };
 
@@ -93,12 +97,6 @@ export default function CreateOrganizationPage() {
                 onSubmit={handleSubmit(onSubmit)}
                 className="gap-6 flex flex-col"
               >
-                {error && (
-                  <div className="rounded-xl bg-destructive/5 border border-destructive/20 p-3 text-xs font-medium text-destructive text-center">
-                    {error}
-                  </div>
-                )}
-
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label

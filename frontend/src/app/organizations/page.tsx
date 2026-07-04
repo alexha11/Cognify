@@ -22,7 +22,6 @@ export default function OrganizationsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
-
   useEffect(() => {
     const fetchOrganizations = async () => {
       try {
@@ -43,8 +42,6 @@ export default function OrganizationsPage() {
       org.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       org.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
-
 
   return (
     <div className="min-h-screen bg-background">
@@ -70,8 +67,8 @@ export default function OrganizationsPage() {
               Organizations
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Explore verified learning organizations and their courses. Find
-              the perfect community for your learning journey.
+              Explore learning organizations and their courses. Find the perfect
+              community for your learning journey.
             </p>
           </div>
 
@@ -167,9 +164,6 @@ export default function OrganizationsPage() {
                   <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                     <BookOpen className="w-3.5 h-3.5" />
                     {org.courseCount} courses
-                  </div>
-                  <div className="text-[10px] font-medium text-primary/40">
-                    Active
                   </div>
                 </div>
               </Link>

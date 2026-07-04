@@ -27,13 +27,6 @@ export default function HomePage() {
         <div className="mx-auto max-w-7xl px-8">
           {/* Hero Section */}
           <div className="mx-auto max-w-4xl space-y-8 text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/40 px-3 py-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              <span className="font-mono text-[11px] tracking-[0.14em] text-muted-foreground">
-                AI-GENERATED ASSESSMENTS
-              </span>
-            </div>
-
             <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
               Learn faster with{" "}
               <span className="font-serif font-normal italic text-muted-foreground/80">
@@ -47,15 +40,15 @@ export default function HomePage() {
             </p>
 
             <div className="flex items-center justify-center gap-3 pt-2">
-              <Link href="/register">
+              <Link href="/organizations">
                 <Button size="lg" className="rounded-full">
                   Start learning — it&apos;s free
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link href="#features">
+              <Link href="/register">
                 <Button size="lg" variant="ghost" className="rounded-full">
-                  Organizations
+                  Create an account
                 </Button>
               </Link>
             </div>

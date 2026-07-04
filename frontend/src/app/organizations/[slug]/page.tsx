@@ -166,13 +166,6 @@ export default function OrganizationDetailPage() {
                   <h1 className="text-4xl font-semibold tracking-tight text-foreground">
                     {organization.name}
                   </h1>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-bold border-green-500/20 text-green-700 bg-green-500/5 normal-case tracking-widest flex self-start mx-auto md:mx-0"
-                  >
-                    <Globe className="w-3.5 h-3.5 mr-2" />
-                    Verified Institution
-                  </Badge>
                 </div>
               </div>
 
@@ -204,14 +197,14 @@ export default function OrganizationDetailPage() {
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      Courses
+                      Materials
                     </p>
                     <div className="flex items-end gap-2">
                       <p className="text-2xl font-semibold text-foreground tracking-tighter">
                         {organization.courseCount}
                       </p>
                       <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
-                        Pathways
+                        Courses
                       </span>
                     </div>
                   </div>
@@ -223,11 +216,11 @@ export default function OrganizationDetailPage() {
                       <p className="text-base font-medium text-foreground tracking-tight">
                         {new Date(organization.createdAt).toLocaleDateString(
                           "en-US",
-                          { month: "short", year: "numeric" },
+                          { day: "numeric", month: "short", year: "numeric" },
                         )}
                       </p>
                       <span className="text-[10px] text-muted-foreground/60 pb-1 uppercase tracking-tighter">
-                        Established
+                        Created
                       </span>
                     </div>
                   </div>
@@ -240,10 +233,10 @@ export default function OrganizationDetailPage() {
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-              Institutional Pathways.
+              Courses
             </h2>
             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest hidden md:block">
-              {organization.courses.length} educational units discoverable
+              {organization.courses.length} courses discoverable
             </p>
           </div>
 
@@ -251,12 +244,8 @@ export default function OrganizationDetailPage() {
             <div className="p-20 text-center bg-card rounded-[40px] border border-dashed border-border/60">
               <BookOpen className="mx-auto h-12 w-12 text-muted-foreground/30 mb-6" />
               <h3 className="text-lg font-semibold text-foreground mb-2">
-                Course processing...
+                Loading courses...
               </h3>
-              <p className="text-muted-foreground font-serif leading-relaxed italic">
-                This organization is currently formulating its educational
-                pathways.
-              </p>
             </div>
           ) : (
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 pb-24">
