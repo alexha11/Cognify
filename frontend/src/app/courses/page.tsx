@@ -24,7 +24,6 @@ export default function CoursesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newCourse, setNewCourse] = useState({ name: "", description: "" });
-  const [error, setError] = useState("");
 
   const canCreate = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
@@ -48,7 +47,6 @@ export default function CoursesPage() {
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreating(true);
-    setError("");
 
     try {
       await apiPost("/courses", newCourse);
@@ -59,7 +57,6 @@ export default function CoursesPage() {
       const error = err as { response?: { data?: { message?: string } } };
       const errorMessage =
         error.response?.data?.message || "Failed to create course";
-      setError(errorMessage);
       showToast(errorMessage, "error");
     } finally {
       setCreating(false);
@@ -76,7 +73,7 @@ export default function CoursesPage() {
               Courses
             </h1>
             <p className="text-muted-foreground font-serif">
-              {canCreate ? "Manage your course" : "Explore available pathways"}
+              {canCreate ? "Manage your course" : "Explore available courses"}
             </p>
           </div>
           {canCreate && !showCreate && (
@@ -103,11 +100,6 @@ export default function CoursesPage() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreate} className="space-y-6 max-w-2xl">
-                {error && (
-                  <div className="rounded-xl bg-destructive/5 border border-destructive/20 p-3 text-xs font-medium text-destructive">
-                    {error}
-                  </div>
-                )}
                 <div className="space-y-3">
                   <Label htmlFor="name">Course name</Label>
                   <Input
@@ -169,7 +161,7 @@ export default function CoursesPage() {
             icon={BookOpen}
             message={
               canCreate
-                ? "Begin by creating your first educational pathway."
+                ? "Begin by creating your first educational courses."
                 : "Check back later for newly published courses."
             }
             action={

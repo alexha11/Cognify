@@ -28,21 +28,21 @@ model Organization {
 }
 
 model User {
-  id                String       @id @default(uuid())
-  email             String       @unique
+  id                String        @id @default(uuid())
+  email             String        @unique
   passwordHash      String
   firstName         String
   lastName          String
-  role              Role         @default(STUDENT)
-  isActive          Boolean      @default(true)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
-  organizationId    String
+  role              Role          @default(STUDENT)
+  isActive          Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  organizationId    String?
   attempts          Attempt[]
-  createdCourses    Course[]     @relation("CourseCreator")
-  uploadedMaterials Material[]   @relation("MaterialUploader")
-  createdQuestions  Question[]   @relation("QuestionCreator")
-  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdCourses    Course[]      @relation("CourseCreator")
+  uploadedMaterials Material[]    @relation("MaterialUploader")
+  createdQuestions  Question[]    @relation("QuestionCreator")
+  organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@index([email])
   @@index([organizationId])
@@ -55,11 +55,11 @@ model Course {
   isPublished    Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  organizationId String
+  organizationId String?
   createdById    String
   isPublic       Boolean      @default(false)
   createdBy      User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   materials      Material[]
   questions      Question[]
 
@@ -103,24 +103,24 @@ model Question {
 }
 
 model Answer {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   content    String
-  isCorrect  Boolean   @default(false)
+  isCorrect  Boolean  @default(false)
   questionId String
-  question   Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
 
   @@index([questionId])
 }
 
 model Attempt {
-  id               String   @id @default(uuid())
-  isCorrect        Boolean
-  createdAt        DateTime @default(now())
-  userId           String
-  questionId       String
+  id                String   @id @default(uuid())
+  isCorrect         Boolean
+  createdAt         DateTime @default(now())
+  userId            String
+  questionId        String
   selectedAnswerIds String[]
-  question         Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  question          Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([questionId])

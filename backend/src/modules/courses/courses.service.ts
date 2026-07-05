@@ -43,7 +43,7 @@ export class CoursesService {
       data: {
         name: dto.name,
         description: dto.description,
-        organizationId,
+        organizationId: organizationId || undefined,
         createdById: userId,
       },
       include: {
@@ -73,11 +73,20 @@ export class CoursesService {
    * Get all courses for organization
    * Students only see published courses
    */
-  async findAll(organizationId?: string, userRole?: Role) {
-    const whereClause = {
-      ...(organizationId && { organizationId }),
+  async findAll(organizationId?: string, userRole?: Role, userId?: string) {
+    const whereClause: any = {
       ...(userRole === Role.STUDENT || !userRole ? { isPublished: true } : {}),
     };
+
+    if (organizationId) {
+      whereClause.organizationId = organizationId;
+    } else {
+      // Standalone user: can only see public courses or courses they created
+      whereClause.OR = [
+        { isPublic: true },
+        ...(userId ? [{ createdById: userId }] : []),
+      ];
+    }
 
     return this.prisma.course.findMany({
       where: whereClause,

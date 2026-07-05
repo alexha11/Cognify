@@ -49,15 +49,7 @@ export class CoursesController {
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
   async findAll(@CurrentUser() user?: AuthenticatedUser): Promise<any[]> {
-    console.log(
-      '[CoursesController] GET /courses - user:',
-      user?.userId,
-      'role:',
-      user?.role,
-      'orgId:',
-      user?.organizationId,
-    );
-    return this.coursesService.findAll(user?.organizationId, user?.role);
+    return this.coursesService.findAll(user?.organizationId, user?.role, user?.userId);
   }
 
   /**

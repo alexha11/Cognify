@@ -262,6 +262,10 @@ export class OrganizationsService {
     organizationId: string,
     limitType: 'courses' | 'questions' | 'users',
   ): Promise<boolean> {
+    if (!organizationId) {
+      return true; // Allow standalone users to create courses (they fall under FREE limits theoretically, but we permit them)
+    }
+
     const org = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       include: {

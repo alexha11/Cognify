@@ -136,9 +136,11 @@ export class OrganizationsController {
    */
   @Get('limits')
   @UseGuards(JwtAuthGuard)
-  async getPlanLimits(@CurrentUser('organizationId') organizationId: string) {
-    const org =
-      await this.organizationsService.getMyOrganization(organizationId);
+  async getPlanLimits(@CurrentUser('organizationId') organizationId?: string) {
+    if (!organizationId) {
+      return this.organizationsService.getPlanLimits('FREE');
+    }
+    const org = await this.organizationsService.getMyOrganization(organizationId);
     return this.organizationsService.getPlanLimits(org.plan);
   }
 }
