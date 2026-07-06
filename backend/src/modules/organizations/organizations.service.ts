@@ -38,6 +38,7 @@ export class OrganizationsService {
           slug,
           description: data.description,
           logoUrl: data.logoUrl,
+          isPublic: true, // Make newly created organizations public by default so they appear in the UI
         },
       });
 
