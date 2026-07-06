@@ -139,7 +139,6 @@ export default function DashboardPage() {
                 </Link>
                 <Link href="/ai-generate">
                   <Button variant="outline" size="lg" className="rounded-full">
-                    <Sparkles className="h-5 w-5 mr-1" />
                     AI Synthesis
                   </Button>
                 </Link>
@@ -276,7 +275,7 @@ export default function DashboardPage() {
               icon={BookOpen}
               message="No courses yet."
               action={
-                (isAdmin || isInstructor) ? (
+                isAdmin || isInstructor ? (
                   <Button asChild variant="pill">
                     <Link href="/courses">Create a course</Link>
                   </Button>
