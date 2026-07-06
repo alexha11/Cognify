@@ -93,6 +93,9 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 - `Question.approved` gates whether students see AI-generated questions
 - `Attempt` records one answer per question attempt; `isCorrect` is stored
 - `Plan` enum: `FREE | PRO | ENTERPRISE` — controls AI generation limits
+- **Course Visibility Controls:**
+  - `isPublished`: Content readiness gate. If false (Draft), the course is still being written and is hidden from all students.
+  - `isPublic`: Cross-org sharing gate. If true, the course is discoverable by students from *other* organizations who follow the course's organization. A course must be both published and public to appear in followers' feeds.
 
 ### Frontend Structure (`frontend/src/`)
 
