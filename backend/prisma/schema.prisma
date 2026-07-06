@@ -22,6 +22,7 @@ model Organization {
   courses          Course[]
   subscriptions    Subscription[]
   users            User[]
+  members          OrgMembership[]
 
   @@index([slug])
   @@index([isPublic])
@@ -43,6 +44,7 @@ model User {
   uploadedMaterials Material[]    @relation("MaterialUploader")
   createdQuestions  Question[]    @relation("QuestionCreator")
   organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberships       OrgMembership[]
 
   @@index([email])
   @@index([organizationId])
@@ -142,6 +144,19 @@ model Subscription {
 
   @@index([organizationId])
   @@index([stripeSubscriptionId])
+}
+
+model OrgMembership {
+  id             String       @id @default(uuid())
+  userId         String
+  organizationId String
+  joinedAt       DateTime     @default(now())
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, organizationId])
+  @@index([userId])
+  @@index([organizationId])
 }
 
 enum Role {

@@ -4,6 +4,7 @@ import {
   Put,
   Patch,
   Post,
+  Delete,
   Body,
   Param,
   UseGuards,
@@ -87,6 +88,18 @@ export class OrganizationsController {
   }
 
   /**
+   * Get the current user's organization memberships
+   * GET /organizations/memberships
+   */
+  @Get('memberships')
+  @UseGuards(JwtAuthGuard)
+  async getMyMemberships(
+    @CurrentUser('userId') userId: string,
+  ): Promise<any[]> {
+    return this.organizationsService.getUserMemberships(userId);
+  }
+
+  /**
    * Get all users in organization
    * GET /organizations/users
    */
@@ -142,5 +155,31 @@ export class OrganizationsController {
     }
     const org = await this.organizationsService.getMyOrganization(organizationId);
     return this.organizationsService.getPlanLimits(org.plan);
+  }
+
+  /**
+   * Join an organization
+   * POST /organizations/:id/join
+   */
+  @Post(':id/join')
+  @UseGuards(JwtAuthGuard)
+  async joinOrganization(
+    @Param('id') organizationId: string,
+    @CurrentUser('userId') userId: string,
+  ): Promise<any> {
+    return this.organizationsService.joinOrganization(userId, organizationId);
+  }
+
+  /**
+   * Leave an organization
+   * DELETE /organizations/:id/leave
+   */
+  @Delete(':id/leave')
+  @UseGuards(JwtAuthGuard)
+  async leaveOrganization(
+    @Param('id') organizationId: string,
+    @CurrentUser('userId') userId: string,
+  ): Promise<{ message: string }> {
+    return this.organizationsService.leaveOrganization(userId, organizationId);
   }
 }

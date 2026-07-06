@@ -71,43 +71,67 @@ export class CoursesService {
 
   /**
    * Get all courses for organization
+   * Also includes public courses from orgs the user has joined as a member
    * Students only see published courses
    */
   async findAll(organizationId?: string, userRole?: Role, userId?: string) {
-    const whereClause: any = {
-      ...(userRole === Role.STUDENT || !userRole ? { isPublished: true } : {}),
-    };
+    const publishedFilter =
+      userRole === Role.STUDENT || !userRole ? { isPublished: true } : {};
+
+    // Get orgs the user is a member of (if userId provided)
+    let memberOrgIds: string[] = [];
+    if (userId) {
+      const memberships = await this.prisma.orgMembership.findMany({
+        where: { userId },
+        select: { organizationId: true },
+      });
+      memberOrgIds = memberships.map((m) => m.organizationId);
+    }
+
+    let whereClause: any;
 
     if (organizationId) {
-      whereClause.organizationId = organizationId;
+      // User belongs to an org — show their org's courses + public courses from joined orgs
+      whereClause = {
+        ...publishedFilter,
+        OR: [
+          { organizationId },
+          ...(memberOrgIds.length > 0
+            ? [{ organizationId: { in: memberOrgIds }, isPublic: true }]
+            : []),
+        ],
+      };
     } else {
-      // Standalone user: can only see public courses or courses they created
-      whereClause.OR = [
-        { isPublic: true },
-        ...(userId ? [{ createdById: userId }] : []),
-      ];
+      // Standalone user — show public courses, their own, and joined org public courses
+      whereClause = {
+        ...publishedFilter,
+        OR: [
+          { isPublic: true },
+          ...(userId ? [{ createdById: userId }] : []),
+          ...(memberOrgIds.length > 0
+            ? [{ organizationId: { in: memberOrgIds }, isPublic: true }]
+            : []),
+        ],
+      };
     }
 
     return this.prisma.course.findMany({
       where: whereClause,
       include: {
         createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
+          select: { id: true, firstName: true, lastName: true },
+        },
+        organization: {
+          select: { id: true, name: true, slug: true },
         },
         _count: {
-          select: {
-            materials: true,
-            questions: true,
-          },
+          select: { materials: true, questions: true },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
   }
+
 
   /**
    * Get single course by ID
@@ -194,7 +218,10 @@ export class CoursesService {
     userRole: Role,
   ) {
     const course = await this.prisma.course.findFirst({
-      where: { id, organizationId },
+      where: { 
+        id, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {
@@ -234,7 +261,10 @@ export class CoursesService {
     role: Role,
   ): Promise<any> {
     const course = await this.prisma.course.findFirst({
-      where: { id, organizationId },
+      where: { 
+        id, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {
@@ -360,7 +390,10 @@ export class CoursesService {
     role: Role,
   ) {
     const course = await this.prisma.course.findFirst({
-      where: { id: courseId, organizationId },
+      where: { 
+        id: courseId, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {
@@ -381,7 +414,10 @@ export class CoursesService {
     organizationId: string,
   ): Promise<{ message: string }> {
     const course = await this.prisma.course.findFirst({
-      where: { id, organizationId },
+      where: { 
+        id, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {

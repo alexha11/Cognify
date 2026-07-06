@@ -26,7 +26,10 @@ export class QuestionsService {
   ): Promise<any> {
     // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { id: dto.courseId, organizationId },
+      where: { 
+        id: dto.courseId, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {
@@ -203,7 +206,7 @@ export class QuestionsService {
     const question = await this.prisma.question.findFirst({
       where: {
         id,
-        course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
       },
     });
 
@@ -227,7 +230,7 @@ export class QuestionsService {
     const question = await this.prisma.question.findFirst({
       where: {
         id,
-        course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
       },
     });
 
@@ -254,7 +257,7 @@ export class QuestionsService {
     const question = await this.prisma.question.findFirst({
       where: {
         id,
-        course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
       },
     });
 
@@ -275,7 +278,7 @@ export class QuestionsService {
   async getPendingApproval(organizationId: string) {
     return this.prisma.question.findMany({
       where: {
-        course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
         aiGenerated: true,
         approved: false,
       },

@@ -25,7 +25,10 @@ export class MaterialsService {
   ): Promise<any> {
     // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { id: dto.courseId, organizationId },
+      where: { 
+        id: dto.courseId, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {
@@ -58,7 +61,10 @@ export class MaterialsService {
   ): Promise<any> {
     // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { id: courseId, organizationId },
+      where: { 
+        id: courseId, 
+        ...(organizationId && { organizationId }) 
+      },
     });
 
     if (!course) {
@@ -161,7 +167,7 @@ export class MaterialsService {
     const material = await this.prisma.material.findFirst({
       where: {
         id,
-        course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
       },
     });
 

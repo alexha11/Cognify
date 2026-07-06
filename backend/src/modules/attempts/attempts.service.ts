@@ -20,7 +20,7 @@ export class AttemptsService {
       where: {
         id: dto.questionId,
         approved: true,
-        course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
       },
       include: {
         answers: true,
@@ -125,7 +125,7 @@ export class AttemptsService {
       where: {
         userId,
         question: {
-          course: { organizationId },
+        ...(organizationId && { course: { organizationId } }),
         },
       },
       select: {
@@ -177,7 +177,10 @@ export class AttemptsService {
   ) {
     // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { id: courseId, organizationId },
+      where: { 
+        id: courseId, 
+        ...(organizationId && { organizationId }) 
+      },
       include: {
         questions: {
           where: { approved: true },
