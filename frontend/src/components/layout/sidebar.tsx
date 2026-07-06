@@ -20,6 +20,7 @@ const navItems = {
   ADMIN: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/courses", label: "Courses", icon: BookOpen },
+    { href: "/quiz", label: "Quizzes", icon: FileQuestion },
     { href: "/questions", label: "Questions", icon: FileQuestion },
     { href: "/users", label: "Users", icon: Users },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
@@ -28,13 +29,14 @@ const navItems = {
   INSTRUCTOR: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/courses", label: "Courses", icon: BookOpen },
+    { href: "/quiz", label: "Quizzes", icon: FileQuestion },
     { href: "/questions", label: "Questions", icon: FileQuestion },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ],
   STUDENT: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
     { href: "/courses", label: "Courses", icon: BookOpen },
-    { href: "/quiz", label: "Take Quiz", icon: FileQuestion },
+    { href: "/quiz", label: "Quizzes", icon: FileQuestion },
     { href: "/progress", label: "My Progress", icon: BarChart3 },
   ],
 };
@@ -51,6 +53,11 @@ export function Sidebar() {
           href: "/organizations",
           label: "Browse Organizations",
           icon: Building2,
+        },
+        {
+          href: "/quiz",
+          label: "Quizzes",
+          icon: FileQuestion,
         },
         {
           href: "/progress",
