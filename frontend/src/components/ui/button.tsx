@@ -4,22 +4,22 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-primary/90 hover:scale-[1.02] hover:shadow-md shadow-sm",
+          "bg-primary text-primary-foreground hover:bg-primary/85 hover:shadow-md shadow-sm active:opacity-80",
         destructive:
-          "bg-destructive text-destructive-foreground hover:bg-destructive/90 hover:scale-[1.02] hover:shadow-md shadow-sm",
+          "bg-destructive text-destructive-foreground hover:bg-destructive/85 hover:shadow-md shadow-sm active:opacity-80",
         outline:
-          "border border-input bg-background hover:bg-accent hover:border-border/80 hover:text-accent-foreground hover:scale-[1.02]",
+          "border border-input bg-background hover:bg-accent hover:border-border/80 hover:text-accent-foreground active:opacity-80",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80 hover:scale-[1.02] shadow-sm",
+          "bg-secondary text-secondary-foreground hover:bg-secondary/70 shadow-sm active:opacity-80",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground hover:scale-[1.02]",
+          "hover:bg-accent hover:text-accent-foreground active:opacity-70",
         link: "text-primary underline-offset-4 hover:underline",
-        pill: "bg-primary text-primary-foreground rounded-full px-6 hover:bg-primary/90 hover:scale-[1.02] hover:shadow-md shadow-sm",
+        pill: "bg-primary text-primary-foreground rounded-full px-6 hover:bg-primary/85 hover:shadow-md shadow-sm active:opacity-80",
       },
       size: {
         default: "h-10 px-5 py-2",
