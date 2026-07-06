@@ -1,9 +1,18 @@
 import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
 
 const isServer = typeof window === 'undefined';
-const API_URL = isServer 
-  ? (process.env.INTERNAL_API_URL || 'http://localhost:3001/api')
-  : (process.env.NEXT_PUBLIC_API_URL || '/api');
+
+// Get the normalized backend base URL for server-side requests
+const getBackendUrl = () => {
+  const envUrl = process.env.NEXT_PUBLIC_API_URL || process.env.INTERNAL_API_URL;
+  if (!envUrl) return 'http://localhost:3001/api';
+  const cleanUrl = envUrl.replace(/\/api\/?$/, "").replace(/\/$/, "");
+  return `${cleanUrl}/api`;
+};
+
+// Server components hit the backend directly.
+// Client components ALWAYS hit the local Next.js proxy (/api) to avoid CORS and path issues.
+const API_URL = isServer ? getBackendUrl() : '/api';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
