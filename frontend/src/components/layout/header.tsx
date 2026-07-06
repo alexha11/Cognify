@@ -50,7 +50,7 @@ export function Header({ variant = "public" }: HeaderProps) {
   return (
     <header
       className={cn(
-        "z-10 flex items-center justify-between border-b border-border backdrop-blur-md",
+        "z-10 flex items-center justify-between border-b border-border/90 backdrop-blur-md",
         isDashboard
           ? "sticky top-0 h-14 bg-background/90 px-8"
           : "fixed top-0 left-0 right-0 h-16 bg-background/80",
