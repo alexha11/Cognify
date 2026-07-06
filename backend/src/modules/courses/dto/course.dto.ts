@@ -8,6 +8,14 @@ export class CreateCourseDto {
   @IsString()
   @IsOptional()
   description?: string;
+
+  @IsBoolean()
+  @IsOptional()
+  isPublic?: boolean;
+
+  @IsString()
+  @IsOptional()
+  organizationId?: string;
 }
 
 export class UpdateCourseDto {

@@ -55,19 +55,18 @@ model Course {
   name           String
   description    String?
   isPublished    Boolean      @default(false)
+  isPublic       Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  organizationId String?
+  organizationId String
   createdById    String
-  isPublic       Boolean      @default(false)
   createdBy      User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   materials      Material[]
   questions      Question[]
 
   @@index([organizationId])
   @@index([createdById])
-  @@index([isPublic])
 }
 
 model Material {

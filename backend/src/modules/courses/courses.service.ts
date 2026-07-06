@@ -20,18 +20,15 @@ export class CoursesService {
    * Enforces organization plan limits
    */
   async create(dto: CreateCourseDto, userId: string, organizationId: string) {
-    console.log('[CoursesService] Creating course:', {
-      dto,
-      userId,
-      organizationId,
-    });
+    // Use organizationId from dto if provided (admin creating for a specific org),
+    // otherwise fall back to the caller's org.
+    const resolvedOrgId = dto.organizationId || organizationId;
 
     // Check plan limits
     const canCreate = await this.organizationsService.checkPlanLimit(
-      organizationId,
+      resolvedOrgId,
       'courses',
     );
-    console.log('[CoursesService] Plan limit check:', { canCreate });
 
     if (!canCreate) {
       throw new ForbiddenException(
@@ -43,7 +40,8 @@ export class CoursesService {
       data: {
         name: dto.name,
         description: dto.description,
-        organizationId: organizationId || undefined,
+        isPublic: dto.isPublic ?? false,
+        organizationId: resolvedOrgId,
         createdById: userId,
       },
       include: {
@@ -62,10 +60,7 @@ export class CoursesService {
         },
       },
     });
-    console.log('[CoursesService] Course created successfully:', {
-      id: course.id,
-      name: course.name,
-    });
+
     return course;
   }
 
@@ -178,28 +173,6 @@ export class CoursesService {
       throw new NotFoundException('Course not found');
     }
 
-    // Role-based access control for Student
-    if (userRole === Role.STUDENT && userId) {
-      const prerequisitesMet = await this.checkPrerequisites(id, userId);
-
-      if (!prerequisitesMet) {
-        // Hide materials and correct answers if prerequisites not met
-        return {
-          ...course,
-          materials: [], // Restricted
-          questions: (course as any).questions.map((q: any) => ({
-            ...q,
-            hint: 'Prerequisites not met', // Optional: hide hint too?
-            answers: q.answers.map((a: any) => ({
-              ...a,
-              isCorrect: undefined, // Hide correctness
-            })),
-          })),
-          prerequisitesMet: false,
-        };
-      }
-    }
-
     return {
       ...course,
       prerequisitesMet: true,
@@ -291,26 +264,12 @@ export class CoursesService {
   }
 
   /**
-   * Check if user has completed all prerequisites for a course
+   * Check if user has completed all prerequisites for a course.
+   * NOTE: CoursePrerequisite model is not yet in the schema, so this
+   * always returns true until the feature is implemented.
    */
-  async checkPrerequisites(courseId: string, userId: string): Promise<boolean> {
-    const prerequisites = await (
-      this.prisma as any
-    ).coursePrerequisite.findMany({
-      where: { courseId },
-      select: { requiresCourseId: true },
-    });
-
-    if (prerequisites.length === 0) return true;
-
-    const completions = await (this.prisma as any).courseCompletion.findMany({
-      where: {
-        userId,
-        courseId: { in: prerequisites.map((p: any) => p.requiresCourseId) },
-      },
-    });
-
-    return completions.length === prerequisites.length;
+  async checkPrerequisites(_courseId: string, _userId: string): Promise<boolean> {
+    return true;
   }
 
   /**

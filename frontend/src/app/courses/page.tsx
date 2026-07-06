@@ -14,7 +14,7 @@ import { apiGet, apiPost } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { Course } from "@/types";
 import { formatDate } from "@/lib/utils";
-import { Plus, BookOpen, FileQuestion, Loader2, X, Play } from "lucide-react";
+import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock } from "lucide-react";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -23,7 +23,7 @@ export default function CoursesPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
-  const [newCourse, setNewCourse] = useState({ name: "", description: "" });
+  const [newCourse, setNewCourse] = useState({ name: "", description: "", isPublic: false });
 
   const canCreate = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
@@ -50,7 +50,7 @@ export default function CoursesPage() {
 
     try {
       await apiPost("/courses", newCourse);
-      setNewCourse({ name: "", description: "" });
+      setNewCourse({ name: "", description: "", isPublic: false });
       setShowCreate(false);
       await fetchCourses();
     } catch (err: unknown) {
@@ -125,6 +125,30 @@ export default function CoursesPage() {
                       })
                     }
                   />
+                </div>
+                {/* isPublic toggle */}
+                <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-secondary/30">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Visibility</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {newCourse.isPublic
+                        ? "Public — students from any followed organization can see this course"
+                        : "Private — only members of your organization can access this course"}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setNewCourse({ ...newCourse, isPublic: !newCourse.isPublic })}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                      newCourse.isPublic ? "bg-primary" : "bg-border"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                        newCourse.isPublic ? "translate-x-6" : "translate-x-1"
+                      }`}
+                    />
+                  </button>
                 </div>
                 <div className="flex gap-4 pt-4">
                   <Button type="submit" disabled={creating} size="lg">
