@@ -83,7 +83,7 @@ export default function RegisterPage() {
           <Card className="border border-border p-1">
             <CardHeader className="text-center pt-10 pb-8">
               <div className="mx-auto mb-6 flex justify-center animate-in zoom-in duration-500">
-                <CognifyLogo size={44} />
+                <CognifyLogo size={100} />
               </div>
               <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
                 Create your account

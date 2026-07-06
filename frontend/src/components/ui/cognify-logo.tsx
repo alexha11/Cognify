@@ -6,7 +6,7 @@ interface CognifyLogoProps {
   className?: string;
 }
 
-export function CognifyLogo({ size = 32, className }: CognifyLogoProps) {
+export function CognifyLogo({ size = 50, className }: CognifyLogoProps) {
   return (
     <Image
       src="/logo.png"

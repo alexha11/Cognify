@@ -67,7 +67,7 @@ export default function LoginPage() {
           <Card className="border border-border p-1">
             <CardHeader className="text-center pt-10 pb-12">
               <div className="mx-auto mb-5 flex justify-center animate-in zoom-in duration-500">
-                <CognifyLogo size={44} />
+                <CognifyLogo size={100} />
               </div>
               <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
                 Welcome back

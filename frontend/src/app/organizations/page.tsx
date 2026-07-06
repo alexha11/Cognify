@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { apiGet } from "@/lib/api";
+import { DashboardLayout } from "@/components/layout";
 import { Building2, BookOpen, Search, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,7 +46,7 @@ export default function OrganizationsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <DashboardLayout>
       {/* Search & Header Section */}
       <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
@@ -53,8 +54,11 @@ export default function OrganizationsPage() {
             <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">
               <ol className="flex items-center gap-2">
                 <li>
-                  <Link href="/" className="hover:opacity-80 transition-opacity flex items-center">
-                    <CognifyLogo size={18} />
+                  <Link
+                    href="/"
+                    className="hover:opacity-80 transition-opacity flex items-center"
+                  >
+                    <CognifyLogo size={70} />
                   </Link>
                 </li>
                 <li className="opacity-40">/</li>
@@ -169,6 +173,6 @@ export default function OrganizationsPage() {
           </div>
         )}
       </main>
-    </div>
+    </DashboardLayout>
   );
 }
