@@ -16,7 +16,7 @@ export class OrganizationsService {
    */
   async create(
     userId: string,
-    data: { name: string; description?: string; logoUrl?: string },
+    data: { name: string; description?: string; logoUrl?: string; isPublic?: boolean },
   ): Promise<any> {
     const slug = data.name
       .toLowerCase()
@@ -38,7 +38,7 @@ export class OrganizationsService {
           slug,
           description: data.description,
           logoUrl: data.logoUrl,
-          isPublic: true, // Make newly created organizations public by default so they appear in the UI
+          isPublic: data.isPublic ?? true, // Respect user choice, default to true if not provided
         },
       });
 

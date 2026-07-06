@@ -26,6 +26,7 @@ const createOrgSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().optional(),
   logoUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
+  isPublic: z.boolean().default(true),
 });
 
 type CreateOrgFormValues = z.infer<typeof createOrgSchema>;
@@ -41,6 +42,9 @@ export default function CreateOrganizationPage() {
     formState: { errors, isSubmitting },
   } = useForm<CreateOrgFormValues>({
     resolver: zodResolver(createOrgSchema),
+    defaultValues: {
+      isPublic: true,
+    },
   });
 
   const onSubmit = async (values: CreateOrgFormValues) => {
@@ -152,6 +156,20 @@ export default function CreateOrganizationPage() {
                       </p>
                     )}
                   </div>
+
+                  <label className="flex items-start gap-3 p-4 rounded-xl border border-border bg-background/50 cursor-pointer hover:bg-muted/50 transition-colors">
+                    <div className="flex h-5 items-center">
+                      <input 
+                        type="checkbox" 
+                        {...register("isPublic")}
+                        className="w-4 h-4 text-primary rounded border-border focus:ring-primary/20 cursor-pointer" 
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium leading-none">Public Organization</p>
+                      <p className="text-xs text-muted-foreground">Allow students across the platform to discover this organization and its public courses.</p>
+                    </div>
+                  </label>
                 </div>
 
                 <Button
