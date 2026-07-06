@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { apiGet } from "@/lib/api";
+import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { CognifyLogo } from "@/components/ui/cognify-logo";
 import {
   Building2,
   BookOpen,
@@ -14,6 +15,10 @@ import {
   Lock,
   Globe,
   Loader2,
+  UserPlus,
+  UserMinus,
+  Check,
+  Users,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -39,17 +44,23 @@ interface Organization {
   createdAt: string;
   userCount: number;
   courseCount: number;
+  memberCount: number;
+  isMember: boolean;
   courses: Course[];
 }
 
 export default function OrganizationDetailPage() {
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
+  const { user } = useAuth();
 
   const [organization, setOrganization] = useState<Organization | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isMounted, setIsMounted] = useState(false);
+  const [isMember, setIsMember] = useState(false);
+  const [membershipLoading, setMembershipLoading] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -60,6 +71,7 @@ export default function OrganizationDetailPage() {
       try {
         const data = await apiGet<Organization>(`/organizations/slug/${slug}`);
         setOrganization(data);
+        setIsMember(data.isMember ?? false);
       } catch (err: any) {
         console.error("Failed to fetch organization", err);
         setError("Organization not found");
@@ -72,6 +84,42 @@ export default function OrganizationDetailPage() {
       fetchOrganization();
     }
   }, [slug]);
+
+  const handleJoin = async () => {
+    if (!user) {
+      router.push(`/login?redirect=/organizations/${slug}`);
+      return;
+    }
+    if (!organization) return;
+    setMembershipLoading(true);
+    try {
+      await apiPost(`/organizations/${organization.id}/join`, {});
+      setIsMember(true);
+      setOrganization((prev) =>
+        prev ? { ...prev, memberCount: (prev.memberCount ?? 0) + 1 } : prev
+      );
+    } catch (e) {
+      console.error("Failed to join organization", e);
+    } finally {
+      setMembershipLoading(false);
+    }
+  };
+
+  const handleLeave = async () => {
+    if (!organization) return;
+    setMembershipLoading(true);
+    try {
+      await apiDelete(`/organizations/${organization.id}/leave`);
+      setIsMember(false);
+      setOrganization((prev) =>
+        prev ? { ...prev, memberCount: Math.max(0, (prev.memberCount ?? 1) - 1) } : prev
+      );
+    } catch (e) {
+      console.error("Failed to leave organization", e);
+    } finally {
+      setMembershipLoading(false);
+    }
+  };
 
   if (!isMounted) return null;
 
@@ -115,9 +163,9 @@ export default function OrganizationDetailPage() {
         <div className="flex items-center justify-between mb-12">
           <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
             <ol className="flex items-center gap-2">
-              <li>
-                <Link href="/" className="hover:text-primary transition-colors">
-                  Cognify
+                <li>
+                <Link href="/" className="hover:opacity-80 transition-opacity flex items-center">
+                  <CognifyLogo size={18} />
                 </Link>
               </li>
               <li className="opacity-40">/</li>
@@ -133,16 +181,51 @@ export default function OrganizationDetailPage() {
               <li className="text-primary/60">{organization.name}</li>
             </ol>
           </nav>
-          <Link href="/organizations">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[10px] font-bold uppercase tracking-widest gap-2"
-            >
-              <ArrowLeft className="h-3.5 w-3.5" />
-              Return to Organizations
-            </Button>
-          </Link>
+          {/* Back button & Join button */}
+          <div className="flex items-center gap-3">
+            {organization.isPublic && (
+              isMember ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLeave}
+                  disabled={membershipLoading}
+                  className="gap-2 rounded-full border-green-500/40 text-green-700 hover:bg-red-50 hover:border-red-300 hover:text-red-600 transition-all"
+                >
+                  {membershipLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                  Following
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  onClick={handleJoin}
+                  disabled={membershipLoading}
+                  className="gap-2 rounded-full"
+                >
+                  {membershipLoading ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <UserPlus className="h-3.5 w-3.5" />
+                  )}
+                  Follow Organization
+                </Button>
+              )
+            )}
+            <Link href="/organizations">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-[10px] font-bold uppercase tracking-widest gap-2"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Return
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Organization Profile Header */}
@@ -184,14 +267,27 @@ export default function OrganizationDetailPage() {
                 <div className="grid grid-cols-2 lg:grid-cols-3 gap-8">
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      Enrollment
+                      Members
                     </p>
                     <div className="flex items-end gap-2">
                       <p className="text-2xl font-semibold text-foreground tracking-tighter">
                         {organization.userCount}
                       </p>
                       <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
-                        Members
+                        Enrolled
+                      </span>
+                    </div>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                      Followers
+                    </p>
+                    <div className="flex items-end gap-2">
+                      <p className="text-2xl font-semibold text-foreground tracking-tighter">
+                        {organization.memberCount ?? 0}
+                      </p>
+                      <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
+                        Following
                       </span>
                     </div>
                   </div>
@@ -205,22 +301,6 @@ export default function OrganizationDetailPage() {
                       </p>
                       <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
                         Courses
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-1 hidden lg:block">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                      Archival Info
-                    </p>
-                    <div className="flex items-end gap-2">
-                      <p className="text-base font-medium text-foreground tracking-tight">
-                        {new Date(organization.createdAt).toLocaleDateString(
-                          "en-US",
-                          { day: "numeric", month: "short", year: "numeric" },
-                        )}
-                      </p>
-                      <span className="text-[10px] text-muted-foreground/60 pb-1 uppercase tracking-tighter">
-                        Created
                       </span>
                     </div>
                   </div>

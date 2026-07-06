@@ -24,6 +24,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
+import { CognifyLogo } from "@/components/ui/cognify-logo";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -81,8 +82,8 @@ export default function RegisterPage() {
 
           <Card className="border border-border p-1">
             <CardHeader className="text-center pt-10 pb-8">
-              <div className="mx-auto mb-6 flex h-11 w-11 items-center justify-center rounded-2xl bg-zinc-950 animate-in zoom-in duration-500">
-                <Sparkles className="h-5 w-5 text-[#F2B84B]" />
+              <div className="mx-auto mb-6 flex justify-center animate-in zoom-in duration-500">
+                <CognifyLogo size={44} />
               </div>
               <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
                 Create your account

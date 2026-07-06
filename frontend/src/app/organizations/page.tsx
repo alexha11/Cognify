@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { apiGet } from "@/lib/api";
 import { Building2, BookOpen, Search, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,11 +53,8 @@ export default function OrganizationsPage() {
             <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">
               <ol className="flex items-center gap-2">
                 <li>
-                  <Link
-                    href="/"
-                    className="hover:text-primary transition-colors"
-                  >
-                    Cognify
+                  <Link href="/" className="hover:opacity-80 transition-opacity flex items-center">
+                    <CognifyLogo size={18} />
                   </Link>
                 </li>
                 <li className="opacity-40">/</li>
