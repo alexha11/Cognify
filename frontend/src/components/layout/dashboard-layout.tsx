@@ -28,14 +28,11 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
   return (
     <div className="min-h-screen bg-background">
+      <Header variant="dashboard" />
       <Sidebar />
-      {/* pl-[52px] = collapsed sidebar width. No z-index or opacity here to avoid stacking context bugs. */}
-      <div className="flex min-h-screen flex-col pl-[52px]">
-        <Header variant="dashboard" />
-        <main className="flex-1">
-          <div className="p-10">{children}</div>
-        </main>
-      </div>
+      <main className="flex min-h-screen flex-col pl-[52px]">
+        <div className="flex-1 p-10">{children}</div>
+      </main>
     </div>
   );
 }

@@ -68,10 +68,10 @@ export function Sidebar() {
       ];
 
   return (
-    <aside className="group fixed left-0 top-0 flex h-screen w-[52px] flex-col overflow-hidden border-r border-border transition-all duration-300 hover:w-56 hover:shadow-2xl z-[99999] bg-[var(--background)]">
+    <aside className="group fixed left-0 top-14 flex h-[calc(100vh-3.5rem)] w-[52px] flex-col overflow-hidden border-r border-border transition-all duration-300 hover:w-56 hover:shadow-2xl z-40 bg-[var(--background)]">
       <div className="flex h-full w-56 flex-col">
-        {/* Nav items — start from top with a bit of top padding to align with header */}
-        <nav className="flex flex-col gap-0.5 p-2 pt-[18px]">
+        {/* Nav items */}
+        <nav className="flex flex-col gap-0.5 p-2 pt-4">
           {items.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
