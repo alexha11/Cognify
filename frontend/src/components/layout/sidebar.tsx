@@ -19,7 +19,6 @@ import { useAuth } from "@/lib/auth";
 const navItems = {
   ADMIN: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin", label: "Admin Panel", icon: Shield },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/questions", label: "Questions", icon: FileQuestion },
     { href: "/users", label: "Users", icon: Users },
@@ -48,16 +47,28 @@ export function Sidebar() {
     ? navItems[user.role] || navItems.STUDENT
     : [
         { href: "/", label: "Home", icon: LayoutDashboard },
-        { href: "/organizations", label: "Browse Organizations", icon: Building2 },
-        { href: "/progress", label: "My Progress", icon: BarChart3, gated: true },
+        {
+          href: "/organizations",
+          label: "Browse Organizations",
+          icon: Building2,
+        },
+        {
+          href: "/progress",
+          label: "My Progress",
+          icon: BarChart3,
+          gated: true,
+        },
       ];
 
   return (
     <aside
       className="group fixed left-0 top-0 flex h-screen w-[52px] flex-col overflow-hidden border-r border-border transition-all duration-300 hover:w-56 hover:shadow-2xl"
-      style={{ zIndex: 9999, backgroundColor: '#ffffff' }}
+      style={{ zIndex: 9999, backgroundColor: "#ffffff" }}
     >
-      <div className="flex h-full w-56 flex-col" style={{ backgroundColor: '#ffffff' }}>
+      <div
+        className="flex h-full w-56 flex-col"
+        style={{ backgroundColor: "#ffffff" }}
+      >
         {/* Nav items — start from top with a bit of top padding to align with header */}
         <nav className="flex flex-col gap-0.5 p-2 pt-[18px]">
           {items.map((item) => {

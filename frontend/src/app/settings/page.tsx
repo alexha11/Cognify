@@ -3,7 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -304,11 +310,11 @@ export default function SettingsPage() {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
                 <div className="space-y-1">
                   <p className="font-semibold text-lg tracking-tight">
-                    Delete Organization
+                    Delete Account
                   </p>
                   <p className="text-sm text-muted-foreground font-serif">
-                    Permanently delete your organization and all associated
-                    data. This action cannot be undone.
+                    Permanently delete your account and all associated data.
+                    This action cannot be undone.
                   </p>
                 </div>
                 <Button
@@ -316,7 +322,7 @@ export default function SettingsPage() {
                   className="rounded-xl border-destructive/30 text-destructive hover:bg-destructive hover:text-destructive-foreground transition-colors"
                   disabled
                 >
-                  Delete Organization
+                  Delete Account
                 </Button>
               </div>
             </CardContent>
