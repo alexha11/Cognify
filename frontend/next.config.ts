@@ -2,16 +2,15 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   async rewrites() {
-    // In production, we expect NEXT_PUBLIC_API_URL to point to the backend's URL.
-    // In local dev, it falls back to localhost:3001.
-    const apiBase = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+    // In production, we expect NEXT_PUBLIC_API_URL to point to the backend's root URL (e.g., https://backend.onrender.com).
+    // In local dev, it falls back to http://localhost:3001.
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, "")?.replace(/\/$/, "") || "http://localhost:3001";
     
-    // We rewrite /api/* on the frontend to the backend URL.
+    // We rewrite /api/* on the frontend to the backend URL + /api/*
     return [
       {
-        // For frontend requests to /api/courses -> backendUrl/courses
         source: "/api/:path*",
-        destination: `${apiBase}/:path*`,
+        destination: `${baseUrl}/api/:path*`,
       },
     ];
   },
