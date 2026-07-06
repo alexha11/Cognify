@@ -26,7 +26,7 @@ const createOrgSchema = z.object({
   name: z.string().min(3, "Name must be at least 3 characters"),
   description: z.string().optional(),
   logoUrl: z.string().url("Invalid URL").optional().or(z.literal("")),
-  isPublic: z.boolean().default(true),
+  isPublic: z.boolean(),
 });
 
 type CreateOrgFormValues = z.infer<typeof createOrgSchema>;
