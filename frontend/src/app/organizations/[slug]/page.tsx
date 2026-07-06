@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiGet, apiPost, apiDelete } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { CognifyLogo } from "@/components/ui/cognify-logo";
+import { DashboardLayout } from "@/components/layout";
 import {
   Building2,
   BookOpen,
@@ -157,18 +157,12 @@ export default function OrganizationDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-7xl mx-auto px-6 py-12">
+    <DashboardLayout>
+      <div className="max-w-7xl mx-auto space-y-12">
         {/* Navigation / Breadcrumb */}
         <div className="flex items-center justify-between mb-12">
           <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
             <ol className="flex items-center gap-2">
-                <li>
-                <Link href="/" className="hover:opacity-80 transition-opacity flex items-center">
-                  <CognifyLogo size={18} />
-                </Link>
-              </li>
-              <li className="opacity-40">/</li>
               <li>
                 <Link
                   href="/organizations"
@@ -377,7 +371,7 @@ export default function OrganizationDetailPage() {
             </div>
           )}
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }

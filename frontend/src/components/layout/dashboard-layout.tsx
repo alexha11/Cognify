@@ -3,7 +3,7 @@
 import { ReactNode } from "react";
 import { useAuth } from "@/lib/auth";
 import { Sidebar } from "./sidebar";
-import { DashboardHeader } from "./dashboard-header";
+import { Header } from "./header";
 import { Loader2 } from "lucide-react";
 
 interface DashboardLayoutProps {
@@ -31,7 +31,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Sidebar />
       {/* pl-[52px] = collapsed sidebar width. No z-index or opacity here to avoid stacking context bugs. */}
       <div className="flex min-h-screen flex-col pl-[52px]">
-        <DashboardHeader />
+        <Header variant="dashboard" />
         <main className="flex-1">
           <div className="p-10">{children}</div>
         </main>
