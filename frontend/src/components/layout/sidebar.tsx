@@ -19,6 +19,7 @@ import { useAuth } from "@/lib/auth";
 const navItems = {
   ADMIN: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/organizations", label: "Organizations", icon: Building2 },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/quiz", label: "Quizzes", icon: FileQuestion },
     { href: "/questions", label: "Questions", icon: FileQuestion },
@@ -28,6 +29,7 @@ const navItems = {
   ],
   INSTRUCTOR: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/organizations", label: "Organizations", icon: Building2 },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/quiz", label: "Quizzes", icon: FileQuestion },
     { href: "/questions", label: "Questions", icon: FileQuestion },
@@ -35,6 +37,7 @@ const navItems = {
   ],
   STUDENT: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/organizations", label: "Organizations", icon: Building2 },
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/quiz", label: "Quizzes", icon: FileQuestion },
     { href: "/progress", label: "My Progress", icon: BarChart3 },

@@ -278,7 +278,7 @@ export default function DashboardPage() {
           ) : courses.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              message="No courses yet."
+              message="No courses yet. Please explore more courses by following an organization."
               action={
                 isAdmin || isInstructor ? (
                   <Button asChild variant="pill">
@@ -334,7 +334,11 @@ export default function DashboardPage() {
                 </h2>
               </div>
               <Link href="/organizations">
-                <Button variant="ghost" size="sm" className="gap-2 text-xs font-semibold">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2 text-xs font-semibold"
+                >
                   Discover more <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
               </Link>
@@ -370,7 +374,11 @@ export default function DashboardPage() {
                       </div>
                     </Link>
                     <Link href={`/organizations/${m.organization.slug}`}>
-                      <Button variant="ghost" size="sm" className="gap-1.5 text-xs">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                      >
                         View all <ArrowRight className="h-3 w-3" />
                       </Button>
                     </Link>
