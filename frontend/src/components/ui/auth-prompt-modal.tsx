@@ -44,8 +44,8 @@ export function AuthPromptModal({
 
         <Card className="overflow-hidden border-border/50 shadow-2xl bg-card/95 backdrop-blur-sm">
           <CardHeader className="text-center pt-12 pb-6 px-8">
-            <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-tr from-primary/10 to-primary/5 text-primary shadow-sm ring-1 ring-inset ring-primary/10">
-              <CognifyLogo className="h-7 w-7" />
+            <div className="mx-auto mb-5 flex justify-center animate-in zoom-in duration-500">
+              <CognifyLogo size={100} />
             </div>
             <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
               {title}

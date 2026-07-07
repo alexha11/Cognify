@@ -306,7 +306,7 @@ export default function DashboardPage() {
                       <div className="pt-6 border-t border-border/40 flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
                         <span className="flex items-center gap-2">
                           <FileQuestion className="h-3.5 w-3.5 opacity-40" />
-                          {course._count?.questions || 0} Units
+                          {course._count?.questions || 0} Questions
                         </span>
                         <span className="flex items-center gap-2">
                           <BookOpen className="h-3.5 w-3.5 opacity-40" />

@@ -183,9 +183,7 @@ export default function CourseDetailPage() {
                           : ""
                       }
                     >
-                      {course.isPublished
-                        ? "Published"
-                        : "Draft"}
+                      {course.isPublished ? "Published" : "Draft"}
                     </Badge>
                   </div>
                   <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
@@ -239,14 +237,14 @@ export default function CourseDetailPage() {
                   <div className="grid grid-cols-2 gap-12">
                     <div className="space-y-1">
                       <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        Questions
+                        Assessments
                       </p>
                       <div className="flex items-end gap-2">
                         <p className="text-3xl font-semibold text-foreground tracking-tighter">
                           {approvedQuestions.length}
                         </p>
                         <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
-                          Assessment Items
+                          Questions
                         </span>
                       </div>
                     </div>
