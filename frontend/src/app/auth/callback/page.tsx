@@ -1,36 +1,44 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { Loader2 } from "lucide-react";
+import { apiGet } from "@/lib/api";
 
 export default function AuthCallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    // Prevent strict mode double-fetching
+    if (hasProcessed.current) return;
+
     const token = searchParams.get("token");
 
     if (token) {
-      // Save the JWT token exactly like the email/password login does
-      localStorage.setItem("token", token);
+      hasProcessed.current = true;
+      
+      const processLogin = async () => {
+        try {
+          // Save the JWT token first so apiGet can use it in the Authorization header
+          localStorage.setItem("token", token);
+          
+          // Fetch the full user profile from the backend to get firstName/lastName
+          const user = await apiGet<any>("/auth/profile");
+          
+          localStorage.setItem("user", JSON.stringify(user));
+          
+          // Force a full reload to the dashboard so AuthProvider picks up the new localStorage state immediately
+          window.location.href = "/dashboard";
+        } catch (error) {
+          console.error("Failed to fetch profile during OAuth callback", error);
+          router.replace("/login?error=google_auth_failed");
+        }
+      };
 
-      // Decode the token to get user info (without verification – just for storage)
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const user = {
-          id: payload.sub,
-          email: payload.email,
-          role: payload.role,
-          organizationId: payload.organizationId || "",
-        };
-        localStorage.setItem("user", JSON.stringify(user));
-      } catch {
-        // Token decoding failed, still redirect — profile will be fetched fresh
-      }
-
-      router.replace("/dashboard");
+      processLogin();
     } else {
       // No token — something went wrong, send back to login
       router.replace("/login?error=google_auth_failed");
