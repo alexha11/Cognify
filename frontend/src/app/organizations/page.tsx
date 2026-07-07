@@ -8,6 +8,7 @@ import { DashboardLayout } from "@/components/layout";
 import { Building2, BookOpen, Search, ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/lib/auth";
 
 interface Organization {
   id: string;
@@ -20,6 +21,8 @@ interface Organization {
 }
 
 export default function OrganizationsPage() {
+  const { user } = useAuth();
+
   const [organizations, setOrganizations] = useState<Organization[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -45,10 +48,12 @@ export default function OrganizationsPage() {
       org.description?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const canCreateOrg = user?.role === "INSTRUCTOR" || user?.role === "ADMIN";
+
   return (
     <DashboardLayout>
       {/* Search & Header Section */}
-      <div className="max-w-7xl mx-auto px-6 pt-12 pb-8">
+      <div className="max-w-7xl mx-auto px-6 pb-8">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-8">
           <div className="space-y-2">
             <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">
@@ -89,21 +94,16 @@ export default function OrganizationsPage() {
         </div>
       </div>
 
-      {/* Create Org Button (Only for Instructors/Admins without org) */}
-      {/* We can check this via auth context or just show it for now and let backend handle limits/permissions if we want to allow multiple orgs later. 
-          But per req, "users with 'instructor' or 'admin' roles should be able to add organizations separately". 
-          Let's show it if they have the role. valid logic: if (user.role == INSTRUCTOR || ADMIN) && !user.organizationId
-      */}
-      {/* For now, just adding the button to the UI layout near search or in a separate row */}
-
-      <div className="max-w-7xl mx-auto px-6 pb-6 flex justify-end">
-        <Link href="/organizations/create">
-          <Button className="rounded-xl shadow-sm">
-            <Building2 className="mr-2 h-4 w-4" />
-            Create Organization
-          </Button>
-        </Link>
-      </div>
+      {canCreateOrg && (
+        <div className="max-w-7xl mx-auto px-6 pb-6 flex justify-end">
+          <Link href="/organizations/create">
+            <Button className="rounded-xl shadow-sm">
+              <Building2 className="mr-2 h-4 w-4" />
+              Create Organization
+            </Button>
+          </Link>
+        </div>
+      )}
 
       <main className="max-w-7xl mx-auto px-6 pb-24">
         {/* Organizations Grid */}
