@@ -135,6 +135,10 @@ export class AuthService {
       throw new UnauthorizedException('Account is deactivated');
     }
 
+    if (!user.passwordHash) {
+      throw new UnauthorizedException('Please sign in with Google');
+    }
+
     const isPasswordValid = await bcrypt.compare(
       dto.password,
       user.passwordHash,
