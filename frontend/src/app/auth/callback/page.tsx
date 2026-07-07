@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { Loader2 } from "lucide-react";
 import { apiGet } from "@/lib/api";
 
-export default function AuthCallbackPage() {
+function AuthCallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const hasProcessed = useRef(false);
@@ -45,6 +45,10 @@ export default function AuthCallbackPage() {
     }
   }, [searchParams, router]);
 
+  return null;
+}
+
+export default function AuthCallbackPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
       <CognifyLogo size={80} />
@@ -52,6 +56,9 @@ export default function AuthCallbackPage() {
         <Loader2 className="h-5 w-5 animate-spin" />
         <span className="text-sm font-medium">Signing you in…</span>
       </div>
+      <Suspense fallback={null}>
+        <AuthCallbackContent />
+      </Suspense>
     </div>
   );
 }
