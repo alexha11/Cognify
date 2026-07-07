@@ -6,6 +6,8 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
+  Req,
+  Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto, LoginDto, InviteUserDto } from './dto';
@@ -13,10 +15,17 @@ import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
+import { AuthGuard } from '@nestjs/passport';
+import { ConfigService } from '@nestjs/config';
+import { Config } from '../../config';
+import type { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly configService: ConfigService<Config>,
+  ) {}
 
   /**
    * Register a new organization with admin user
@@ -60,5 +69,36 @@ export class AuthController {
     @CurrentUser('organizationId') organizationId: string,
   ): Promise<any> {
     return this.authService.inviteUser(dto, organizationId);
+  }
+
+  /**
+   * Initiate Google OAuth flow
+   * GET /auth/google
+   */
+  @Get('google')
+  @UseGuards(AuthGuard('google'))
+  async googleAuth(): Promise<void> {
+    // Passport redirects to Google automatically
+  }
+
+  /**
+   * Google OAuth callback
+   * GET /auth/google/callback
+   */
+  @Get('google/callback')
+  @UseGuards(AuthGuard('google'))
+  async googleCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
+    const googleUser = req.user as {
+      googleId: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+    };
+
+    const result = await this.authService.validateGoogleUser(googleUser);
+    const frontendUrl = this.configService.get('app.frontendUrl', { infer: true }) || 'http://localhost:3000';
+
+    // Redirect to frontend callback page with the token
+    res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}`);
   }
 }

@@ -248,6 +248,69 @@ export class AuthService {
   }
 
   /**
+   * Find or create a user from a Google OAuth profile.
+   * - If a user with the same googleId exists, return them.
+   * - If a user with the same email exists, link the googleId to their account.
+   * - Otherwise, create a brand-new user.
+   */
+  async validateGoogleUser(googleProfile: {
+    googleId: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  }): Promise<AuthResponseDto> {
+    // 1. Try to find by googleId first
+    let user = await this.prisma.user.findUnique({
+      where: { googleId: googleProfile.googleId },
+      include: { organization: true },
+    });
+
+    if (!user) {
+      // 2. Try to find by email (link existing account)
+      const existing = await this.prisma.user.findUnique({
+        where: { email: googleProfile.email },
+        include: { organization: true },
+      });
+
+      if (existing) {
+        // Link the google id to the existing account
+        user = await this.prisma.user.update({
+          where: { id: existing.id },
+          data: { googleId: googleProfile.googleId },
+          include: { organization: true },
+        });
+      } else {
+        // 3. Create a brand-new user
+        user = await this.prisma.user.create({
+          data: {
+            email: googleProfile.email,
+            firstName: googleProfile.firstName,
+            lastName: googleProfile.lastName,
+            googleId: googleProfile.googleId,
+            role: Role.STUDENT,
+          },
+          include: { organization: true },
+        });
+      }
+    }
+
+    const token = this.generateToken(user);
+
+    return {
+      accessToken: token,
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        organizationId: user.organizationId || '',
+        organizationName: (user as any).organization?.name || '',
+      },
+    };
+  }
+
+  /**
    * Generate URL-safe slug from organization name
    */
   private generateSlug(name: string): string {

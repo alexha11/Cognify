@@ -13,6 +13,9 @@ export interface AppConfig {
   supabaseAnonKey: string;
   supabaseServiceKey: string;
   nodeEnv: string;
+  googleClientId: string;
+  googleClientSecret: string;
+  frontendUrl: string;
 }
 
 export interface Config {

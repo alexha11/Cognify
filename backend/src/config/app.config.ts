@@ -19,6 +19,9 @@ export const appConfigValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'production', 'test')
     .default('development'),
+  GOOGLE_CLIENT_ID: Joi.string().optional().allow(''),
+  GOOGLE_CLIENT_SECRET: Joi.string().optional().allow(''),
+  FRONTEND_URL: Joi.string().default('http://localhost:3000'),
 });
 
 export const appConfig = registerAs(
@@ -38,5 +41,8 @@ export const appConfig = registerAs(
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY || '',
     supabaseServiceKey: process.env.SUPABASE_SERVICE_KEY || '',
     nodeEnv: process.env.NODE_ENV || 'development',
+    googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+    googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+    frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   }),
 );
