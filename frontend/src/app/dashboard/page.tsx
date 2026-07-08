@@ -17,7 +17,6 @@ import {
   Users,
   TrendingUp,
   ArrowRight,
-  Sparkles,
   Lock,
   Plus,
   Building2,
@@ -220,32 +219,6 @@ export default function DashboardPage() {
                 className={!user ? "relative" : ""}
               />
             </>
-          )}
-
-          {isAdmin && organization && (
-            <Card className="hover:bg-secondary/20 transition-all duration-300">
-              <CardContent className="p-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
-                    <Sparkles className="h-5 w-5" />
-                  </div>
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] font-bold tracking-widest uppercase"
-                  >
-                    Tier
-                  </Badge>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                    License Status
-                  </p>
-                  <p className="text-2xl font-semibold tracking-tight text-foreground uppercase pt-1">
-                    {organization.plan} Plan
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
           )}
         </div>
 
