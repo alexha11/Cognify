@@ -80,3 +80,19 @@ export class AuthResponseDto {
     organizationName: string;
   };
 }
+
+export class VerifyEmailDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+
+  @IsString()
+  @IsNotEmpty()
+  code: string;
+}
+
+export class ResendCodeDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}

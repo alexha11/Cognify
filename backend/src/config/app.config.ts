@@ -22,6 +22,8 @@ export const appConfigValidationSchema = Joi.object({
   GOOGLE_CLIENT_ID: Joi.string().optional().allow(''),
   GOOGLE_CLIENT_SECRET: Joi.string().optional().allow(''),
   FRONTEND_URL: Joi.string().default('http://localhost:3000'),
+  RESEND_API_KEY: Joi.string().optional().allow(''),
+  RESEND_FROM_EMAIL: Joi.string().default('onboarding@resend.dev'),
 });
 
 export const appConfig = registerAs(
@@ -44,5 +46,7 @@ export const appConfig = registerAs(
     googleClientId: process.env.GOOGLE_CLIENT_ID || '',
     googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    resendFromEmail: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
   }),
 );

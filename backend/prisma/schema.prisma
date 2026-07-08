@@ -37,6 +37,7 @@ model User {
   lastName          String
   role              Role          @default(STUDENT)
   isActive          Boolean       @default(true)
+  isEmailVerified   Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
   organizationId    String?
@@ -46,6 +47,7 @@ model User {
   createdQuestions  Question[]    @relation("QuestionCreator")
   organization      Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   memberships       OrgMembership[]
+  emailVerification EmailVerification?
 
   @@index([email])
   @@index([organizationId])
@@ -163,6 +165,17 @@ enum Role {
   ADMIN
   INSTRUCTOR
   STUDENT
+}
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 enum Plan {

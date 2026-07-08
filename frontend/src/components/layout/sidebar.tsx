@@ -54,11 +54,7 @@ export function Sidebar() {
           label: "Browse Organizations",
           icon: Building2,
         },
-        {
-          href: "/quiz",
-          label: "Quizzes",
-          icon: FileQuestion,
-        },
+        { href: "/courses", label: "Courses", icon: BookOpen },
         {
           href: "/progress",
           label: "My Progress",

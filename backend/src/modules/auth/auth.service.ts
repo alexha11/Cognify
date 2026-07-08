@@ -3,6 +3,7 @@ import {
   UnauthorizedException,
   ConflictException,
   BadRequestException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -11,6 +12,7 @@ import { PrismaService } from '../../prisma';
 import { RegisterDto, LoginDto, InviteUserDto, AuthResponseDto } from './dto';
 import { JwtPayload } from './interfaces';
 import { Role } from '@prisma/client';
+import { EmailService } from '../email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -18,20 +20,20 @@ export class AuthService {
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly emailService: EmailService,
   ) {}
 
   /**
-   * Register a new user.
-   * If organizationName is provided, creates a new organization and assigns the user as INSTRUCTOR (Admin).
-   * If organizationName is NOT provided, creates a standalone user (Student/Instructor) without an organization.
+   * Register a new user and send OTP verification email.
+   * Returns a message instead of a JWT — user must verify email first.
    */
-  async register(dto: RegisterDto): Promise<AuthResponseDto> {
+  async register(dto: RegisterDto): Promise<{ message: string; email: string }> {
     // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
 
-    if (existingUser) {
+    if (existingUser && existingUser.isEmailVerified) {
       throw new ConflictException('Email already registered');
     }
 
@@ -39,15 +41,17 @@ export class AuthService {
     const passwordHash = await bcrypt.hash(dto.password, 12);
 
     let user;
-    let organization;
 
-    if (dto.organizationName) {
+    if (existingUser && !existingUser.isEmailVerified) {
+      // Re-registration attempt for unverified user — update their info and resend code
+      user = await this.prisma.user.update({
+        where: { email: dto.email },
+        data: { passwordHash, firstName: dto.firstName, lastName: dto.lastName },
+      });
+    } else if (dto.organizationName) {
       // Flow 1: Create Organization + User (Instructor/Admin)
-
-      // Generate organization slug from name
       const slug = this.generateSlug(dto.organizationName);
 
-      // Check if slug already exists
       const existingOrg = await this.prisma.organization.findUnique({
         where: { slug },
       });
@@ -56,13 +60,9 @@ export class AuthService {
         throw new ConflictException('Organization name already taken');
       }
 
-      // Create organization and admin user in a transaction
       const result = await this.prisma.$transaction(async (tx) => {
         const newOrg = await tx.organization.create({
-          data: {
-            name: dto.organizationName!,
-            slug,
-          },
+          data: { name: dto.organizationName!, slug },
         });
 
         const newUser = await tx.user.create({
@@ -71,11 +71,8 @@ export class AuthService {
             passwordHash,
             firstName: dto.firstName,
             lastName: dto.lastName,
-            role: Role.INSTRUCTOR, // Organization creator gets INSTRUCTOR role
+            role: Role.INSTRUCTOR,
             organizationId: newOrg.id,
-          },
-          include: {
-            organization: true,
           },
         });
 
@@ -83,39 +80,116 @@ export class AuthService {
       });
 
       user = result.user;
-      organization = result.organization;
     } else {
-      // Flow 2: Create User Only (No Organization)
+      // Flow 2: Create User Only
       user = await this.prisma.user.create({
         data: {
           email: dto.email,
           passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
-          role: dto.role || Role.STUDENT, // Use provided role or default to STUDENT
+          role: (dto as any).role || Role.STUDENT,
         } as any,
-        include: {
-          organization: true,
-        },
       });
-      organization = null;
     }
 
-    // Generate JWT token
-    const token = this.generateToken(user as any);
+    // Generate and store a 6-digit OTP
+    await this.sendOtpToUser(user.id, dto.email);
+
+    return { message: 'Verification code sent to your email', email: dto.email };
+  }
+
+  /**
+   * Verify the OTP code submitted by the user.
+   * Activates the account and returns a JWT.
+   */
+  async verifyEmail(email: string, code: string): Promise<AuthResponseDto> {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { organization: true, emailVerification: true },
+    });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email already verified');
+    }
+
+    const verification = user.emailVerification;
+
+    if (!verification) {
+      throw new BadRequestException('No verification code found. Please register again.');
+    }
+
+    if (new Date() > verification.expiresAt) {
+      throw new BadRequestException('Verification code has expired. Please request a new one.');
+    }
+
+    if (verification.code !== code) {
+      throw new BadRequestException('Invalid verification code');
+    }
+
+    // Activate the user and remove the verification record
+    const updatedUser = await this.prisma.$transaction(async (tx) => {
+      await tx.emailVerification.delete({ where: { userId: user.id } });
+      return tx.user.update({
+        where: { id: user.id },
+        data: { isEmailVerified: true },
+        include: { organization: true },
+      });
+    });
+
+    const token = this.generateToken(updatedUser);
 
     return {
       accessToken: token,
       user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        organizationId: user.organizationId || '',
-        organizationName: (user as any).organization?.name || '',
+        id: updatedUser.id,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+        organizationId: updatedUser.organizationId || '',
+        organizationName: (updatedUser as any).organization?.name || '',
       },
     };
+  }
+
+  /**
+   * Resend a fresh OTP code to the user's email.
+   */
+  async resendVerificationCode(email: string): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      throw new BadRequestException('User not found');
+    }
+
+    if (user.isEmailVerified) {
+      throw new BadRequestException('Email is already verified');
+    }
+
+    await this.sendOtpToUser(user.id, user.email);
+
+    return { message: 'A new verification code has been sent to your email' };
+  }
+
+  /**
+   * Generate a 6-digit OTP, upsert it in the database, and send the email.
+   */
+  private async sendOtpToUser(userId: string, email: string): Promise<void> {
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    await this.prisma.emailVerification.upsert({
+      where: { userId },
+      update: { code, expiresAt },
+      create: { userId, code, expiresAt },
+    });
+
+    await this.emailService.sendVerificationEmail(email, code);
   }
 
   /**
@@ -133,6 +207,10 @@ export class AuthService {
 
     if (!user.isActive) {
       throw new UnauthorizedException('Account is deactivated');
+    }
+
+    if (!user.isEmailVerified) {
+      throw new ForbiddenException('Please verify your email before signing in. Check your inbox for the verification code.');
     }
 
     if (!user.passwordHash) {

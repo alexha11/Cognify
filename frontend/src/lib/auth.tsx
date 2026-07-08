@@ -16,7 +16,9 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  register: (data: RegisterData) => Promise<{ message: string; email: string }>;
+  verifyEmail: (email: string, code: string) => Promise<void>;
+  resendVerification: (email: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -59,7 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const register = async (registerData: RegisterData) => {
-    const data = await apiPost<AuthResponse>("/auth/register", registerData);
+    const data = await apiPost<{ message: string; email: string }>("/auth/register", registerData);
+    router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+    return data;
+  };
+
+  const verifyEmail = async (email: string, code: string) => {
+    const data = await apiPost<AuthResponse>("/auth/verify-email", { email, code });
     const { accessToken, user: userData } = data;
 
     localStorage.setItem("token", accessToken);
@@ -68,6 +76,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userData);
 
     router.push("/dashboard");
+  };
+
+  const resendVerification = async (email: string) => {
+    await apiPost<{ message: string }>("/auth/resend-code", { email });
   };
 
   const logout = () => {
@@ -80,7 +92,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, login, register, logout }}
+      value={{ user, token, isLoading, login, register, verifyEmail, resendVerification, logout }}
     >
       {children}
     </AuthContext.Provider>

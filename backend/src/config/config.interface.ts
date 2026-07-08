@@ -16,6 +16,8 @@ export interface AppConfig {
   googleClientId: string;
   googleClientSecret: string;
   frontendUrl: string;
+  resendApiKey: string;
+  resendFromEmail: string;
 }
 
 export interface Config {

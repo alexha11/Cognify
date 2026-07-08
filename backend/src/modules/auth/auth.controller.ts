@@ -10,7 +10,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, InviteUserDto } from './dto';
+import { RegisterDto, LoginDto, InviteUserDto, VerifyEmailDto, ResendCodeDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -34,6 +34,26 @@ export class AuthController {
   @Post('register')
   async register(@Body() dto: RegisterDto): Promise<any> {
     return this.authService.register(dto);
+  }
+
+  /**
+   * Verify email OTP
+   * POST /auth/verify-email
+   */
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<any> {
+    return this.authService.verifyEmail(dto.email, dto.code);
+  }
+
+  /**
+   * Resend OTP code
+   * POST /auth/resend-code
+   */
+  @Post('resend-code')
+  @HttpCode(HttpStatus.OK)
+  async resendCode(@Body() dto: ResendCodeDto): Promise<any> {
+    return this.authService.resendVerificationCode(dto.email);
   }
 
   /**
