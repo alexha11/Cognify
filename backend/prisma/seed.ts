@@ -28,7 +28,7 @@ async function main() {
     data: {
       name: 'Introduction to AI',
       description: 'Learn the basics of Artificial Intelligence.',
-      isPublished: true,
+      isPublic: true,
       createdById: instructor.id,
     },
   });

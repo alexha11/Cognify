@@ -212,9 +212,9 @@ export default function CoursesPage() {
                       </CardTitle>
                     </Link>
                     <Badge
-                      variant={course.isPublished ? "success" : "secondary"}
+                      variant={course.isPublic ? "success" : "secondary"}
                     >
-                      {course.isPublished ? "Published" : "Draft"}
+                      {course.isPublic ? "Public" : "Private"}
                     </Badge>
                   </div>
                 </CardHeader>

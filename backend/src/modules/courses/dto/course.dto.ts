@@ -26,5 +26,5 @@ export class UpdateCourseDto {
 
   @IsBoolean()
   @IsOptional()
-  isPublished?: boolean;
+  isPublic?: boolean;
 }

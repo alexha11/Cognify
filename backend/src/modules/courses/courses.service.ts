@@ -50,7 +50,7 @@ export class CoursesService {
    */
   async findAll(userRole?: Role, userId?: string) {
     const publishedFilter =
-      userRole === Role.STUDENT || !userRole ? { isPublished: true } : {};
+      userRole === Role.STUDENT || !userRole ? { isPublic: true } : {};
 
     const whereClause = {
       ...publishedFilter,
@@ -86,7 +86,7 @@ export class CoursesService {
       where: {
         id,
         ...(userRole === Role.STUDENT || !userRole
-          ? { isPublished: true }
+          ? { isPublic: true }
           : {}),
       },
       include: {

@@ -32,7 +32,7 @@ export interface Course {
   id: string;
   name: string;
   description?: string;
-  isPublished: boolean;
+  isPublic: boolean;
 
   createdById: string;
   createdAt: string;

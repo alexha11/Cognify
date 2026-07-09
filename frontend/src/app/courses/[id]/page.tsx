@@ -31,6 +31,7 @@ import {
   Lock,
   ArrowRight,
   Share2,
+  Globe,
 } from "lucide-react";
 import { FeatureGate, AuthPromptModal } from "@/components/ui";
 
@@ -176,14 +177,15 @@ export default function CourseDetailPage() {
                       {course.name}
                     </h1>
                     <Badge
-                      variant={course.isPublished ? "outline" : "secondary"}
-                      className={
-                        course.isPublished
-                          ? "text-[8px] border-green-500/20 text-green-700 bg-green-500/5"
-                          : ""
-                      }
+                      variant={course.isPublic ? "outline" : "secondary"}
+                      className="gap-1.5"
                     >
-                      {course.isPublished ? "Published" : "Draft"}
+                      {course.isPublic ? (
+                        <Globe className="h-3.5 w-3.5 text-success" />
+                      ) : (
+                        <Lock className="h-3.5 w-3.5" />
+                      )}
+                      {course.isPublic ? "Public" : "Private"}
                     </Badge>
                   </div>
                   <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
