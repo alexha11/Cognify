@@ -26,7 +26,7 @@ async function main() {
       firstName: 'Test',
       lastName: 'Instructor',
       role: 'INSTRUCTOR',
-      organizationId: orga.id,
+      memberships: { create: { organizationId: orga.id } },
     },
   });
 

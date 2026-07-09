@@ -72,7 +72,7 @@ export class AuthService {
             firstName: dto.firstName,
             lastName: dto.lastName,
             role: Role.INSTRUCTOR,
-            organizationId: newOrg.id,
+            memberships: { create: { organizationId: newOrg.id } },
           },
         });
 
@@ -106,7 +106,7 @@ export class AuthService {
   async verifyEmail(email: string, code: string): Promise<AuthResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { organization: true, emailVerification: true },
+      include: { memberships: { include: { organization: true } }, emailVerification: true },
     });
 
     if (!user) {
@@ -137,7 +137,7 @@ export class AuthService {
       return tx.user.update({
         where: { id: user.id },
         data: { isEmailVerified: true },
-        include: { organization: true },
+        include: { memberships: { include: { organization: true } } },
       });
     });
 
@@ -151,7 +151,7 @@ export class AuthService {
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         role: updatedUser.role,
-        organizationId: updatedUser.organizationId || '',
+        organizationId: (updatedUser as any).memberships?.[0]?.organizationId || '',
         organizationName: (updatedUser as any).organization?.name || '',
       },
     };
@@ -198,7 +198,7 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      include: { organization: true },
+      include: { memberships: { include: { organization: true } } },
     });
 
     if (!user) {
@@ -226,7 +226,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.generateToken(user);
+    const token = this.generateToken(user as any);
 
     return {
       accessToken: token,
@@ -236,8 +236,8 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        organizationId: user.organizationId || '',
-        organizationName: (user as any).organization?.name || '',
+        organizationId: (user as any).memberships?.[0]?.organizationId || '',
+        organizationName: (user as any).memberships?.[0]?.organization?.name || '',
       },
     };
   }
@@ -268,7 +268,9 @@ export class AuthService {
         firstName: dto.firstName,
         lastName: dto.lastName,
         role: dto.role || Role.STUDENT,
-        organizationId,
+        memberships: {
+          create: { organizationId }
+        }
       },
     });
 
@@ -292,7 +294,7 @@ export class AuthService {
   }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { organization: true },
+      include: { memberships: { include: { organization: true } } },
     });
 
     if (!user) {
@@ -305,8 +307,8 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      organizationId: user.organizationId || '',
-      organizationName: user.organization?.name || '',
+      organizationId: (user as any).memberships?.[0]?.organizationId || '',
+      organizationName: (user as any).memberships?.[0]?.organization?.name || '',
     };
   }
 
@@ -329,7 +331,7 @@ export class AuthService {
         ...(dto.lastName && { lastName: dto.lastName }),
         ...(dto.role && { role: dto.role }),
       },
-      include: { organization: true },
+      include: { memberships: { include: { organization: true } } },
     });
 
     return {
@@ -338,24 +340,19 @@ export class AuthService {
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       role: updatedUser.role,
-      organizationId: updatedUser.organizationId || '',
-      organizationName: (updatedUser as any).organization?.name || '',
+      organizationId: (updatedUser as any).memberships?.[0]?.organizationId || '',
+      organizationName: (updatedUser as any).memberships?.[0]?.organization?.name || '',
     };
   }
 
   /**
    * Generate JWT token with organization context
    */
-  private generateToken(user: {
-    id: string;
-    email: string;
-    organizationId: string | null;
-    role: Role;
-  }): string {
+  private generateToken(user: any): string {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
-      organizationId: user.organizationId || undefined,
+      organizationId: user.memberships?.[0]?.organizationId || undefined,
       role: user.role,
     };
 
@@ -377,14 +374,14 @@ export class AuthService {
     // 1. Try to find by googleId first
     let user = await this.prisma.user.findUnique({
       where: { googleId: googleProfile.googleId },
-      include: { organization: true },
+      include: { memberships: { include: { organization: true } } },
     });
 
     if (!user) {
       // 2. Try to find by email (link existing account)
       const existing = await this.prisma.user.findUnique({
         where: { email: googleProfile.email },
-        include: { organization: true },
+        include: { memberships: { include: { organization: true } } },
       });
 
       if (existing) {
@@ -392,7 +389,7 @@ export class AuthService {
         user = await this.prisma.user.update({
           where: { id: existing.id },
           data: { googleId: googleProfile.googleId },
-          include: { organization: true },
+          include: { memberships: { include: { organization: true } } },
         });
       } else {
         // 3. Create a brand-new user
@@ -404,12 +401,12 @@ export class AuthService {
             googleId: googleProfile.googleId,
             role: Role.STUDENT,
           },
-          include: { organization: true },
+          include: { memberships: { include: { organization: true } } },
         });
       }
     }
 
-    const token = this.generateToken(user);
+    const token = this.generateToken(user as any);
 
     return {
       accessToken: token,
@@ -419,8 +416,8 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        organizationId: user.organizationId || '',
-        organizationName: (user as any).organization?.name || '',
+        organizationId: (user as any).memberships?.[0]?.organizationId || '',
+        organizationName: (user as any).memberships?.[0]?.organization?.name || '',
       },
     };
   }

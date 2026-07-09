@@ -42,9 +42,8 @@ export class OrganizationsService {
         },
       });
 
-      await tx.user.update({
-        where: { id: userId },
-        data: { organizationId: org.id },
+      await tx.orgMembership.create({
+        data: { userId, organizationId: org.id },
       });
 
       return org;
@@ -94,7 +93,6 @@ export class OrganizationsService {
       include: {
         _count: {
           select: {
-            users: true,
             courses: true,
             members: true,
           },
@@ -139,11 +137,10 @@ export class OrganizationsService {
       isPublic: organization.isPublic,
       plan: organization.plan,
       createdAt: organization.createdAt,
-      userCount: organization._count.users,
       courseCount: organization._count.courses,
       memberCount: organization._count.members,
       isMember,
-      courses: organization.courses.map((course) => ({
+      courses: organization.courses.map((course: any) => ({
         id: course.id,
         name: course.name,
         description: course.description,
@@ -162,7 +159,7 @@ export class OrganizationsService {
       where: { id: organizationId },
       include: {
         _count: {
-          select: { users: true, courses: true },
+          select: { members: true, courses: true },
         },
       },
     });
@@ -180,7 +177,7 @@ export class OrganizationsService {
       isPublic: organization.isPublic,
       plan: organization.plan,
       createdAt: organization.createdAt,
-      userCount: organization._count.users,
+      memberCount: organization._count.members,
       courseCount: organization._count.courses,
     };
   }
@@ -297,20 +294,26 @@ export class OrganizationsService {
    * Get all users in organization
    */
   async getUsers(organizationId: string): Promise<any[]> {
-    return this.prisma.user.findMany({
+    const memberships = await this.prisma.orgMembership.findMany({
       where: { organizationId },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+          }
+        }
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { joinedAt: 'desc' },
     });
+    return memberships.map(m => m.user);
   }
+
 
   /**
    * Update organization
@@ -368,7 +371,7 @@ export class OrganizationsService {
     const org = await this.prisma.organization.findUnique({
       where: { id: organizationId },
       include: {
-        _count: { select: { users: true, courses: true } },
+        _count: { select: { members: true, courses: true } },
       },
     });
 
@@ -380,7 +383,7 @@ export class OrganizationsService {
       return limits.maxCourses === -1 || org._count.courses < limits.maxCourses;
     }
     if (limitType === 'users') {
-      return limits.maxUsers === -1 || org._count.users < limits.maxUsers;
+      return limits.maxUsers === -1 || org._count.members < limits.maxUsers;
     }
     if (limitType === 'questions') {
       const questionCount = await this.prisma.question.count({
