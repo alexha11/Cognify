@@ -27,7 +27,7 @@ function VerifyEmailContent() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(60);
   const [resendLoading, setResendLoading] = useState(false);
-  
+
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { verifyEmail, resendVerification } = useAuth();
 
@@ -104,7 +104,7 @@ function VerifyEmailContent() {
 
   const handleResend = async () => {
     if (resendCooldown > 0 || resendLoading) return;
-    
+
     setError("");
     setResendLoading(true);
     try {
@@ -112,7 +112,8 @@ function VerifyEmailContent() {
       setResendCooldown(60); // Reset cooldown
     } catch (err: any) {
       setError(
-        err.response?.data?.message || "Failed to resend code. Try again later."
+        err.response?.data?.message ||
+          "Failed to resend code. Try again later.",
       );
     } finally {
       setResendLoading(false);
@@ -156,7 +157,9 @@ function VerifyEmailContent() {
                   {otp.map((digit, index) => (
                     <Input
                       key={index}
-                      ref={(el) => { inputRefs.current[index] = el; }}
+                      ref={(el) => {
+                        inputRefs.current[index] = el;
+                      }}
                       type="text"
                       inputMode="numeric"
                       pattern="\d*"
@@ -164,7 +167,7 @@ function VerifyEmailContent() {
                       value={digit}
                       onChange={(e) => handleChange(index, e.target.value)}
                       onKeyDown={(e) => handleKeyDown(index, e)}
-                      className="h-12 w-10 sm:h-14 sm:w-12 text-center text-lg sm:text-xl font-semibold rounded-xl border-border/80 focus:border-primary focus:ring-primary/20 transition-all"
+                      className="h-12 w-12 sm:h-14 sm:w-14 text-center text-lg sm:text-xl font-semibold rounded-xl border-border/80 focus:border-primary focus:ring-primary/20 transition-all"
                     />
                   ))}
                 </div>
@@ -208,11 +211,13 @@ function VerifyEmailContent() {
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      }
+    >
       <VerifyEmailContent />
     </Suspense>
   );
