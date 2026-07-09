@@ -64,10 +64,7 @@ export function Header({ variant = "public" }: HeaderProps) {
       >
         {/* Left: Page breadcrumb / logo */}
         <div className="flex items-center gap-8">
-          <Link
-            href={isDashboard ? "/dashboard" : "/"}
-            className="flex items-center"
-          >
+          <Link href={"/"} className="flex items-center">
             <CognifyLogo size={100} />
           </Link>
         </div>
