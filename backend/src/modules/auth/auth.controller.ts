@@ -1,6 +1,7 @@
 import {
   Controller,
   Post,
+  Put,
   Get,
   Body,
   UseGuards,
@@ -10,7 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, InviteUserDto, VerifyEmailDto, ResendCodeDto } from './dto';
+import { RegisterDto, LoginDto, InviteUserDto, VerifyEmailDto, ResendCodeDto, UpdateProfileDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -74,6 +75,19 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   async getProfile(@CurrentUser() user: AuthenticatedUser) {
     return this.authService.getProfile(user.userId);
+  }
+
+  /**
+   * Update current user profile
+   * PUT /auth/profile
+   */
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  async updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: UpdateProfileDto,
+  ) {
+    return this.authService.updateProfile(user.userId, dto);
   }
 
   /**

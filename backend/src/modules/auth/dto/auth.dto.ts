@@ -96,3 +96,17 @@ export class ResendCodeDto {
   @IsNotEmpty()
   email: string;
 }
+
+export class UpdateProfileDto {
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
+  @IsEnum(Role)
+  @IsOptional()
+  role?: Role;
+}

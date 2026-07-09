@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { PageHeader, SectionHeader } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPut } from "@/lib/api";
-import { Organization } from "@/types";
+import { Organization, User as UserType } from "@/types";
 import { useToast } from "@/components/ui/toast";
 import {
   Settings,
@@ -38,13 +38,22 @@ export default function SettingsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
-  // Form state
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [role, setRole] = useState(user?.role || "STUDENT");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Form state for org
   const [orgName, setOrgName] = useState("");
   const [orgSlug, setOrgSlug] = useState("");
 
   useEffect(() => {
-    if (!authLoading && (!user || user.role !== "ADMIN")) {
+    if (!authLoading && !user) {
       router.push("/dashboard");
+    } else if (user) {
+      setFirstName(user.firstName);
+      setLastName(user.lastName);
+      setRole(user.role);
     }
   }, [user, authLoading, router]);
 
@@ -83,6 +92,34 @@ export default function SettingsPage() {
     }
   };
 
+  const handleSaveProfile = async () => {
+    setIsSavingProfile(true);
+    try {
+      const updatedUser = await apiPut<UserType>("/auth/profile", {
+        firstName,
+        lastName,
+        role,
+      });
+      // Update local storage and context here ideally, but next hard refresh or dashboard fetch will also get it
+      // if `useAuth` had an `updateUser(user)` function, we'd use it. For now just show toast.
+      
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        localStorage.setItem("user", JSON.stringify({ ...parsed, ...updatedUser }));
+      }
+      
+      showToast("Profile has been updated.", "success");
+      // Force reload to update context properly
+      window.location.reload();
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      showToast("Failed to save profile. Please try again.", "error");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
   if (authLoading || isLoading) {
     return (
       <DashboardLayout>
@@ -93,7 +130,7 @@ export default function SettingsPage() {
     );
   }
 
-  if (!user || user.role !== "ADMIN") return null;
+  if (!user) return null;
 
   return (
     <DashboardLayout>
@@ -114,39 +151,82 @@ export default function SettingsPage() {
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
                     <User className="h-3.5 w-3.5 opacity-40" />
-                    Full Name
+                    First Name
                   </Label>
-                  <p className="text-lg font-semibold tracking-tight text-foreground">
-                    {user.firstName} {user.lastName}
-                  </p>
+                  <Input
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                    <User className="h-3.5 w-3.5 opacity-40" />
+                    Last Name
+                  </Label>
+                  <Input
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    className="h-12 rounded-xl"
+                  />
                 </div>
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
                     <Mail className="h-3.5 w-3.5 opacity-40" />
                     Email Address
                   </Label>
-                  <p className="text-lg font-semibold tracking-tight text-foreground">
-                    {user.email}
-                  </p>
+                  <Input
+                    value={user.email}
+                    disabled
+                    className="h-12 rounded-xl bg-secondary/20"
+                  />
                 </div>
                 <div className="space-y-3">
                   <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
                     <Shield className="h-3.5 w-3.5 opacity-40" />
                     Role
                   </Label>
-                  <Badge className="text-[10px] font-bold uppercase tracking-widest">
-                    {user.role}
-                  </Badge>
+                  {user.role === "ADMIN" ? (
+                    <Badge className="text-[10px] font-bold uppercase tracking-widest mt-3">
+                      {user.role}
+                    </Badge>
+                  ) : (
+                    <select
+                      value={role}
+                      onChange={(e) => setRole(e.target.value as "ADMIN" | "INSTRUCTOR" | "STUDENT")}
+                      className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      <option value="STUDENT">Student</option>
+                      <option value="INSTRUCTOR">Instructor</option>
+                    </select>
+                  )}
                 </div>
-                <div className="space-y-3">
-                  <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Building2 className="h-3.5 w-3.5 opacity-40" />
-                    Organization
-                  </Label>
-                  <p className="text-lg font-semibold tracking-tight text-foreground">
-                    {user.organizationName}
-                  </p>
-                </div>
+                {user.organizationName && (
+                  <div className="space-y-3 md:col-span-2">
+                    <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                      <Building2 className="h-3.5 w-3.5 opacity-40" />
+                      Organization
+                    </Label>
+                    <p className="text-lg font-semibold tracking-tight text-foreground">
+                      {user.organizationName}
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="pt-6 mt-6 border-t border-border/40 flex justify-end">
+                <Button
+                  variant="default"
+                  className="rounded-xl px-8"
+                  onClick={handleSaveProfile}
+                  disabled={isSavingProfile || (firstName === user.firstName && lastName === user.lastName && role === user.role)}
+                >
+                  {isSavingProfile ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  Save Profile
+                </Button>
               </div>
             </CardContent>
           </Card>

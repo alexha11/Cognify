@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma';
-import { RegisterDto, LoginDto, InviteUserDto, AuthResponseDto } from './dto';
+import { RegisterDto, LoginDto, InviteUserDto, AuthResponseDto, UpdateProfileDto } from './dto';
 import { JwtPayload } from './interfaces';
 import { Role } from '@prisma/client';
 import { EmailService } from '../email/email.service';
@@ -307,6 +307,39 @@ export class AuthService {
       role: user.role,
       organizationId: user.organizationId || '',
       organizationName: user.organization?.name || '',
+    };
+  }
+
+  /**
+   * Update current user profile
+   */
+  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<{
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: Role;
+    organizationId: string;
+    organizationName: string;
+  }> {
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        ...(dto.firstName && { firstName: dto.firstName }),
+        ...(dto.lastName && { lastName: dto.lastName }),
+        ...(dto.role && { role: dto.role }),
+      },
+      include: { organization: true },
+    });
+
+    return {
+      id: updatedUser.id,
+      email: updatedUser.email,
+      firstName: updatedUser.firstName,
+      lastName: updatedUser.lastName,
+      role: updatedUser.role,
+      organizationId: updatedUser.organizationId || '',
+      organizationName: (updatedUser as any).organization?.name || '',
     };
   }
 
