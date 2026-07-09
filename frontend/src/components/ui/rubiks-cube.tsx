@@ -1,150 +1,135 @@
 "use client";
 
-// ─── Cube geometry ────────────────────────────────────────────────────────────
-const S = 220; // face size in px
-const H = S / 2; // half = translateZ distance
-const PAD = 10; // padding inside each face
-const GAP = 5; // gap between stickers
-const ST = (S - PAD * 2 - GAP * 2) / 3; // sticker size ≈ 63 px
+import { useRef, useMemo } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
+import {
+  PresentationControls,
+  Environment,
+  ContactShadows,
+  Float,
+} from "@react-three/drei";
+import * as THREE from "three";
 
-// ─── Classic Rubik's cube colours ─────────────────────────────────────────────
-const O = "#F97316"; // orange
-const B = "#3B82F6"; // blue
-const G = "#22C55E"; // green
-const R = "#EF4444"; // red
-const W = "#FAFAFA"; // white
-const Y = "#EAB308"; // yellow
+// Array to hold the offset positions for the 27 sub-cubes
+const POSITIONS: [number, number, number][] = [];
+const SPACING = 1.05; // Gap between cubes
 
-// 9 stickers per face (row-major 3×3). Lightly scrambled for visual interest.
-const STICKERS: Record<string, string[]> = {
-  front: [O, O, O, W, O, O, O, O, G],
-  back: [B, B, B, B, B, B, B, B, B],
-  right: [G, G, B, G, G, G, G, G, G],
-  left: [R, R, R, R, R, R, R, R, R],
-  top: [W, W, W, W, W, W, W, W, O],
-  bottom: [Y, Y, Y, Y, Y, Y, Y, Y, Y],
-};
+for (let x = -1; x <= 1; x++) {
+  for (let y = -1; y <= 1; y++) {
+    for (let z = -1; z <= 1; z++) {
+      POSITIONS.push([x * SPACING, y * SPACING, z * SPACING]);
+    }
+  }
+}
 
-// ─── 3D face transforms ───────────────────────────────────────────────────────
-const TRANSFORMS: Record<string, string> = {
-  front: `translateZ(${H}px)`,
-  back: `rotateY(180deg) translateZ(${H}px)`,
-  right: `rotateY(90deg) translateZ(${H}px)`,
-  left: `rotateY(-90deg) translateZ(${H}px)`,
-  top: `rotateX(90deg) translateZ(${H}px)`,
-  bottom: `rotateX(-90deg) translateZ(${H}px)`,
-};
+// Generate an array of materials to mimic the varied texture look in the reference image
+// We use a light monochrome palette to fit the "white color" requirement
+const MATERIALS = [
+  // Glossy White
+  new THREE.MeshPhysicalMaterial({
+    color: "#ffffff",
+    metalness: 0.1,
+    roughness: 0.1,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.1,
+  }),
+  // Matte Light Gray
+  new THREE.MeshStandardMaterial({
+    color: "#f0f0f0",
+    metalness: 0.2,
+    roughness: 0.8,
+  }),
+  // Metallic Silver
+  new THREE.MeshStandardMaterial({
+    color: "#e0e0e0",
+    metalness: 0.8,
+    roughness: 0.3,
+  }),
+  // Frosted Glass style
+  new THREE.MeshPhysicalMaterial({
+    color: "#ffffff",
+    transmission: 0.9,
+    opacity: 1,
+    metalness: 0,
+    roughness: 0.2,
+    ior: 1.5,
+    thickness: 0.5,
+  }),
+];
 
-// ─── Single face ──────────────────────────────────────────────────────────────
-function Face({ face }: { face: string }) {
+// Helper to pick a random material from the palette
+const getRandomMaterial = () =>
+  MATERIALS[Math.floor(Math.random() * MATERIALS.length)];
+
+function CubeCluster() {
+  const groupRef = useRef<THREE.Group>(null);
+
+  // Pre-assign materials so they don't change on re-render
+  const cubeMaterials = useMemo(
+    () => POSITIONS.map(() => getRandomMaterial()),
+    [],
+  );
+
+  // Gentle auto-rotation
+  useFrame((state, delta) => {
+    if (groupRef.current) {
+      groupRef.current.rotation.y += delta * 0.15;
+      groupRef.current.rotation.x += delta * 0.05;
+    }
+  });
+
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        transform: TRANSFORMS[face],
-        backgroundColor: "#111827",
-        borderRadius: 14,
-        padding: PAD,
-        display: "grid",
-        gridTemplateColumns: `repeat(3, ${ST}px)`,
-        gridTemplateRows: `repeat(3, ${ST}px)`,
-        gap: GAP,
-        boxSizing: "border-box",
-        border: "2px solid #1F2937",
-      }}
-    >
-      {STICKERS[face].map((color, i) => (
-        <div
+    <group ref={groupRef}>
+      {POSITIONS.map((pos, i) => (
+        <mesh
           key={i}
-          style={{
-            backgroundColor: color,
-            borderRadius: 5,
-            // Subtle gloss effect on each sticker
-            boxShadow:
-              "inset 0 1px 0 rgba(255,255,255,0.40), " +
-              "inset 0 -1px 0 rgba(0,0,0,0.20), " +
-              "0 1px 3px rgba(0,0,0,0.35)",
-          }}
-        />
+          position={pos}
+          material={cubeMaterials[i]}
+          castShadow
+          receiveShadow
+        >
+          <boxGeometry args={[1, 1, 1]} />
+          {/* Subtle edge highlight */}
+          <lineSegments>
+            <edgesGeometry args={[new THREE.BoxGeometry(1, 1, 1)]} />
+            <lineBasicMaterial color="#d0d0d0" linewidth={1} />
+          </lineSegments>
+        </mesh>
       ))}
-    </div>
+    </group>
   );
 }
 
-// ─── Public component ─────────────────────────────────────────────────────────
 export function RubiksCube() {
   return (
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        minHeight: 340,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        perspective: "800px",
-      }}
-    >
-      {/*
-        Plain <style> (not styled-jsx) works in both Pages Router and App Router.
-        All 3D transforms are inline — no class dependency for geometry.
-      */}
-      <style>{`
-        @keyframes rubiks-float {
-          0%   { transform: rotateX(-22deg) rotateY(0deg)   translateY(0px); }
-          25%  { transform: rotateX(-28deg) rotateY(90deg)  translateY(-8px); }
-          50%  { transform: rotateX(-22deg) rotateY(180deg) translateY(0px); }
-          75%  { transform: rotateX(-16deg) rotateY(270deg) translateY(-8px); }
-          100% { transform: rotateX(-22deg) rotateY(360deg) translateY(0px); }
-        }
-        .rubiks-cube-spin {
-          animation: rubiks-float 20s linear infinite;
-        }
-        .rubiks-cube-spin:hover {
-          animation-play-state: paused;
-          cursor: grab;
-        }
-        @media (prefers-reduced-motion: reduce) {
-          .rubiks-cube-spin {
-            animation: none;
-            transform: rotateX(-22deg) rotateY(-35deg);
-          }
-        }
-      `}</style>
+    <div className="w-full h-full min-h-[400px] md:min-h-[500px]">
+      <Canvas camera={{ position: [5, 4, 6], fov: 45 }}>
+        {/* Soft lighting setup for a clean white look */}
+        <ambientLight intensity={0.7} />
+        <directionalLight position={[10, 10, 5]} intensity={1.5} castShadow />
+        <directionalLight position={[-10, -10, -5]} intensity={0.5} />
+        <Environment preset="city" />
 
-      <div style={{ position: "relative" }}>
-        {/* Floating ground shadow */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: -32,
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: S * 0.72,
-            height: 28,
-            background:
-              "radial-gradient(ellipse at center, rgba(0,0,0,0.22) 0%, transparent 70%)",
-            filter: "blur(8px)",
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* The cube itself */}
-        <div
-          className="rubiks-cube-spin"
-          style={{
-            position: "relative",
-            width: S,
-            height: S,
-            transformStyle: "preserve-3d",
-          }}
+        {/* Presentation controls allow the user to drag to rotate the whole assembly */}
+        <PresentationControls
+          rotation={[0, 0.3, 0]}
+          polar={[-Math.PI / 3, Math.PI / 3]}
+          azimuth={[-Math.PI / 1.4, Math.PI / 2]}
         >
-          {Object.keys(STICKERS).map((face) => (
-            <Face key={face} face={face} />
-          ))}
-        </div>
-      </div>
+          <Float speed={1.5} rotationIntensity={0.5} floatIntensity={1}>
+            <CubeCluster />
+          </Float>
+        </PresentationControls>
+
+        {/* Soft shadow on the floor */}
+        <ContactShadows
+          position={[0, -2.5, 0]}
+          opacity={0.4}
+          scale={10}
+          blur={2}
+          far={4}
+        />
+      </Canvas>
     </div>
   );
 }

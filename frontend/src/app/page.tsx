@@ -27,12 +27,6 @@ export default function HomePage() {
 
       <main className="flex-1 pt-32 pb-32">
         <div className="mx-auto max-w-7xl px-8">
-          {/* ── Hero ────────────────────────────────────────────────────── */}
-          {/*
-            md:grid-cols-2 fires at 768 px — much sooner than the previous
-            lg:grid-cols-2 (1024 px), so the columns sit side-by-side on
-            most laptop/desktop viewports.
-          */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center pt-8 md:pt-16">
             {/* Left column — text */}
             <div className="space-y-8 text-center md:text-left">
@@ -63,19 +57,12 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right column — Rubik's cube */}
-            {/*
-              Fixed height (h-[420px]) gives the cube room to breathe and
-              keeps the two columns vertically centred regardless of text height.
-              The gradient blob sits behind the cube as a soft ambient glow.
-            */}
-            <div className="relative w-full h-[420px] flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/20 rounded-full blur-3xl opacity-60 -z-10" />
+            <div className="relative w-full aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-tr from-secondary/40 to-transparent rounded-full blur-3xl opacity-50 -z-10" />
               <RubiksCube />
             </div>
           </div>
 
-          {/* ── Feature grid ────────────────────────────────────────────── */}
           <div id="features" className="mt-40 grid gap-8 md:grid-cols-3">
             {[
               {
