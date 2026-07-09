@@ -45,15 +45,11 @@ const MATERIALS = [
     metalness: 0.8,
     roughness: 0.3,
   }),
-  // Frosted Glass style
-  new THREE.MeshPhysicalMaterial({
-    color: "#ffffff",
-    transmission: 0.9,
-    opacity: 1,
-    metalness: 0,
-    roughness: 0.2,
-    ior: 1.5,
-    thickness: 0.5,
+  // Soft White
+  new THREE.MeshStandardMaterial({
+    color: "#fafafa",
+    metalness: 1,
+    roughness: 1,
   }),
 ];
 
