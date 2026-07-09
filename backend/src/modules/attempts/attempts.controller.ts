@@ -22,7 +22,6 @@ export class AttemptsController {
     return this.attemptsService.create(
       dto,
       user.userId,
-      user.organizationId || '',
     );
   }
 
@@ -43,7 +42,6 @@ export class AttemptsController {
   async getStats(@CurrentUser() user: AuthenticatedUser): Promise<any> {
     return this.attemptsService.getOverallStats(
       user.userId,
-      user.organizationId || '',
     );
   }
 
@@ -59,7 +57,6 @@ export class AttemptsController {
     return this.attemptsService.getCourseProgress(
       courseId,
       user.userId,
-      user.organizationId || '',
     );
   }
 }

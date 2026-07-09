@@ -21,14 +21,9 @@ export class MaterialsService {
   async create(
     dto: CreateMaterialDto,
     userId: string,
-    organizationId: string,
   ): Promise<any> {
-    // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id: dto.courseId, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id: dto.courseId },
     });
 
     if (!course) {
@@ -57,14 +52,9 @@ export class MaterialsService {
     fileSize: number,
     courseId: string,
     userId: string,
-    organizationId: string,
   ): Promise<any> {
-    // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id: courseId, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id: courseId },
     });
 
     if (!course) {
@@ -137,12 +127,10 @@ export class MaterialsService {
    */
   async findByCourse(
     courseId: string,
-    organizationId?: string,
   ): Promise<any[]> {
     return this.prisma.material.findMany({
       where: {
         courseId,
-        ...(organizationId && { course: { organizationId } }),
       },
       include: {
         uploadedBy: {
@@ -162,13 +150,9 @@ export class MaterialsService {
    */
   async remove(
     id: string,
-    organizationId: string,
   ): Promise<{ message: string }> {
     const material = await this.prisma.material.findFirst({
-      where: {
-        id,
-        ...(organizationId && { course: { organizationId } }),
-      },
+      where: { id },
     });
 
     if (!material) {

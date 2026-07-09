@@ -13,9 +13,6 @@ export class CreateCourseDto {
   @IsOptional()
   isPublic?: boolean;
 
-  @IsString()
-  @IsOptional()
-  organizationId?: string;
 }
 
 export class UpdateCourseDto {

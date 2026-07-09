@@ -132,8 +132,8 @@ export default function CoursesPage() {
                     <p className="text-sm font-semibold text-foreground">Visibility</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {newCourse.isPublic
-                        ? "Public — students from any followed organization can see this course"
-                        : "Private — only members of your organization can access this course"}
+                        ? "Public — everyone can see this course"
+                        : "Private — only you can access this course"}
                     </p>
                   </div>
                   <button

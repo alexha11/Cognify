@@ -9,13 +9,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  // Create an orga
-  const orga = await prisma.organization.create({
-    data: {
-      name: 'Test University',
-      slug: 'test-university',
-    },
-  });
+
 
   // Create an instructor
   const hashedPassword = await bcrypt.hash('password123', 10);
@@ -26,7 +20,6 @@ async function main() {
       firstName: 'Test',
       lastName: 'Instructor',
       role: 'INSTRUCTOR',
-      memberships: { create: { organizationId: orga.id } },
     },
   });
 
@@ -37,7 +30,6 @@ async function main() {
       description: 'Learn the basics of Artificial Intelligence.',
       isPublished: true,
       createdById: instructor.id,
-      organizationId: orga.id,
     },
   });
 

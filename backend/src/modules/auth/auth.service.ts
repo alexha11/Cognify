@@ -9,7 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma';
-import { RegisterDto, LoginDto, InviteUserDto, AuthResponseDto, UpdateProfileDto } from './dto';
+import { RegisterDto, LoginDto, AuthResponseDto, UpdateProfileDto } from './dto';
 import { JwtPayload } from './interfaces';
 import { Role } from '@prisma/client';
 import { EmailService } from '../email/email.service';
@@ -48,38 +48,6 @@ export class AuthService {
         where: { email: dto.email },
         data: { passwordHash, firstName: dto.firstName, lastName: dto.lastName },
       });
-    } else if (dto.organizationName) {
-      // Flow 1: Create Organization + User (Instructor/Admin)
-      const slug = this.generateSlug(dto.organizationName);
-
-      const existingOrg = await this.prisma.organization.findUnique({
-        where: { slug },
-      });
-
-      if (existingOrg) {
-        throw new ConflictException('Organization name already taken');
-      }
-
-      const result = await this.prisma.$transaction(async (tx) => {
-        const newOrg = await tx.organization.create({
-          data: { name: dto.organizationName!, slug },
-        });
-
-        const newUser = await tx.user.create({
-          data: {
-            email: dto.email,
-            passwordHash,
-            firstName: dto.firstName,
-            lastName: dto.lastName,
-            role: Role.INSTRUCTOR,
-            memberships: { create: { organizationId: newOrg.id } },
-          },
-        });
-
-        return { user: newUser, organization: newOrg };
-      });
-
-      user = result.user;
     } else {
       // Flow 2: Create User Only
       user = await this.prisma.user.create({
@@ -106,7 +74,7 @@ export class AuthService {
   async verifyEmail(email: string, code: string): Promise<AuthResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email },
-      include: { memberships: { include: { organization: true } }, emailVerification: true },
+      include: { emailVerification: true },
     });
 
     if (!user) {
@@ -137,7 +105,6 @@ export class AuthService {
       return tx.user.update({
         where: { id: user.id },
         data: { isEmailVerified: true },
-        include: { memberships: { include: { organization: true } } },
       });
     });
 
@@ -151,8 +118,6 @@ export class AuthService {
         firstName: updatedUser.firstName,
         lastName: updatedUser.lastName,
         role: updatedUser.role,
-        organizationId: (updatedUser as any).memberships?.[0]?.organizationId || '',
-        organizationName: (updatedUser as any).organization?.name || '',
       },
     };
   }
@@ -198,7 +163,6 @@ export class AuthService {
   async login(dto: LoginDto): Promise<AuthResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
-      include: { memberships: { include: { organization: true } } },
     });
 
     if (!user) {
@@ -236,49 +200,10 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        organizationId: (user as any).memberships?.[0]?.organizationId || '',
-        organizationName: (user as any).memberships?.[0]?.organization?.name || '',
       },
     };
   }
 
-  /**
-   * Invite a new user to the organization
-   * Only admins can invite users
-   */
-  async inviteUser(
-    dto: InviteUserDto,
-    organizationId: string,
-  ): Promise<{ message: string; userId: string }> {
-    // Check if email already exists
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
-
-    if (existingUser) {
-      throw new ConflictException('Email already registered');
-    }
-
-    const passwordHash = await bcrypt.hash(dto.password, 12);
-
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        passwordHash,
-        firstName: dto.firstName,
-        lastName: dto.lastName,
-        role: dto.role || Role.STUDENT,
-        memberships: {
-          create: { organizationId }
-        }
-      },
-    });
-
-    return {
-      message: 'User created successfully',
-      userId: user.id,
-    };
-  }
 
   /**
    * Get current user profile
@@ -289,12 +214,9 @@ export class AuthService {
     firstName: string;
     lastName: string;
     role: Role;
-    organizationId: string;
-    organizationName: string;
   }> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
-      include: { memberships: { include: { organization: true } } },
     });
 
     if (!user) {
@@ -307,8 +229,6 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
-      organizationId: (user as any).memberships?.[0]?.organizationId || '',
-      organizationName: (user as any).memberships?.[0]?.organization?.name || '',
     };
   }
 
@@ -321,8 +241,6 @@ export class AuthService {
     firstName: string;
     lastName: string;
     role: Role;
-    organizationId: string;
-    organizationName: string;
   }> {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -331,7 +249,6 @@ export class AuthService {
         ...(dto.lastName && { lastName: dto.lastName }),
         ...(dto.role && { role: dto.role }),
       },
-      include: { memberships: { include: { organization: true } } },
     });
 
     return {
@@ -340,8 +257,6 @@ export class AuthService {
       firstName: updatedUser.firstName,
       lastName: updatedUser.lastName,
       role: updatedUser.role,
-      organizationId: (updatedUser as any).memberships?.[0]?.organizationId || '',
-      organizationName: (updatedUser as any).memberships?.[0]?.organization?.name || '',
     };
   }
 
@@ -352,7 +267,6 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
-      organizationId: user.memberships?.[0]?.organizationId || undefined,
       role: user.role,
     };
 
@@ -374,14 +288,12 @@ export class AuthService {
     // 1. Try to find by googleId first
     let user = await this.prisma.user.findUnique({
       where: { googleId: googleProfile.googleId },
-      include: { memberships: { include: { organization: true } } },
     });
 
     if (!user) {
       // 2. Try to find by email (link existing account)
       const existing = await this.prisma.user.findUnique({
         where: { email: googleProfile.email },
-        include: { memberships: { include: { organization: true } } },
       });
 
       if (existing) {
@@ -389,7 +301,6 @@ export class AuthService {
         user = await this.prisma.user.update({
           where: { id: existing.id },
           data: { googleId: googleProfile.googleId },
-          include: { memberships: { include: { organization: true } } },
         });
       } else {
         // 3. Create a brand-new user
@@ -401,7 +312,6 @@ export class AuthService {
             googleId: googleProfile.googleId,
             role: Role.STUDENT,
           },
-          include: { memberships: { include: { organization: true } } },
         });
       }
     }
@@ -416,20 +326,7 @@ export class AuthService {
         firstName: user.firstName,
         lastName: user.lastName,
         role: user.role,
-        organizationId: (user as any).memberships?.[0]?.organizationId || '',
-        organizationName: (user as any).memberships?.[0]?.organization?.name || '',
       },
     };
-  }
-
-  /**
-   * Generate URL-safe slug from organization name
-   */
-  private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/^-|-$/g, '')
-      .substring(0, 50);
   }
 }

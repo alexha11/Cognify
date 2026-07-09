@@ -5,43 +5,23 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
-import { OrganizationsService } from '../organizations';
 import { Role } from '@prisma/client';
 
 @Injectable()
 export class CoursesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly organizationsService: OrganizationsService,
   ) {}
 
   /**
    * Create a new course
-   * Enforces organization plan limits
    */
-  async create(dto: CreateCourseDto, userId: string, organizationId: string) {
-    // Use organizationId from dto if provided (admin creating for a specific org),
-    // otherwise fall back to the caller's org.
-    const resolvedOrgId = dto.organizationId || organizationId;
-
-    // Check plan limits
-    const canCreate = await this.organizationsService.checkPlanLimit(
-      resolvedOrgId,
-      'courses',
-    );
-
-    if (!canCreate) {
-      throw new ForbiddenException(
-        'Course limit reached for your plan. Please upgrade to create more courses.',
-      );
-    }
-
+  async create(dto: CreateCourseDto, userId: string) {
     const course = await this.prisma.course.create({
       data: {
         name: dto.name,
         description: dto.description,
         isPublic: dto.isPublic ?? false,
-        organizationId: resolvedOrgId,
         createdById: userId,
       },
       include: {
@@ -65,59 +45,26 @@ export class CoursesService {
   }
 
   /**
-   * Get all courses for organization
-   * Also includes public courses from orgs the user has joined as a member
+   * Get all courses
    * Students only see published courses
    */
-  async findAll(organizationId?: string, userRole?: Role, userId?: string) {
+  async findAll(userRole?: Role, userId?: string) {
     const publishedFilter =
       userRole === Role.STUDENT || !userRole ? { isPublished: true } : {};
 
-    // Get orgs the user is a member of (if userId provided)
-    let memberOrgIds: string[] = [];
-    if (userId) {
-      const memberships = await this.prisma.orgMembership.findMany({
-        where: { userId },
-        select: { organizationId: true },
-      });
-      memberOrgIds = memberships.map((m) => m.organizationId);
-    }
-
-    let whereClause: any;
-
-    if (organizationId) {
-      // User belongs to an org — show their org's courses + public courses from joined orgs
-      whereClause = {
-        ...publishedFilter,
-        OR: [
-          { organizationId },
-          ...(memberOrgIds.length > 0
-            ? [{ organizationId: { in: memberOrgIds }, isPublic: true }]
-            : []),
-        ],
-      };
-    } else {
-      // Standalone user — show public courses, their own, and joined org public courses
-      whereClause = {
-        ...publishedFilter,
-        OR: [
-          { isPublic: true },
-          ...(userId ? [{ createdById: userId }] : []),
-          ...(memberOrgIds.length > 0
-            ? [{ organizationId: { in: memberOrgIds }, isPublic: true }]
-            : []),
-        ],
-      };
-    }
+    const whereClause = {
+      ...publishedFilter,
+      OR: [
+        { isPublic: true },
+        ...(userId ? [{ createdById: userId }] : []),
+      ],
+    };
 
     return this.prisma.course.findMany({
       where: whereClause,
       include: {
         createdBy: {
           select: { id: true, firstName: true, lastName: true },
-        },
-        organization: {
-          select: { id: true, name: true, slug: true },
         },
         _count: {
           select: { materials: true, questions: true },
@@ -127,21 +74,17 @@ export class CoursesService {
     });
   }
 
-
   /**
    * Get single course by ID
-   * Enforces organization isolation
    */
   async findOne(
     id: string,
-    organizationId?: string,
     userRole?: Role,
     userId?: string,
   ) {
     const course = await this.prisma.course.findFirst({
       where: {
         id,
-        ...(organizationId && { organizationId }),
         ...(userRole === Role.STUDENT || !userRole
           ? { isPublished: true }
           : {}),
@@ -165,7 +108,6 @@ export class CoursesService {
           },
           orderBy: { createdAt: 'desc' },
         },
-
       } as any,
     });
 
@@ -187,14 +129,10 @@ export class CoursesService {
     id: string,
     dto: UpdateCourseDto,
     userId: string,
-    organizationId: string,
     userRole: Role,
   ) {
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id },
     });
 
     if (!course) {
@@ -224,20 +162,15 @@ export class CoursesService {
   /**
    * Toggle course visibility (public/private)
    * Instructors can only change their own courses
-   * Admins can change any course in their organization
    */
   async updateVisibility(
     id: string,
     isPublic: boolean,
     userId: string,
-    organizationId: string,
     role: Role,
   ): Promise<any> {
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id },
     });
 
     if (!course) {
@@ -265,8 +198,6 @@ export class CoursesService {
 
   /**
    * Check if user has completed all prerequisites for a course.
-   * NOTE: CoursePrerequisite model is not yet in the schema, so this
-   * always returns true until the feature is implemented.
    */
   async checkPrerequisites(_courseId: string, _userId: string): Promise<boolean> {
     return true;
@@ -278,16 +209,15 @@ export class CoursesService {
   async addPrerequisite(
     courseId: string,
     prerequisiteId: string,
-    organizationId: string,
     userId: string,
     role: Role,
   ) {
     // Verify course access
-    await this.verifyCourseAccess(courseId, organizationId, userId, role);
+    await this.verifyCourseAccess(courseId, userId, role);
 
     // Verify prerequisite exists
     const prerequisite = await this.prisma.course.findFirst({
-      where: { id: prerequisiteId, organizationId },
+      where: { id: prerequisiteId },
     });
 
     if (!prerequisite) {
@@ -321,11 +251,10 @@ export class CoursesService {
   async removePrerequisite(
     courseId: string,
     prerequisiteId: string,
-    organizationId: string,
     userId: string,
     role: Role,
   ) {
-    await this.verifyCourseAccess(courseId, organizationId, userId, role);
+    await this.verifyCourseAccess(courseId, userId, role);
 
     await (this.prisma as any).coursePrerequisite.delete({
       where: {
@@ -344,15 +273,11 @@ export class CoursesService {
    */
   private async verifyCourseAccess(
     courseId: string,
-    organizationId: string,
     userId: string,
     role: Role,
   ) {
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id: courseId, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id: courseId },
     });
 
     if (!course) {
@@ -366,17 +291,10 @@ export class CoursesService {
 
   /**
    * Delete course
-   * Only admin can delete
    */
-  async remove(
-    id: string,
-    organizationId: string,
-  ): Promise<{ message: string }> {
+  async remove(id: string): Promise<{ message: string }> {
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id },
     });
 
     if (!course) {

@@ -5,8 +5,6 @@ export interface User {
   firstName: string;
   lastName: string;
   role: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
-  organizationId: string;
-  organizationName: string;
 }
 
 export interface AuthResponse {
@@ -24,26 +22,10 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  organizationName?: string;
   role?: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
 }
 
-// Organization types
-export interface Organization {
-  id: string;
-  name: string;
-  slug: string;
-  plan: 'FREE' | 'PRO' | 'ENTERPRISE';
-  createdAt: string;
-  userCount: number;
-  courseCount: number;
-}
 
-export interface PlanLimits {
-  maxCourses: number;
-  maxQuestions: number;
-  maxUsers: number;
-}
 
 // Course types
 export interface Course {
@@ -51,7 +33,7 @@ export interface Course {
   name: string;
   description?: string;
   isPublished: boolean;
-  organizationId: string;
+
   createdById: string;
   createdAt: string;
   createdBy: {

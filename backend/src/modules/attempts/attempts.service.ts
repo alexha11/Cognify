@@ -12,15 +12,12 @@ export class AttemptsService {
 
   /**
    * Submit an answer attempt
-   * Validates question and answer belong to user's organization
    */
-  async create(dto: CreateAttemptDto, userId: string, organizationId: string) {
-    // Verify question exists and belongs to organization
+  async create(dto: CreateAttemptDto, userId: string) {
     const question = await this.prisma.question.findFirst({
       where: {
         id: dto.questionId,
         approved: true,
-        ...(organizationId && { course: { organizationId } }),
       },
       include: {
         answers: true,
@@ -120,13 +117,10 @@ export class AttemptsService {
   /**
    * Get attempt statistics for user
    */
-  async getOverallStats(userId: string, organizationId: string): Promise<any> {
+  async getOverallStats(userId: string): Promise<any> {
     const attempts = await this.prisma.attempt.findMany({
       where: {
         userId,
-        question: {
-        ...(organizationId && { course: { organizationId } }),
-        },
       },
       select: {
         isCorrect: true,
@@ -173,13 +167,10 @@ export class AttemptsService {
   async getCourseProgress(
     courseId: string,
     userId: string,
-    organizationId: string,
   ) {
-    // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
       where: { 
         id: courseId, 
-        ...(organizationId && { organizationId }) 
       },
       include: {
         questions: {
@@ -253,17 +244,6 @@ export class AttemptsService {
 
     if (uniqueCorrectQuestions.size === course.questions.length) {
       // Mark as complete
-      // Removed until CourseCompletion table is re-added
-      // await (this.prisma as any).courseCompletion.upsert({
-      //   where: {
-      //     userId_courseId: { userId, courseId },
-      //   },
-      //   create: {
-      //     userId,
-      //     courseId,
-      //   },
-      //   update: {},
-      // });
     }
   }
 }

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { StatCard, EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
-import { Organization, Course, AttemptStats, PlanLimits } from "@/types";
+import { Course, AttemptStats } from "@/types";
 import { FeatureGate } from "@/components/ui";
 import {
   BookOpen,
@@ -24,11 +24,11 @@ import {
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const [organization, setOrganization] = useState<Organization | null>(null);
+
   const [courses, setCourses] = useState<Course[]>([]);
   const [stats, setStats] = useState<AttemptStats | null>(null);
-  const [limits, setLimits] = useState<PlanLimits | null>(null);
-  const [memberships, setMemberships] = useState<any[]>([]);
+
+
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -38,13 +38,9 @@ export default function DashboardPage() {
       try {
         const promises: Promise<any>[] = [apiGet<Course[]>("/courses")];
 
-        if (user) {
-          promises.push(apiGet<Organization>("/organizations/me"));
-          promises.push(apiGet<PlanLimits>("/organizations/limits"));
-          if (user.role === "STUDENT") {
+          if (user?.role === "STUDENT") {
             promises.push(apiGet<AttemptStats>("/attempts/stats"));
           }
-        }
 
         const results = await Promise.all(promises);
 
@@ -53,17 +49,9 @@ export default function DashboardPage() {
           Array.isArray(coursesData) ? coursesData : coursesData?.data || [],
         );
 
-        if (user) {
-          setOrganization(results[1]);
-          setLimits(results[2]);
-          if (user.role === "STUDENT" && results[3]) {
-            setStats(results[3]);
+          if (user?.role === "STUDENT" && results[1]) {
+            setStats(results[1]);
           }
-          // Fetch memberships separately (non-blocking)
-          apiGet<any[]>("/organizations/memberships")
-            .then((m) => setMemberships(Array.isArray(m) ? m : []))
-            .catch(() => setMemberships([]));
-        }
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -123,12 +111,7 @@ export default function DashboardPage() {
                 <span className="text-foreground font-semibold font-sans">
                   {user.firstName} {user.lastName}
                 </span>
-                {organization && (
-                  <>
-                    <span className="opacity-40">•</span>
-                    <span>{organization.name}</span>
-                  </>
-                )}
+
                 <span className="opacity-40">•</span>
                 <Badge
                   variant="outline"
@@ -161,7 +144,6 @@ export default function DashboardPage() {
           />
 
           {(isAdmin || isInstructor) && (
-            <>
               <StatCard
                 icon={FileQuestion}
                 label="Questions"
@@ -171,13 +153,6 @@ export default function DashboardPage() {
                 )}
                 badge="Bank"
               />
-              <StatCard
-                icon={Users}
-                label="Members"
-                value={organization?.userCount || 0}
-                badge="Staff"
-              />
-            </>
           )}
 
           {(isStudent || !user) && (
@@ -251,7 +226,7 @@ export default function DashboardPage() {
           ) : courses.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              message="No courses yet. Please explore more courses by following an organization."
+              message="No courses yet."
               action={
                 isAdmin || isInstructor ? (
                   <Button asChild variant="pill">
@@ -294,103 +269,7 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* Following Organizations */}
-        {user && memberships.length > 0 && (
-          <section className="space-y-8">
-            <div className="flex items-end justify-between">
-              <div className="space-y-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                  Following
-                </p>
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                  Organizations you follow
-                </h2>
-              </div>
-              <Link href="/organizations">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2 text-xs font-semibold"
-                >
-                  Discover more <ArrowRight className="h-3.5 w-3.5" />
-                </Button>
-              </Link>
-            </div>
 
-            <div className="space-y-10">
-              {memberships.map((m: any) => (
-                <div key={m.organization.id} className="space-y-4">
-                  {/* Org header */}
-                  <div className="flex items-center justify-between">
-                    <Link
-                      href={`/organizations/${m.organization.slug}`}
-                      className="flex items-center gap-3 group"
-                    >
-                      <div className="h-8 w-8 rounded-xl bg-secondary/60 border border-border flex items-center justify-center">
-                        {m.organization.logoUrl ? (
-                          <img
-                            src={m.organization.logoUrl}
-                            alt={m.organization.name}
-                            className="h-full w-full object-cover rounded-xl"
-                          />
-                        ) : (
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
-                          {m.organization.name}
-                        </p>
-                        <p className="text-[10px] text-muted-foreground">
-                          {m.organization.courseCount} courses
-                        </p>
-                      </div>
-                    </Link>
-                    <Link href={`/organizations/${m.organization.slug}`}>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="gap-1.5 text-xs"
-                      >
-                        View all <ArrowRight className="h-3 w-3" />
-                      </Button>
-                    </Link>
-                  </div>
-
-                  {/* Courses */}
-                  {m.organization.courses.length === 0 ? (
-                    <p className="text-sm text-muted-foreground pl-11">
-                      No public courses yet.
-                    </p>
-                  ) : (
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                      {m.organization.courses.slice(0, 3).map((course: any) => (
-                        <Link key={course.id} href={`/courses/${course.id}`}>
-                          <Card className="group h-full hover:border-primary/20 transition-all duration-300">
-                            <CardHeader className="p-6">
-                              <CardTitle className="text-base font-semibold tracking-tight group-hover:text-primary transition-colors line-clamp-1">
-                                {course.name}
-                              </CardTitle>
-                              <p className="text-sm text-muted-foreground font-serif line-clamp-2 leading-relaxed">
-                                {course.description || "No description yet."}
-                              </p>
-                            </CardHeader>
-                            <CardContent className="px-6 pb-6 pt-0">
-                              <div className="pt-4 border-t border-border/40 flex items-center gap-3 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                                <FileQuestion className="h-3.5 w-3.5 opacity-40" />
-                                {course.questionCount} Questions
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </section>
-        )}
 
         {/* Enhanced Guest CTA */}
         {!user && (

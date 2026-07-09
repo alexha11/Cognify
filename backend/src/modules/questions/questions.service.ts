@@ -5,47 +5,27 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
-import { OrganizationsService } from '../organizations';
 import { Role } from '@prisma/client';
 
 @Injectable()
 export class QuestionsService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly organizationsService: OrganizationsService,
   ) {}
 
   /**
    * Create a new question with answers
-   * Enforces organization plan limits
    */
   async create(
     dto: CreateQuestionDto,
     userId: string,
-    organizationId: string,
   ): Promise<any> {
-    // Verify course belongs to organization
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id: dto.courseId, 
-        ...(organizationId && { organizationId }) 
-      },
+      where: { id: dto.courseId },
     });
 
     if (!course) {
       throw new NotFoundException('Course not found');
-    }
-
-    // Check plan limits
-    const canCreate = await this.organizationsService.checkPlanLimit(
-      organizationId,
-      'questions',
-    );
-
-    if (!canCreate) {
-      throw new ForbiddenException(
-        'Question limit reached for your plan. Please upgrade to add more questions.',
-      );
     }
 
     // Ensure exactly one correct answer
@@ -115,13 +95,11 @@ export class QuestionsService {
    */
   async findByCourse(
     courseId: string,
-    organizationId?: string,
     userRole?: Role,
   ) {
     return this.prisma.question.findMany({
       where: {
         courseId,
-        ...(organizationId && { organizationId }),
         ...(userRole === Role.STUDENT || !userRole ? { approved: true } : {}),
       },
       include: {
@@ -158,9 +136,11 @@ export class QuestionsService {
         approved: true,
       },
       include: {
-        answers: true,
+        answers: {
+          select: { id: true, content: true }, // Don't expose isCorrect
+        },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: 'asc' },
     });
 
     return { course, questions };
@@ -169,21 +149,13 @@ export class QuestionsService {
   /**
    * Get single question
    */
-  async findOne(id: string, organizationId?: string) {
+  async findOne(id: string) {
     const question = await this.prisma.question.findFirst({
-      where: {
-        id,
-        ...(organizationId && { organizationId }),
-      },
+      where: { id },
       include: {
         answers: true,
-        course: true,
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
+        course: {
+          select: { id: true, name: true },
         },
       },
     });
@@ -201,37 +173,35 @@ export class QuestionsService {
   async update(
     id: string,
     dto: UpdateQuestionDto,
-    organizationId: string,
   ): Promise<any> {
     const question = await this.prisma.question.findFirst({
-      where: {
-        id,
-        ...(organizationId && { course: { organizationId } }),
-      },
+      where: { id },
     });
 
     if (!question) {
       throw new NotFoundException('Question not found');
     }
 
-    return this.prisma.question.update({
-      where: { id },
-      data: dto,
-      include: {
-        answers: true,
-      },
+    return this.prisma.$transaction(async (tx) => {
+      return tx.question.update({
+        where: { id },
+        data: {
+          content: dto.content,
+          hint: dto.hint,
+        },
+        include: {
+          answers: true,
+        },
+      });
     });
   }
 
   /**
-   * Approve an AI-generated question
+   * Approve AI question
    */
-  async approve(id: string, organizationId: string) {
+  async approve(id: string) {
     const question = await this.prisma.question.findFirst({
-      where: {
-        id,
-        ...(organizationId && { course: { organizationId } }),
-      },
+      where: { id },
     });
 
     if (!question) {
@@ -241,9 +211,7 @@ export class QuestionsService {
     return this.prisma.question.update({
       where: { id },
       data: { approved: true },
-      include: {
-        answers: true,
-      },
+      include: { answers: true },
     });
   }
 
@@ -252,13 +220,9 @@ export class QuestionsService {
    */
   async remove(
     id: string,
-    organizationId: string,
   ): Promise<{ message: string }> {
     const question = await this.prisma.question.findFirst({
-      where: {
-        id,
-        ...(organizationId && { course: { organizationId } }),
-      },
+      where: { id },
     });
 
     if (!question) {
@@ -273,22 +237,20 @@ export class QuestionsService {
   }
 
   /**
-   * Get unapproved AI questions for review
+   * Get questions pending approval
    */
-  async getPendingApproval(organizationId: string) {
+  async getPendingApproval() {
     return this.prisma.question.findMany({
       where: {
-        ...(organizationId && { course: { organizationId } }),
-        aiGenerated: true,
         approved: false,
       },
       include: {
         answers: true,
         course: {
-          select: {
-            id: true,
-            name: true,
-          },
+          select: { id: true, name: true },
+        },
+        createdBy: {
+          select: { firstName: true, lastName: true },
         },
       },
       orderBy: { createdAt: 'desc' },

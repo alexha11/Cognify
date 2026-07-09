@@ -11,7 +11,7 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, InviteUserDto, VerifyEmailDto, ResendCodeDto, UpdateProfileDto } from './dto';
+import { RegisterDto, LoginDto, VerifyEmailDto, ResendCodeDto, UpdateProfileDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -29,7 +29,7 @@ export class AuthController {
   ) {}
 
   /**
-   * Register a new organization with admin user
+   * Register a new user
    * POST /auth/register
    */
   @Post('register')
@@ -90,20 +90,6 @@ export class AuthController {
     return this.authService.updateProfile(user.userId, dto);
   }
 
-  /**
-   * Invite a new user to the organization
-   * POST /auth/invite
-   * Only admins can invite users
-   */
-  @Post('invite')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  async inviteUser(
-    @Body() dto: InviteUserDto,
-    @CurrentUser('organizationId') organizationId: string,
-  ): Promise<any> {
-    return this.authService.inviteUser(dto, organizationId);
-  }
 
   /**
    * Initiate Google OAuth flow

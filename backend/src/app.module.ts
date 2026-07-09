@@ -5,7 +5,7 @@ import { appConfig, appConfigValidationSchema } from './config';
 
 // Feature modules
 import { AuthModule } from './modules/auth';
-import { OrganizationsModule } from './modules/organizations';
+
 import { CoursesModule } from './modules/courses';
 import { QuestionsModule } from './modules/questions';
 import { AttemptsModule } from './modules/attempts';
@@ -33,7 +33,7 @@ import { EmailModule } from './modules/email/email.module';
 
     // Feature modules
     AuthModule,
-    OrganizationsModule,
+
     CoursesModule,
     QuestionsModule,
     AttemptsModule,

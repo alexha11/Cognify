@@ -33,7 +33,6 @@ export class QuestionsController {
     return this.questionsService.create(
       dto,
       user.userId,
-      user.organizationId || '',
     );
   }
 
@@ -48,7 +47,6 @@ export class QuestionsController {
   ): Promise<any[]> {
     return this.questionsService.findByCourse(
       courseId,
-      user?.organizationId,
       user?.role,
     );
   }
@@ -72,10 +70,8 @@ export class QuestionsController {
   @Get('pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async getPendingApproval(
-    @CurrentUser('organizationId') organizationId: string,
-  ) {
-    return this.questionsService.getPendingApproval(organizationId);
+  async getPendingApproval() {
+    return this.questionsService.getPendingApproval();
   }
 
   /**
@@ -85,9 +81,8 @@ export class QuestionsController {
   @Get(':id')
   async findOne(
     @Param('id') id: string,
-    @CurrentUser('organizationId') organizationId?: string,
   ) {
-    return this.questionsService.findOne(id, organizationId);
+    return this.questionsService.findOne(id);
   }
 
   /**
@@ -102,7 +97,7 @@ export class QuestionsController {
     @Body() dto: UpdateQuestionDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.questionsService.update(id, dto, user.organizationId || '');
+    return this.questionsService.update(id, dto);
   }
 
   /**
@@ -114,9 +109,8 @@ export class QuestionsController {
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async approve(
     @Param('id') id: string,
-    @CurrentUser('organizationId') organizationId: string | undefined,
   ) {
-    return this.questionsService.approve(id, organizationId || '');
+    return this.questionsService.approve(id);
   }
 
   /**
@@ -130,6 +124,6 @@ export class QuestionsController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.questionsService.remove(id, user.organizationId || '');
+    return this.questionsService.remove(id);
   }
 }

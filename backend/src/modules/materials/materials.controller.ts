@@ -37,7 +37,6 @@ export class MaterialsController {
     return this.materialsService.create(
       dto,
       user.userId,
-      user.organizationId || '',
     );
   }
 
@@ -68,7 +67,6 @@ export class MaterialsController {
       file.size,
       dto.courseId,
       user.userId,
-      user.organizationId || '',
     );
   }
 
@@ -80,7 +78,7 @@ export class MaterialsController {
     @Param('courseId') courseId: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any[]> {
-    return this.materialsService.findByCourse(courseId, user?.organizationId);
+    return this.materialsService.findByCourse(courseId);
   }
 
   /**
@@ -93,6 +91,6 @@ export class MaterialsController {
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.materialsService.remove(id, user.organizationId || '');
+    return this.materialsService.remove(id);
   }
 }

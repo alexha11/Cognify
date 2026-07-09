@@ -26,9 +26,6 @@ export class RegisterDto {
   @IsNotEmpty()
   lastName: string;
 
-  @IsString()
-  @IsOptional()
-  organizationName?: string;
 
   @IsEnum(Role)
   @IsOptional()
@@ -45,28 +42,7 @@ export class LoginDto {
   password: string;
 }
 
-export class InviteUserDto {
-  @IsEmail()
-  @IsNotEmpty()
-  email: string;
 
-  @IsString()
-  @IsNotEmpty()
-  firstName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  lastName: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MinLength(8)
-  password: string;
-
-  @IsEnum(Role)
-  @IsOptional()
-  role?: Role;
-}
 
 export class AuthResponseDto {
   accessToken: string;
@@ -76,8 +52,7 @@ export class AuthResponseDto {
     firstName: string;
     lastName: string;
     role: Role;
-    organizationId: string;
-    organizationName: string;
+
   };
 }
 

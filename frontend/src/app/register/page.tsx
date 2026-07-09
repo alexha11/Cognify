@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -64,6 +65,7 @@ function GoogleIcon({ className }: { className?: string }) {
 
 export default function RegisterPage() {
   const [error, setError] = useState("");
+  const router = useRouter();
   const { register: authRegister } = useAuth();
 
   const {
@@ -85,6 +87,7 @@ export default function RegisterPage() {
     setError("");
     try {
       await authRegister(values);
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
     } catch (err: any) {
       setError(
         err.response?.data?.error?.message ||

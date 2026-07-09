@@ -8,24 +8,7 @@ datasource db {
   provider = "postgresql"
 }
 
-model Organization {
-  id               String         @id @default(uuid())
-  name             String
-  slug             String         @unique
-  plan             Plan           @default(FREE)
-  stripeCustomerId String?        @unique
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
-  description      String?
-  isPublic         Boolean        @default(false)
-  logoUrl          String?
-  courses          Course[]
-  subscriptions    Subscription[]
-  members          OrgMembership[]
 
-  @@index([slug])
-  @@index([isPublic])
-}
 
 model User {
   id                String        @id @default(uuid())
@@ -39,12 +22,14 @@ model User {
   isEmailVerified   Boolean       @default(false)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
+  plan              Plan          @default(FREE)
+  stripeCustomerId  String?       @unique
   attempts          Attempt[]
   createdCourses    Course[]      @relation("CourseCreator")
   uploadedMaterials Material[]    @relation("MaterialUploader")
   createdQuestions  Question[]    @relation("QuestionCreator")
-  memberships       OrgMembership[]
   emailVerification EmailVerification?
+  subscriptions     Subscription[]
 
   @@index([email])
 }
@@ -57,14 +42,11 @@ model Course {
   isPublic       Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
-  organizationId String
   createdById    String
   createdBy      User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   materials      Material[]
   questions      Question[]
 
-  @@index([organizationId])
   @@index([createdById])
 }
 
@@ -137,25 +119,14 @@ model Subscription {
   cancelAtPeriodEnd    Boolean            @default(false)
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
-  organizationId       String
-  organization         Organization       @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId               String
+  user                 User               @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([organizationId])
+  @@index([userId])
   @@index([stripeSubscriptionId])
 }
 
-model OrgMembership {
-  id             String       @id @default(uuid())
-  userId         String
-  organizationId String
-  joinedAt       DateTime     @default(now())
-  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, organizationId])
-  @@index([userId])
-  @@index([organizationId])
-}
 
 enum Role {
   ADMIN

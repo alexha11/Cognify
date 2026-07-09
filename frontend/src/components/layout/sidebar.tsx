@@ -19,23 +19,23 @@ import { useAuth } from "@/lib/auth";
 const navItems = {
   ADMIN: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/organizations", label: "Organizations", icon: Building2 },
+
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/questions", label: "Questions", icon: FileQuestion },
-    { href: "/users", label: "Users", icon: Users },
+
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/settings", label: "Settings", icon: Settings },
   ],
   INSTRUCTOR: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/organizations", label: "Organizations", icon: Building2 },
+
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/questions", label: "Questions", icon: FileQuestion },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
   ],
   STUDENT: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/organizations", label: "Organizations", icon: Building2 },
+
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/progress", label: "My Progress", icon: BarChart3 },
   ],
@@ -49,11 +49,7 @@ export function Sidebar() {
     ? navItems[user.role] || navItems.STUDENT
     : [
         { href: "/", label: "Home", icon: LayoutDashboard },
-        {
-          href: "/organizations",
-          label: "Browse Organizations",
-          icon: Building2,
-        },
+
         { href: "/courses", label: "Courses", icon: BookOpen },
         {
           href: "/progress",

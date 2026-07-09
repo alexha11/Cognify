@@ -2,7 +2,6 @@ import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
 import { QuestionsService } from '../questions';
-import { OrganizationsService } from '../organizations';
 import { RagService } from './rag.service';
 import { Config } from '../../config';
 
@@ -20,7 +19,6 @@ export class AiService {
   constructor(
     private readonly configService: ConfigService<Config>,
     private readonly questionsService: QuestionsService,
-    private readonly organizationsService: OrganizationsService,
     private readonly ragService: RagService,
   ) {}
 
@@ -32,7 +30,6 @@ export class AiService {
     topic: string,
     count: number,
     userId: string,
-    organizationId: string,
     materialId?: string,
   ): Promise<{ message: string; questionsCreated: number }> {
     const apiKey = this.configService.get('app.openRouterApiKey', {
@@ -44,18 +41,6 @@ export class AiService {
 
     if (!apiKey) {
       throw new BadRequestException('OpenRouter API key not configured');
-    }
-
-    // Check plan limits before generating
-    const canCreate = await this.organizationsService.checkPlanLimit(
-      organizationId,
-      'questions',
-    );
-
-    if (!canCreate) {
-      throw new BadRequestException(
-        'Question limit reached for your plan. Please upgrade.',
-      );
     }
 
     // Retrieve RAG context if materialId is provided
