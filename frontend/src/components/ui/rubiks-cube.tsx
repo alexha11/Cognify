@@ -1,94 +1,150 @@
-const STICKERS = Array.from({ length: 9 });
+"use client";
 
-type Face = "front" | "back" | "left" | "right" | "top" | "bottom";
-const FACES: Face[] = ["front", "back", "right", "left", "top", "bottom"];
+// ─── Cube geometry ────────────────────────────────────────────────────────────
+const S = 220; // face size in px
+const H = S / 2; // half = translateZ distance
+const PAD = 10; // padding inside each face
+const GAP = 5; // gap between stickers
+const ST = (S - PAD * 2 - GAP * 2) / 3; // sticker size ≈ 63 px
 
-function CubeFace({ position }: { position: Face }) {
+// ─── Classic Rubik's cube colours ─────────────────────────────────────────────
+const O = "#F97316"; // orange
+const B = "#3B82F6"; // blue
+const G = "#22C55E"; // green
+const R = "#EF4444"; // red
+const W = "#FAFAFA"; // white
+const Y = "#EAB308"; // yellow
+
+// 9 stickers per face (row-major 3×3). Lightly scrambled for visual interest.
+const STICKERS: Record<string, string[]> = {
+  front: [O, O, O, W, O, O, O, O, G],
+  back: [B, B, B, B, B, B, B, B, B],
+  right: [G, G, B, G, G, G, G, G, G],
+  left: [R, R, R, R, R, R, R, R, R],
+  top: [W, W, W, W, W, W, W, W, O],
+  bottom: [Y, Y, Y, Y, Y, Y, Y, Y, Y],
+};
+
+// ─── 3D face transforms ───────────────────────────────────────────────────────
+const TRANSFORMS: Record<string, string> = {
+  front: `translateZ(${H}px)`,
+  back: `rotateY(180deg) translateZ(${H}px)`,
+  right: `rotateY(90deg) translateZ(${H}px)`,
+  left: `rotateY(-90deg) translateZ(${H}px)`,
+  top: `rotateX(90deg) translateZ(${H}px)`,
+  bottom: `rotateX(-90deg) translateZ(${H}px)`,
+};
+
+// ─── Single face ──────────────────────────────────────────────────────────────
+function Face({ face }: { face: string }) {
   return (
     <div
-      className={`cube-face cube-face--${position} grid grid-cols-3 grid-rows-3 gap-[6%] p-[6%] rounded-[18px] border border-border bg-card shadow-[0_10px_30px_-12px_rgba(0,0,0,0.3)]`}
+      style={{
+        position: "absolute",
+        inset: 0,
+        transform: TRANSFORMS[face],
+        backgroundColor: "#111827",
+        borderRadius: 14,
+        padding: PAD,
+        display: "grid",
+        gridTemplateColumns: `repeat(3, ${ST}px)`,
+        gridTemplateRows: `repeat(3, ${ST}px)`,
+        gap: GAP,
+        boxSizing: "border-box",
+        border: "2px solid #1F2937",
+      }}
     >
-      {STICKERS.map((_, i) => (
-        <span
+      {STICKERS[face].map((color, i) => (
+        <div
           key={i}
-          className={
-            i === 4
-              ? "rounded-[6px] bg-primary"
-              : "rounded-[6px] bg-secondary border border-border/60"
-          }
+          style={{
+            backgroundColor: color,
+            borderRadius: 5,
+            // Subtle gloss effect on each sticker
+            boxShadow:
+              "inset 0 1px 0 rgba(255,255,255,0.40), " +
+              "inset 0 -1px 0 rgba(0,0,0,0.20), " +
+              "0 1px 3px rgba(0,0,0,0.35)",
+          }}
         />
       ))}
     </div>
   );
 }
 
+// ─── Public component ─────────────────────────────────────────────────────────
 export function RubiksCube() {
   return (
-    <div className="cube-scene">
-      <div className="cube">
-        {FACES.map((face) => (
-          <CubeFace key={face} position={face} />
-        ))}
-      </div>
-
-      <style jsx>{`
-        .cube-scene {
-          --size: clamp(160px, 20vw, 260px);
-          width: 100%;
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          perspective: 1400px;
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        minHeight: 340,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        perspective: "800px",
+      }}
+    >
+      {/*
+        Plain <style> (not styled-jsx) works in both Pages Router and App Router.
+        All 3D transforms are inline — no class dependency for geometry.
+      */}
+      <style>{`
+        @keyframes rubiks-float {
+          0%   { transform: rotateX(-22deg) rotateY(0deg)   translateY(0px); }
+          25%  { transform: rotateX(-28deg) rotateY(90deg)  translateY(-8px); }
+          50%  { transform: rotateX(-22deg) rotateY(180deg) translateY(0px); }
+          75%  { transform: rotateX(-16deg) rotateY(270deg) translateY(-8px); }
+          100% { transform: rotateX(-22deg) rotateY(360deg) translateY(0px); }
         }
-        .cube {
-          position: relative;
-          width: var(--size);
-          height: var(--size);
-          transform-style: preserve-3d;
-          animation: cube-spin 24s linear infinite;
+        .rubiks-cube-spin {
+          animation: rubiks-float 20s linear infinite;
         }
-        .cube:hover {
+        .rubiks-cube-spin:hover {
           animation-play-state: paused;
-        }
-        .cube-face {
-          position: absolute;
-          inset: 0;
-        }
-        .cube-face--front {
-          transform: translateZ(calc(var(--size) / 2));
-        }
-        .cube-face--back {
-          transform: rotateY(180deg) translateZ(calc(var(--size) / 2));
-        }
-        .cube-face--right {
-          transform: rotateY(90deg) translateZ(calc(var(--size) / 2));
-        }
-        .cube-face--left {
-          transform: rotateY(-90deg) translateZ(calc(var(--size) / 2));
-        }
-        .cube-face--top {
-          transform: rotateX(90deg) translateZ(calc(var(--size) / 2));
-        }
-        .cube-face--bottom {
-          transform: rotateX(-90deg) translateZ(calc(var(--size) / 2));
-        }
-
-        @keyframes cube-spin {
-          from {
-            transform: rotateX(-20deg) rotateY(0deg);
-          }
-          to {
-            transform: rotateX(-20deg) rotateY(360deg);
-          }
+          cursor: grab;
         }
         @media (prefers-reduced-motion: reduce) {
-          .cube {
+          .rubiks-cube-spin {
             animation: none;
-            transform: rotateX(-20deg) rotateY(-35deg);
+            transform: rotateX(-22deg) rotateY(-35deg);
           }
         }
       `}</style>
+
+      <div style={{ position: "relative" }}>
+        {/* Floating ground shadow */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: -32,
+            left: "50%",
+            transform: "translateX(-50%)",
+            width: S * 0.72,
+            height: 28,
+            background:
+              "radial-gradient(ellipse at center, rgba(0,0,0,0.22) 0%, transparent 70%)",
+            filter: "blur(8px)",
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* The cube itself */}
+        <div
+          className="rubiks-cube-spin"
+          style={{
+            position: "relative",
+            width: S,
+            height: S,
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {Object.keys(STICKERS).map((face) => (
+            <Face key={face} face={face} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

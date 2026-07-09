@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Brain, BarChart3, ArrowRight } from "lucide-react";
 import { Header } from "@/components/layout";
 import { useAuth } from "@/lib/auth";
+// Direct import — no dynamic(), no loading flash, no hydration mismatch
 import { RubiksCube } from "@/components/ui/rubiks-cube";
 
 export default function HomePage() {
@@ -26,9 +27,14 @@ export default function HomePage() {
 
       <main className="flex-1 pt-32 pb-32">
         <div className="mx-auto max-w-7xl px-8">
-          {/* Hero Section */}
+          {/* ── Hero ────────────────────────────────────────────────────── */}
+          {/*
+            md:grid-cols-2 fires at 768 px — much sooner than the previous
+            lg:grid-cols-2 (1024 px), so the columns sit side-by-side on
+            most laptop/desktop viewports.
+          */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center pt-8 md:pt-16">
-            {/* Left Column: Text */}
+            {/* Left column — text */}
             <div className="space-y-8 text-center md:text-left">
               <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
                 Learn faster with{" "}
@@ -37,7 +43,7 @@ export default function HomePage() {
                 </span>
               </h1>
 
-              <p className="mx-auto md:mx-0 max-w-2xl text-xl leading-relaxed text-muted-foreground">
+              <p className="mx-auto md:mx-0 max-w-lg text-xl leading-relaxed text-muted-foreground">
                 Cognify turns your learning materials into smart assessments,
                 giving students and educators actionable insights.
               </p>
@@ -57,14 +63,19 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Column: Rubik's Cube */}
-            <div className="relative w-full max-w-md mx-auto aspect-square flex items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-tr from-secondary/40 to-transparent rounded-full blur-3xl opacity-50 -z-10" />
+            {/* Right column — Rubik's cube */}
+            {/*
+              Fixed height (h-[420px]) gives the cube room to breathe and
+              keeps the two columns vertically centred regardless of text height.
+              The gradient blob sits behind the cube as a soft ambient glow.
+            */}
+            <div className="relative w-full h-[420px] flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-secondary/20 rounded-full blur-3xl opacity-60 -z-10" />
               <RubiksCube />
             </div>
           </div>
 
-          {/* Feature Grid */}
+          {/* ── Feature grid ────────────────────────────────────────────── */}
           <div id="features" className="mt-40 grid gap-8 md:grid-cols-3">
             {[
               {
@@ -92,12 +103,10 @@ export default function HomePage() {
                   <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary transition-transform group-hover:scale-110">
                     <feature.icon className="h-6 w-6" />
                   </div>
-
                   <div className="space-y-4">
                     <h3 className="text-xl font-semibold tracking-tight text-foreground">
                       {feature.title}
                     </h3>
-
                     <p className="font-serif leading-relaxed text-muted-foreground">
                       {feature.desc}
                     </p>
