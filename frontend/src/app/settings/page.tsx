@@ -59,7 +59,7 @@ export default function SettingsPage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (authLoading || !user || user.role !== "ADMIN") return;
+      if (authLoading || !user) return;
       try {
         const orgData = await apiGet<Organization>("/organizations/me");
         if (orgData) {
@@ -102,13 +102,16 @@ export default function SettingsPage() {
       });
       // Update local storage and context here ideally, but next hard refresh or dashboard fetch will also get it
       // if `useAuth` had an `updateUser(user)` function, we'd use it. For now just show toast.
-      
+
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
-        localStorage.setItem("user", JSON.stringify({ ...parsed, ...updatedUser }));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ ...parsed, ...updatedUser }),
+        );
       }
-      
+
       showToast("Profile has been updated.", "success");
       // Force reload to update context properly
       window.location.reload();
@@ -193,7 +196,11 @@ export default function SettingsPage() {
                   ) : (
                     <select
                       value={role}
-                      onChange={(e) => setRole(e.target.value as "ADMIN" | "INSTRUCTOR" | "STUDENT")}
+                      onChange={(e) =>
+                        setRole(
+                          e.target.value as "ADMIN" | "INSTRUCTOR" | "STUDENT",
+                        )
+                      }
                       className="flex h-12 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                     >
                       <option value="STUDENT">Student</option>
@@ -218,7 +225,12 @@ export default function SettingsPage() {
                   variant="default"
                   className="rounded-xl px-8"
                   onClick={handleSaveProfile}
-                  disabled={isSavingProfile || (firstName === user.firstName && lastName === user.lastName && role === user.role)}
+                  disabled={
+                    isSavingProfile ||
+                    (firstName === user.firstName &&
+                      lastName === user.lastName &&
+                      role === user.role)
+                  }
                 >
                   {isSavingProfile ? (
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />

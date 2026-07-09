@@ -2,12 +2,23 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { BookOpen, Brain, BarChart3, ArrowRight, Sparkles } from "lucide-react";
 import { Header } from "@/components/layout";
 import { useAuth } from "@/lib/auth";
+
+// Dynamically import the 3D component with SSR disabled
+const RubiksCube = dynamic(() => import("@/components/ui/rubiks-cube").then(mod => mod.RubiksCube), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full min-h-[400px] flex items-center justify-center bg-secondary/20 rounded-3xl animate-pulse">
+      <span className="text-muted-foreground font-serif text-sm">Loading 3D Experience...</span>
+    </div>
+  ),
+});
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
@@ -26,31 +37,40 @@ export default function HomePage() {
       <main className="flex-1 pt-32 pb-32">
         <div className="mx-auto max-w-7xl px-8">
           {/* Hero Section */}
-          <div className="mx-auto max-w-4xl space-y-8 text-center">
-            <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
-              Learn faster with{" "}
-              <span className="font-serif font-normal italic text-muted-foreground/80">
-                any subject.
-              </span>
-            </h1>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center pt-8 md:pt-16">
+            {/* Left Column: Text */}
+            <div className="space-y-8 text-center lg:text-left">
+              <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
+                Learn faster with{" "}
+                <span className="font-serif font-normal italic text-muted-foreground/80 block mt-2">
+                  any subject.
+                </span>
+              </h1>
 
-            <p className="mx-auto max-w-2xl text-xl leading-relaxed text-muted-foreground">
-              Cognify turns your learning materials into smart assessments,
-              giving students and educators actionable insights.
-            </p>
+              <p className="mx-auto lg:mx-0 max-w-2xl text-xl leading-relaxed text-muted-foreground">
+                Cognify turns your learning materials into smart assessments,
+                giving students and educators actionable insights.
+              </p>
 
-            <div className="flex items-center justify-center gap-3 pt-2">
-              <Link href="/courses">
-                <Button size="lg" className="rounded-full">
-                  Start learning
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button size="lg" variant="ghost" className="rounded-full">
-                  Create an account
-                </Button>
-              </Link>
+              <div className="flex items-center justify-center lg:justify-start gap-3 pt-2">
+                <Link href="/courses">
+                  <Button size="lg" className="rounded-full">
+                    Start learning
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link href="/register">
+                  <Button size="lg" variant="ghost" className="rounded-full">
+                    Create an account
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Column: 3D Rubik's Cube */}
+            <div className="relative w-full aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
+              <div className="absolute inset-0 bg-gradient-to-tr from-secondary/40 to-transparent rounded-full blur-3xl opacity-50 -z-10" />
+              <RubiksCube />
             </div>
           </div>
 
