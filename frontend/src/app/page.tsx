@@ -40,9 +40,9 @@ export default function HomePage() {
             </p>
 
             <div className="flex items-center justify-center gap-3 pt-2">
-              <Link href="/organizations">
+              <Link href="/courses">
                 <Button size="lg" className="rounded-full">
-                  Start learning — it&apos;s free
+                  Start learning
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
