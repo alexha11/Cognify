@@ -137,7 +137,7 @@ export class QuestionsService {
       },
       include: {
         answers: {
-          select: { id: true, content: true }, // Don't expose isCorrect
+          select: { id: true, content: true, isCorrect: true }, // Need isCorrect for instant frontend feedback
         },
       },
       orderBy: { createdAt: 'asc' },

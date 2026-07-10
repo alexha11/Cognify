@@ -230,7 +230,6 @@ export default function SharedQuizPage() {
                 </Button>
                 <Link href="/">
                   <Button variant="pill" size="lg">
-                    <Sparkles className="h-4 w-4 mr-2" />
                     Explore Cognify
                   </Button>
                 </Link>

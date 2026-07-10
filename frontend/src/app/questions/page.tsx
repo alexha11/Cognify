@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { apiGet, apiPost, apiDelete, apiUpload } from "@/lib/api";
+import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from "@/lib/api";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,7 @@ import {
   Filter,
   Loader2,
   BrainCircuit,
+  Pencil,
 } from "lucide-react";
 
 interface Answer {
@@ -64,6 +65,7 @@ export default function QuestionsPage() {
   
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
   // New question form state
   const [newQuestion, setNewQuestion] = useState({
@@ -139,15 +141,10 @@ export default function QuestionsPage() {
     value: string | boolean,
   ) => {
     const updated = [...newAnswers];
-    if (field === "isCorrect" && value === true) {
-      // Only one correct answer
-      updated.forEach((a, i) => {
-        a.isCorrect = i === index;
-      });
+    if (field === "isCorrect") {
+      updated[index].isCorrect = !updated[index].isCorrect;
     } else if (field === "content") {
       updated[index].content = value as string;
-    } else if (field === "isCorrect") {
-      updated[index].isCorrect = value as boolean;
     }
     setNewAnswers(updated);
   };
@@ -211,14 +208,23 @@ export default function QuestionsPage() {
     setError("");
 
     try {
-      await apiPost("/questions", {
-        content: newQuestion.content,
-        hint: newQuestion.hint || undefined,
-        courseId: selectedCourse,
-        answers: newAnswers,
-      });
+      if (editingQuestion) {
+        await apiPut(`/questions/${editingQuestion.id}`, {
+          content: newQuestion.content,
+          hint: newQuestion.hint || undefined,
+          answers: newAnswers,
+        });
+      } else {
+        await apiPost("/questions", {
+          content: newQuestion.content,
+          hint: newQuestion.hint || undefined,
+          courseId: selectedCourse,
+          answers: newAnswers,
+        });
+      }
 
       // Reset form
+      setEditingQuestion(null);
       setNewQuestion({ content: "", hint: "" });
       setNewAnswers([
         { content: "", isCorrect: true },
@@ -248,6 +254,13 @@ export default function QuestionsPage() {
     } catch (err) {
       console.error("Failed to delete question", err);
     }
+  };
+
+  const handleEditClick = (q: Question) => {
+    setEditingQuestion(q);
+    setNewQuestion({ content: q.content, hint: q.hint || "" });
+    setNewAnswers(q.answers.map(a => ({ id: a.id, content: a.content, isCorrect: a.isCorrect })));
+    setShowCreate(true);
   };
 
   return (
@@ -399,15 +412,26 @@ export default function QuestionsPage() {
                       )}
                     </div>
                     {canManage && (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(question.id)}
-                        className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5"
-                        title="Delete question"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </Button>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEditClick(question)}
+                          className="text-muted-foreground/40 hover:text-primary hover:bg-primary/5"
+                          title="Edit question"
+                        >
+                          <Pencil className="w-5 h-5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(question.id)}
+                          className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5"
+                          title="Delete question"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </Button>
+                      </div>
                     )}
                   </div>
 
@@ -455,16 +479,24 @@ export default function QuestionsPage() {
                 <div className="flex items-center justify-between">
                   <div className="space-y-1">
                     <CardTitle className="text-2xl font-semibold tracking-tight">
-                      Create question
+                      {editingQuestion ? "Edit question" : "Create question"}
                     </CardTitle>
                     <CardDescription>
-                      Add a new question for this course.
+                      {editingQuestion ? "Update this question." : "Add a new question for this course."}
                     </CardDescription>
                   </div>
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => setShowCreate(false)}
+                    onClick={() => {
+                      setShowCreate(false);
+                      setEditingQuestion(null);
+                      setNewQuestion({ content: "", hint: "" });
+                      setNewAnswers([
+                        { content: "", isCorrect: true },
+                        { content: "", isCorrect: false },
+                      ]);
+                    }}
                     className="hover:bg-secondary rounded-full"
                   >
                     <X className="w-6 h-6" />
@@ -593,7 +625,15 @@ export default function QuestionsPage() {
                   <Button
                     type="button"
                     variant="ghost"
-                    onClick={() => setShowCreate(false)}
+                    onClick={() => {
+                      setShowCreate(false);
+                      setEditingQuestion(null);
+                      setNewQuestion({ content: "", hint: "" });
+                      setNewAnswers([
+                        { content: "", isCorrect: true },
+                        { content: "", isCorrect: false },
+                      ]);
+                    }}
                     className="font-bold text-[10px] uppercase tracking-widest"
                   >
                     Discard
@@ -605,7 +645,13 @@ export default function QuestionsPage() {
                     size="xl"
                     className="px-10"
                   >
-                    {creating ? "Saving..." : "Save question"}
+                    {creating ? (
+                      "Saving..."
+                    ) : editingQuestion ? (
+                      "Save changes"
+                    ) : (
+                      "Save question"
+                    )}
                     {!creating && <ArrowRight className="ml-2 h-5 w-5" />}
                   </Button>
                 </div>
