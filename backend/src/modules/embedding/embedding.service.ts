@@ -16,11 +16,11 @@ export class EmbeddingService implements OnModuleDestroy {
     }
 
     this.initPromise = (async () => {
-      this.logger.log('Loading embedding model (all-MiniLM-L6-v2)...');
+      this.logger.log('Loading embedding model (Supabase/gte-small)...');
       const { pipeline } = await import('@huggingface/transformers');
       this.pipelineFn = (await pipeline(
         'feature-extraction',
-        'Xenova/all-MiniLM-L6-v2',
+        'Supabase/gte-small',
       )) as unknown as PipelineFunction;
       this.logger.log('Embedding model loaded successfully');
     })();
