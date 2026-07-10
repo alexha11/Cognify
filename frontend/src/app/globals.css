@@ -101,3 +101,19 @@ h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
     padding-bottom: 4rem;
   }
 }
+
+@keyframes rotateGlow {
+  0% {
+    transform: rotate(70deg);
+  }
+  50% {
+    transform: rotate(100deg);
+  }
+  100% {
+    transform: rotate(70deg);
+  }
+}
+
+.animate-rotate-glow {
+  animation: rotateGlow 4s ease-in-out infinite;
+}

@@ -41,10 +41,33 @@ export default function HomePage() {
 
               <div className="flex items-center justify-start md:justify-start gap-3 pt-2">
                 <Link href="/courses">
-                  <Button size="lg" className="rounded-full">
-                    Get started
-                    {/* <ArrowRight className="ml-2 h-4 w-4" /> */}
-                  </Button>
+                  <div className="group relative inline-flex overflow-hidden rounded-xl p-[2px] hover:scale-105 transition-transform duration-300">
+                    {/* Animated glow */}
+                    <div
+                      className="absolute inset-[-50%] -z-10 h-[200%] w-[200%] animate-rotate-glow bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 blur-lg"
+                      style={{
+                        backgroundSize: "50% 25%",
+                        backgroundRepeat: "no-repeat",
+                        backgroundPosition: "center",
+                      }}
+                    />
+
+                    <button className="relative cursor-pointer overflow-hidden rounded-[10px] bg-white px-8 py-4 text-base font-bold text-black shadow-sm transition-all duration-300">
+                      <span className="relative z-20 flex items-center gap-2">
+                        Get Started
+                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                      </span>
+
+                      {/* Shine */}
+                      <span className="absolute left-[-75%] top-0 z-10 h-full w-[50%] rotate-12 bg-black/10 blur-lg transition-all duration-1000 ease-in-out group-hover:left-[125%]" />
+
+                      {/* Border animation */}
+                      <span className="absolute left-0 top-0 block h-[20%] w-1/2 rounded-tl-[10px] border-l-2 border-t-2 border-black transition-all duration-300" />
+                      <span className="absolute right-0 top-0 block h-[60%] w-1/2 rounded-tr-[10px] border-r-2 border-t-2 border-black transition-all duration-300 group-hover:h-[90%]" />
+                      <span className="absolute bottom-0 left-0 block h-[60%] w-1/2 rounded-bl-[10px] border-b-2 border-l-2 border-black transition-all duration-300 group-hover:h-[90%]" />
+                      <span className="absolute bottom-0 right-0 block h-[20%] w-1/2 rounded-br-[10px] border-b-2 border-r-2 border-black transition-all duration-300" />
+                    </button>
+                  </div>
                 </Link>
                 <Link href="/register">
                   <Button size="lg" variant="ghost" className="rounded-full">
