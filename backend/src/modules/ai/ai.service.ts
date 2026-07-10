@@ -31,6 +31,7 @@ export class AiService {
     count: number,
     userId: string,
     materialId?: string,
+    difficulty?: string,
   ): Promise<{ message: string; questionsCreated: number }> {
     const apiKey = this.configService.get('app.openRouterApiKey', {
       infer: true,
@@ -59,7 +60,7 @@ export class AiService {
       }
     }
 
-    const prompt = this.buildPrompt(topic, count, context);
+    const prompt = this.buildPrompt(topic, count, context, difficulty);
 
     try {
       const systemMessage = context
@@ -135,7 +136,7 @@ export class AiService {
   /**
    * Build prompt for question generation, optionally with RAG context
    */
-  private buildPrompt(topic: string, count: number, context?: string): string {
+  private buildPrompt(topic: string, count: number, context?: string, difficulty?: string): string {
     let contextBlock = '';
     if (context) {
       contextBlock = `--- COURSE MATERIAL ---
@@ -148,6 +149,7 @@ Using the course material above as your primary source, generate`;
     }
 
     return `${contextBlock} ${count} multiple choice exam questions about: "${topic}"
+${difficulty ? `\nThe difficulty level of the questions must be strictly: ${difficulty.toUpperCase()}. Ensure the questions, distractors, and concepts align with this difficulty level.` : ''}
 
 For each question, use this exact format:
 

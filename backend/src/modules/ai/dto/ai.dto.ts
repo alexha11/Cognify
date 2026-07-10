@@ -25,4 +25,8 @@ export class GenerateQuestionsDto {
   @IsString()
   @IsOptional()
   materialId?: string;
+
+  @IsString()
+  @IsOptional()
+  difficulty?: string;
 }

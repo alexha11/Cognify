@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/lib/auth";
-import { apiGet, apiPost, apiDelete } from "@/lib/api";
+import { apiGet, apiPost, apiDelete, apiUpload } from "@/lib/api";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState } from "@/components/ui";
+import { EmptyState, GenerateQuestionsModal } from "@/components/ui";
+import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
   Plus,
@@ -27,6 +28,7 @@ import {
   ArrowRight,
   Filter,
   Loader2,
+  BrainCircuit,
 } from "lucide-react";
 
 interface Answer {
@@ -59,6 +61,9 @@ export default function QuestionsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
+  
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   // New question form state
   const [newQuestion, setNewQuestion] = useState({
@@ -147,6 +152,40 @@ export default function QuestionsPage() {
     setNewAnswers(updated);
   };
 
+  const handleGenerateQuestions = async ({ file, topic, count, difficulty }: { file: File, topic: string, count: number, difficulty: string }) => {
+    if (!selectedCourse) {
+      toast.error("Please select a course first");
+      return;
+    }
+    setIsGeneratingAi(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("courseId", selectedCourse);
+      
+      const material = await apiUpload<{id: string}>("/materials/upload", formData);
+      
+      await apiPost("/ai/generate-questions", {
+        courseId: selectedCourse,
+        materialId: material.id,
+        topic,
+        count,
+        difficulty,
+      });
+      
+      toast.success("Questions successfully generated!");
+      setIsGenerateModalOpen(false);
+      // Refresh questions
+      const data = await apiGet<Question[]>(`/questions/course/${selectedCourse}`);
+      setQuestions(data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate questions. Please try again.");
+    } finally {
+      setIsGeneratingAi(false);
+    }
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourse) {
@@ -225,15 +264,32 @@ export default function QuestionsPage() {
             </p>
           </div>
           {canManage && (
-            <Button
-              onClick={() => setShowCreate(true)}
-              variant="pill"
-              size="xl"
-              className="md:w-auto"
-            >
-              <Plus className="w-5 h-5 mr-2" />
-              Add question
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button
+                onClick={() => setShowCreate(true)}
+                variant="outline"
+                size="lg"
+                className="rounded-full md:w-auto"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Add Manually
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!selectedCourse) {
+                    toast.error("Please select a course first");
+                    return;
+                  }
+                  setIsGenerateModalOpen(true);
+                }}
+                variant="pill"
+                size="lg"
+                className="md:w-auto"
+              >
+                <BrainCircuit className="w-4 h-4 mr-2" />
+                Generate with AI
+              </Button>
+            </div>
           )}
         </div>
 
@@ -558,6 +614,13 @@ export default function QuestionsPage() {
           </div>
         )}
       </div>
+
+      <GenerateQuestionsModal 
+        isOpen={isGenerateModalOpen}
+        onClose={() => setIsGenerateModalOpen(false)}
+        onGenerate={handleGenerateQuestions}
+        isGenerating={isGeneratingAi}
+      />
     </DashboardLayout>
   );
 }

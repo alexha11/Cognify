@@ -5,6 +5,7 @@ export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 export { Badge } from './badge';
 export { Avatar, AvatarImage, AvatarFallback } from './avatar';
 export { AuthPromptModal } from './auth-prompt-modal';
+export { GenerateQuestionsModal } from './generate-questions-modal';
 export { FeatureGate } from './feature-gate';
 export { ProgressTeaser } from './progress-teaser';
 export { PageHeader } from './page-header';

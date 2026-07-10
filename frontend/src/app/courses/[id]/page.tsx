@@ -32,8 +32,10 @@ import {
   ArrowRight,
   Share2,
   Globe,
+  BrainCircuit,
 } from "lucide-react";
-import { FeatureGate, AuthPromptModal } from "@/components/ui";
+import { FeatureGate, AuthPromptModal, GenerateQuestionsModal } from "@/components/ui";
+import { toast } from "@/components/ui/toast";
 
 export default function CourseDetailPage() {
   const params = useParams();
@@ -46,6 +48,8 @@ export default function CourseDetailPage() {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
+  const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
   const handleShareLink = () => {
     const url = `${window.location.origin}/quiz/share/${params.id}`;
@@ -110,6 +114,35 @@ export default function CourseDetailPage() {
       setIsUploading(false);
       // Reset the input so the same file can be re-selected
       e.target.value = "";
+    }
+  };
+
+  const handleGenerateQuestions = async ({ file, topic, count, difficulty }: { file: File, topic: string, count: number, difficulty: string }) => {
+    if (!course) return;
+    setIsGeneratingAi(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("courseId", course.id);
+      
+      const material = await apiUpload<Material>("/materials/upload", formData);
+      
+      await apiPost("/ai/generate-questions", {
+        courseId: course.id,
+        materialId: material.id,
+        topic,
+        count,
+        difficulty,
+      });
+      
+      toast.success("Questions successfully generated!");
+      setIsGenerateModalOpen(false);
+      fetchCourse();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate questions. Please try again.");
+    } finally {
+      setIsGeneratingAi(false);
     }
   };
 
@@ -559,12 +592,30 @@ export default function CourseDetailPage() {
                       </>
                     )}
                   </label>
+                  
+                  <Button
+                    variant="default"
+                    className="w-full mt-4 h-auto py-6 rounded-2xl gap-3 text-sm font-semibold tracking-tight shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
+                    onClick={() => setIsGenerateModalOpen(true)}
+                  >
+                    <BrainCircuit className="h-5 w-5" />
+                    <div className="flex flex-col items-start text-left">
+                      <span>Generate with AI</span>
+                      <span className="text-[10px] font-medium opacity-80 uppercase tracking-widest mt-0.5">From PDF Material</span>
+                    </div>
+                  </Button>
                 </div>
               )}
             </div>
           </aside>
         </div>
       </div>
+      <GenerateQuestionsModal 
+        isOpen={isGenerateModalOpen}
+        onClose={() => setIsGenerateModalOpen(false)}
+        onGenerate={handleGenerateQuestions}
+        isGenerating={isGeneratingAi}
+      />
     </DashboardLayout>
   );
 }

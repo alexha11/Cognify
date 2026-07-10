@@ -28,6 +28,7 @@ export class AiController {
       dto.count || 5,
       user.userId,
       dto.materialId,
+      dto.difficulty,
     );
   }
 }
