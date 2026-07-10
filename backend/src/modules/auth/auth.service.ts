@@ -236,11 +236,14 @@ export class AuthService {
    * Update current user profile
    */
   async updateProfile(userId: string, dto: UpdateProfileDto): Promise<{
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: Role;
+    accessToken: string;
+    user: {
+      id: string;
+      email: string;
+      firstName: string;
+      lastName: string;
+      role: Role;
+    };
   }> {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -251,12 +254,17 @@ export class AuthService {
       },
     });
 
+    const token = this.generateToken(updatedUser as any);
+
     return {
-      id: updatedUser.id,
-      email: updatedUser.email,
-      firstName: updatedUser.firstName,
-      lastName: updatedUser.lastName,
-      role: updatedUser.role,
+      accessToken: token,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        firstName: updatedUser.firstName,
+        lastName: updatedUser.lastName,
+        role: updatedUser.role,
+      },
     };
   }
 

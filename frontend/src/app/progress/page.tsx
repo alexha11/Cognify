@@ -6,7 +6,12 @@ import { DashboardLayout } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { StatCard, SectionHeader, EmptyState, ProgressBar } from "@/components/ui";
+import {
+  StatCard,
+  SectionHeader,
+  EmptyState,
+  ProgressBar,
+} from "@/components/ui";
 import { apiGet } from "@/lib/api";
 import { AttemptStats, Attempt, Course, CourseProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
@@ -94,7 +99,7 @@ export default function ProgressPage() {
             Learning Progress
           </h1>
           <p className="mt-2 text-muted-foreground font-serif text-base leading-relaxed">
-            Monitor your intellectual trajectory and master your courses.
+            Monitor your progress and get valuable insights.
           </p>
         </div>
 
@@ -177,7 +182,10 @@ export default function ProgressPage() {
                             </Badge>
                           </div>
 
-                          <ProgressBar percentage={percentage} label="Progression" />
+                          <ProgressBar
+                            percentage={percentage}
+                            label="Progression"
+                          />
 
                           {progress && progress.remaining > 0 && (
                             <div className="mt-8 pt-8 border-t border-border/40 flex justify-end">

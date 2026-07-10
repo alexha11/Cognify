@@ -75,13 +75,18 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
-      const updatedUser = await apiPut<UserType>("/auth/profile", {
+      const response = await apiPut<{ accessToken: string; user: UserType }>("/auth/profile", {
         firstName,
         lastName,
         role,
       });
-      // Update local storage and context here ideally, but next hard refresh or dashboard fetch will also get it
-      // if `useAuth` had an `updateUser(user)` function, we'd use it. For now just show toast.
+
+      const updatedUser = response.user;
+      
+      // Update token if provided
+      if (response.accessToken) {
+        localStorage.setItem("token", response.accessToken);
+      }
 
       const storedUser = localStorage.getItem("user");
       if (storedUser) {
