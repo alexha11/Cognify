@@ -69,8 +69,8 @@ function CubeCluster() {
   // Gentle auto-rotation
   useFrame((state, delta) => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.15;
-      groupRef.current.rotation.x += delta * 0.05;
+      groupRef.current.rotation.y += delta * 0.75;
+      groupRef.current.rotation.x += delta * 0.45;
     }
   });
 
