@@ -49,25 +49,27 @@ export default function SharedQuizPage() {
     setIsMounted(true);
   }, []);
 
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      const data = await apiGet<PublicCourseData>(
+        `/questions/course/${courseId}/public`,
+      );
+      setCourseName(data.course.name);
+      setCourseDescription(data.course.description || "");
+      // Shuffle questions for variety
+      const shuffled = [...(data.questions || [])].sort(
+        () => Math.random() - 0.5,
+      );
+      setQuestions(shuffled);
+    } catch (error) {
+      console.error("Failed to fetch shared quiz data", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await apiGet<PublicCourseData>(
-          `/questions/course/${courseId}/public`,
-        );
-        setCourseName(data.course.name);
-        setCourseDescription(data.course.description || "");
-        // Shuffle questions for variety
-        const shuffled = [...(data.questions || [])].sort(
-          () => Math.random() - 0.5,
-        );
-        setQuestions(shuffled);
-      } catch (error) {
-        console.error("Failed to fetch shared quiz data", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchData();
   }, [courseId]);
 
@@ -116,14 +118,14 @@ export default function SharedQuizPage() {
     }
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setCurrentIndex(0);
     setSelectedAnswers([]);
     setResult(null);
     setCompleted(false);
     setStats({ correct: 0, total: 0 });
-    // Re-shuffle questions
-    setQuestions((prev) => [...prev].sort(() => Math.random() - 0.5));
+    // Fetch latest questions and reshuffle
+    await fetchData();
   };
 
   if (!isMounted) return null;
