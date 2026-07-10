@@ -27,26 +27,23 @@ export default function HomePage() {
 
       <main className="flex-1 pt-32 pb-32">
         <div className="mx-auto max-w-7xl px-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center pt-8 md:pt-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center">
             {/* Left column — text */}
             <div className="space-y-8 text-center md:text-left">
               <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
-                Learn faster with{" "}
-                <span className="font-serif font-normal italic text-muted-foreground/80 block mt-2">
-                  any subject.
-                </span>
+                Enable real learning
               </h1>
 
-              <p className="mx-auto md:mx-0 max-w-lg text-xl leading-relaxed text-muted-foreground">
+              <p className="max-w-lg text-xl leading-relaxed text-muted-foreground">
                 Cognify turns your learning materials into smart assessments,
-                giving students and educators actionable insights.
+                giving students and instructors actionable insights.
               </p>
 
-              <div className="flex items-center justify-center md:justify-start gap-3 pt-2">
+              <div className="flex items-center justify-start md:justify-start gap-3 pt-2">
                 <Link href="/courses">
                   <Button size="lg" className="rounded-full">
-                    Start learning
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    Get started
+                    {/* <ArrowRight className="ml-2 h-4 w-4" /> */}
                   </Button>
                 </Link>
                 <Link href="/register">
