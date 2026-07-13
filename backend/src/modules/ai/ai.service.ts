@@ -70,7 +70,7 @@ export class AiService {
       const response = await axios.post(
         this.apiUrl,
         {
-          model: model || 'google/gemini-2.0-flash',
+          model: model || 'google/gemini-3.5-flash',
           messages: [
             {
               role: 'system',

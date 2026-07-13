@@ -26,7 +26,7 @@ services:
       DATABASE_URL: postgresql://cognify:cognify_local_password@postgres:5432/cognify
       JWT_SECRET: local-development-secret-change-in-production
       JWT_EXPIRES_IN: 7d
-      OPENROUTER_MODEL: google/gemini-2.0-flash
+      OPENROUTER_MODEL: google/gemini-2.0-flash-001
       PORT: 3001
       NODE_ENV: development
     env_file:
