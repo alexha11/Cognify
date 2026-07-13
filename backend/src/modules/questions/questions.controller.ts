@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { QuestionsService } from './questions.service';
-import { CreateQuestionDto, UpdateQuestionDto } from './dto';
+import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -31,6 +31,23 @@ export class QuestionsController {
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
     return this.questionsService.create(
+      dto,
+      user.userId,
+    );
+  }
+
+  /**
+   * Create multiple new questions
+   * POST /questions/bulk
+   */
+  @Post('bulk')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  async createBulk(
+    @Body() dto: BulkCreateQuestionDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.questionsService.createBulk(
       dto,
       user.userId,
     );

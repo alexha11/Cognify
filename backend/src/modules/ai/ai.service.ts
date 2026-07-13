@@ -32,7 +32,7 @@ export class AiService {
     userId: string,
     materialId?: string,
     difficulty?: string,
-  ): Promise<{ message: string; questionsCreated: number }> {
+  ): Promise<{ message: string; questions: any[] }> {
     const apiKey = this.configService.get('app.openRouterApiKey', {
       infer: true,
     });
@@ -100,27 +100,14 @@ export class AiService {
       }
 
       const questions = this.parseAiResponse(content);
-
-      // Save questions to database
-      let created = 0;
-      for (const q of questions) {
-        try {
-          await this.questionsService.createAiQuestion(
-            q.content,
-            q.hint,
-            q.answers,
-            courseId,
-            userId,
-          );
-          created++;
-        } catch (err) {
-          this.logger.warn(`Failed to create question: ${err}`);
-        }
+      this.logger.log(`Parsed ${questions.length} questions from response.`);
+      if (questions.length === 0) {
+        this.logger.log(`Failed to parse questions. Raw content: ${content}`);
       }
 
       return {
-        message: `Successfully generated ${created} questions. They are pending approval.`,
-        questionsCreated: created,
+        message: `Successfully generated ${questions.length} questions. Please review them before saving.`,
+        questions,
       };
     } catch (error) {
       this.logger.error('AI generation failed', error);
@@ -183,76 +170,51 @@ Important:
    */
   private parseAiResponse(content: string): GeneratedQuestion[] {
     const questions: GeneratedQuestion[] = [];
-    const questionBlocks = content
-      .split('---QUESTION---')
-      .filter((b) => b.trim());
+    const questionRegex = /(?:\*{0,2}#*\s*)?---QUESTION---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---OPTIONS---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---CORRECT---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---HINT---(?:\*{0,2}\s*)([\s\S]*?)(?:(?:\*{0,2}#*\s*)?---END---|$)/gi;
 
-    for (const block of questionBlocks) {
+    let match;
+    while ((match = questionRegex.exec(content)) !== null) {
       try {
-        const question = this.parseQuestionBlock(block);
-        if (question) {
-          questions.push(question);
+        const questionContent = match[1].trim();
+        const optionsText = match[2].trim();
+        const correctText = match[3].trim();
+        const hintText = match[4].trim();
+
+        const optionRegex = /([A-D])[\.\)]\s*(.+?)(?=\n[A-D][\.\)]|$)/gs;
+        const options: { letter: string; content: string }[] = [];
+        let optMatch;
+        const optionsTextNormalized = optionsText + '\n';
+        while ((optMatch = optionRegex.exec(optionsTextNormalized)) !== null) {
+          options.push({
+            letter: optMatch[1].toUpperCase(),
+            content: optMatch[2].trim(),
+          });
         }
+
+        if (options.length < 2) continue;
+
+        const correctLetterMatch = correctText.match(/([A-D])/i);
+        if (!correctLetterMatch) continue;
+        const correctLetter = correctLetterMatch[1].toUpperCase();
+
+        const answers = options.map((opt) => ({
+          content: opt.content,
+          isCorrect: opt.letter === correctLetter,
+        }));
+
+        const correctCount = answers.filter((a) => a.isCorrect).length;
+        if (correctCount !== 1) continue;
+
+        questions.push({
+          content: questionContent,
+          hint: hintText || 'Review the course material for this topic.',
+          answers,
+        });
       } catch (err) {
         this.logger.warn(`Failed to parse question block: ${err}`);
       }
     }
 
     return questions;
-  }
-
-  /**
-   * Parse individual question block
-   */
-  private parseQuestionBlock(block: string): GeneratedQuestion | null {
-    // Extract question content
-    const questionMatch = block.match(/^([\s\S]*?)---OPTIONS---/);
-    if (!questionMatch) return null;
-    const questionContent = questionMatch[1].trim();
-
-    // Extract options
-    const optionsMatch = block.match(/---OPTIONS---([\s\S]*?)---CORRECT---/);
-    if (!optionsMatch) return null;
-    const optionsText = optionsMatch[1].trim();
-
-    // Parse options
-    const optionRegex = /([A-D])\.\s*(.+?)(?=\n[A-D]\.|$)/gs;
-    const options: { letter: string; content: string }[] = [];
-    let match;
-    while ((match = optionRegex.exec(optionsText + '\n')) !== null) {
-      options.push({
-        letter: match[1],
-        content: match[2].trim(),
-      });
-    }
-
-    if (options.length < 2) return null;
-
-    // Extract correct answer
-    const correctMatch = block.match(/---CORRECT---\s*([A-D])/i);
-    if (!correctMatch) return null;
-    const correctLetter = correctMatch[1].toUpperCase();
-
-    // Extract hint
-    const hintMatch = block.match(/---HINT---\s*([\s\S]*?)(?:---END---|$)/);
-    const hint = hintMatch
-      ? hintMatch[1].trim()
-      : 'Review the course material for this topic.';
-
-    // Build answers array
-    const answers = options.map((opt) => ({
-      content: opt.content,
-      isCorrect: opt.letter === correctLetter,
-    }));
-
-    // Ensure exactly one correct answer
-    const correctCount = answers.filter((a) => a.isCorrect).length;
-    if (correctCount !== 1) return null;
-
-    return {
-      content: questionContent,
-      hint,
-      answers,
-    };
   }
 }

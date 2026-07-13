@@ -15,7 +15,8 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState, GenerateQuestionsModal } from "@/components/ui";
+import { EmptyState, GenerateQuestionsModal, DraftQuestionsModal } from "@/components/ui";
+import type { DraftQuestion } from "@/components/ui";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -66,6 +67,11 @@ export default function QuestionsPage() {
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+
+  // Draft questions state
+  const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([]);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [isSavingDrafts, setIsSavingDrafts] = useState(false);
 
   // New question form state
   const [newQuestion, setNewQuestion] = useState({
@@ -162,7 +168,7 @@ export default function QuestionsPage() {
       
       const material = await apiUpload<{id: string}>("/materials/upload", formData);
       
-      await apiPost("/ai/generate-questions", {
+      const response = await apiPost<{message: string, questions: DraftQuestion[]}>("/ai/generate-questions", {
         courseId: selectedCourse,
         materialId: material.id,
         topic,
@@ -170,16 +176,42 @@ export default function QuestionsPage() {
         difficulty,
       });
       
-      toast.success("Questions successfully generated!");
+      toast.success(response.message || "Questions successfully generated!");
       setIsGenerateModalOpen(false);
-      // Refresh questions
-      const data = await apiGet<Question[]>(`/questions/course/${selectedCourse}`);
-      setQuestions(data || []);
+      setDraftQuestions(response.questions || []);
+      setIsDraftModalOpen(true);
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate questions. Please try again.");
     } finally {
       setIsGeneratingAi(false);
+    }
+  };
+
+  const handleSaveDrafts = async (questionsToSave: DraftQuestion[]) => {
+    if (!selectedCourse) return;
+    setIsSavingDrafts(true);
+    try {
+      const payload = questionsToSave.map(q => ({
+        content: q.content,
+        hint: q.hint || undefined,
+        courseId: selectedCourse,
+        answers: q.answers,
+      }));
+
+      await apiPost("/questions/bulk", { questions: payload });
+      toast.success(`Successfully added ${questionsToSave.length} questions to the course!`);
+      setIsDraftModalOpen(false);
+      setDraftQuestions([]);
+      
+      // Refresh questions list
+      const data = await apiGet<Question[]>(`/questions/course/${selectedCourse}`);
+      setQuestions(data || []);
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save draft questions. Please try again.");
+    } finally {
+      setIsSavingDrafts(false);
     }
   };
 
@@ -666,6 +698,18 @@ export default function QuestionsPage() {
         onClose={() => setIsGenerateModalOpen(false)}
         onGenerate={handleGenerateQuestions}
         isGenerating={isGeneratingAi}
+      />
+
+      <DraftQuestionsModal
+        isOpen={isDraftModalOpen}
+        onClose={() => {
+          if (confirm("Are you sure you want to discard these generated questions?")) {
+            setIsDraftModalOpen(false);
+          }
+        }}
+        questions={draftQuestions}
+        onSave={handleSaveDrafts}
+        isSaving={isSavingDrafts}
       />
     </DashboardLayout>
   );

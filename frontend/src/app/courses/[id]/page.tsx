@@ -34,7 +34,8 @@ import {
   Globe,
   BrainCircuit,
 } from "lucide-react";
-import { FeatureGate, AuthPromptModal, GenerateQuestionsModal } from "@/components/ui";
+import { FeatureGate, AuthPromptModal, GenerateQuestionsModal, DraftQuestionsModal } from "@/components/ui";
+import type { DraftQuestion } from "@/components/ui";
 import { toast } from "@/components/ui/toast";
 
 export default function CourseDetailPage() {
@@ -50,6 +51,11 @@ export default function CourseDetailPage() {
   const [copied, setCopied] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
+  
+  // Draft questions state
+  const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([]);
+  const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
+  const [isSavingDrafts, setIsSavingDrafts] = useState(false);
 
   const handleShareLink = () => {
     const url = `${window.location.origin}/quiz/share/${params.id}`;
@@ -127,7 +133,7 @@ export default function CourseDetailPage() {
       
       const material = await apiUpload<Material>("/materials/upload", formData);
       
-      await apiPost("/ai/generate-questions", {
+      const response = await apiPost<{message: string, questions: DraftQuestion[]}>("/ai/generate-questions", {
         courseId: course.id,
         materialId: material.id,
         topic,
@@ -135,14 +141,39 @@ export default function CourseDetailPage() {
         difficulty,
       });
       
-      toast.success("Questions successfully generated!");
+      toast.success(response.message || "Questions successfully generated!");
       setIsGenerateModalOpen(false);
-      fetchCourse();
+      setDraftQuestions(response.questions || []);
+      setIsDraftModalOpen(true);
     } catch (err) {
       console.error(err);
       toast.error("Failed to generate questions. Please try again.");
     } finally {
       setIsGeneratingAi(false);
+    }
+  };
+
+  const handleSaveDrafts = async (questionsToSave: DraftQuestion[]) => {
+    if (!course) return;
+    setIsSavingDrafts(true);
+    try {
+      const payload = questionsToSave.map(q => ({
+        content: q.content,
+        hint: q.hint || undefined,
+        courseId: course.id,
+        answers: q.answers,
+      }));
+
+      await apiPost("/questions/bulk", { questions: payload });
+      toast.success(`Successfully added ${questionsToSave.length} questions to the course!`);
+      setIsDraftModalOpen(false);
+      setDraftQuestions([]);
+      fetchCourse();
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to save draft questions. Please try again.");
+    } finally {
+      setIsSavingDrafts(false);
     }
   };
 
@@ -615,6 +646,18 @@ export default function CourseDetailPage() {
         onClose={() => setIsGenerateModalOpen(false)}
         onGenerate={handleGenerateQuestions}
         isGenerating={isGeneratingAi}
+      />
+
+      <DraftQuestionsModal
+        isOpen={isDraftModalOpen}
+        onClose={() => {
+          if (confirm("Are you sure you want to discard these generated questions?")) {
+            setIsDraftModalOpen(false);
+          }
+        }}
+        questions={draftQuestions}
+        onSave={handleSaveDrafts}
+        isSaving={isSavingDrafts}
       />
     </DashboardLayout>
   );

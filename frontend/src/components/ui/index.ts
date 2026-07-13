@@ -6,6 +6,8 @@ export { Badge } from './badge';
 export { Avatar, AvatarImage, AvatarFallback } from './avatar';
 export { AuthPromptModal } from './auth-prompt-modal';
 export { GenerateQuestionsModal } from './generate-questions-modal';
+export { DraftQuestionsModal } from './draft-questions-modal';
+export type { DraftQuestion, DraftAnswer } from './draft-questions-modal';
 export { FeatureGate } from './feature-gate';
 export { ProgressTeaser } from './progress-teaser';
 export { PageHeader } from './page-header';

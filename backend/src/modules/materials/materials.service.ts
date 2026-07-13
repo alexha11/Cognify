@@ -77,7 +77,13 @@ export class MaterialsService {
     const text = pdf.text;
     this.logger.log(`Extracted ${text.length} chars from PDF`);
 
-    // 3. Chunk the text
+    // 3. Check if we actually extracted meaningful text
+    const cleanText = text.replace(/-- \d+ of \d+ --/g, '').trim();
+    if (cleanText.length < 50) {
+      throw new BadRequestException('The uploaded PDF appears to be empty or a scanned image. Please upload a PDF with selectable text.');
+    }
+
+    // 4. Chunk the text
     const chunks = chunkText(text);
     this.logger.log(`Created ${chunks.length} chunks`);
 

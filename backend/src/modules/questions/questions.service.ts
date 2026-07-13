@@ -59,6 +59,59 @@ export class QuestionsService {
         },
       },
     });
+
+  }
+
+  /**
+   * Create multiple questions in bulk
+   */
+  async createBulk(
+    dto: { questions: CreateQuestionDto[] },
+    userId: string,
+  ): Promise<any> {
+    if (dto.questions.length === 0) return [];
+    
+    const courseId = dto.questions[0].courseId;
+    const course = await this.prisma.course.findFirst({
+      where: { id: courseId },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    // Validate all questions have exactly one correct answer
+    for (const q of dto.questions) {
+      const correctAnswers = q.answers.filter((a) => a.isCorrect);
+      if (correctAnswers.length !== 1) {
+        throw new ForbiddenException(
+          'Each question must have exactly one answer marked as correct',
+        );
+      }
+    }
+
+    const createdQuestions = await this.prisma.$transaction(
+      dto.questions.map((q) => 
+        this.prisma.question.create({
+          data: {
+            content: q.content,
+            hint: q.hint,
+            courseId: q.courseId,
+            createdById: userId,
+            approved: true, // Manual questions are auto-approved
+            aiGenerated: true, // They were AI generated, but manually confirmed
+            answers: {
+              create: q.answers,
+            },
+          },
+          include: {
+            answers: true,
+          },
+        })
+      )
+    );
+
+    return createdQuestions;
   }
 
   /**

@@ -64,3 +64,10 @@ export class GenerateQuestionsDto {
   @IsOptional()
   count?: number;
 }
+
+export class BulkCreateQuestionDto {
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateQuestionDto)
+  questions: CreateQuestionDto[];
+}
