@@ -12,18 +12,16 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import {
-  ArrowLeft,
   Check,
   X,
   Lightbulb,
   ArrowRight,
   Trophy,
   Loader2,
-  Sparkles,
-  Search,
   RefreshCw,
   Share2,
 } from "lucide-react";
+import { Search } from "lucide-react";
 
 interface PublicCourseData {
   course: { id: string; name: string; description: string | null };
@@ -57,7 +55,6 @@ export default function SharedQuizPage() {
       );
       setCourseName(data.course.name);
       setCourseDescription(data.course.description || "");
-      // Shuffle questions for variety
       const shuffled = [...(data.questions || [])].sort(
         () => Math.random() - 0.5,
       );
@@ -86,12 +83,10 @@ export default function SharedQuizPage() {
 
   const submitAnswer = () => {
     if (!currentQuestion || result || selectedAnswers.length === 0) return;
-
     const correctAnswers = currentQuestion.answers.filter((a) => a.isCorrect);
     const isCorrect =
       correctAnswers.length === selectedAnswers.length &&
       correctAnswers.every((a) => selectedAnswers.includes(a.id));
-
     const guestResult = {
       id: "guest",
       isCorrect,
@@ -100,7 +95,6 @@ export default function SharedQuizPage() {
       hint: currentQuestion.hint,
       question: { id: currentQuestion.id, content: currentQuestion.content },
     };
-
     setResult(guestResult as AttemptResult);
     setStats((prev) => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
@@ -124,7 +118,6 @@ export default function SharedQuizPage() {
     setResult(null);
     setCompleted(false);
     setStats({ correct: 0, total: 0 });
-    // Fetch latest questions and reshuffle
     await fetchData();
   };
 
@@ -135,9 +128,7 @@ export default function SharedQuizPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">
-            Loading shared quiz...
-          </p>
+          <p className="text-sm text-muted-foreground">Loading shared quiz…</p>
         </div>
       </div>
     );
@@ -149,7 +140,7 @@ export default function SharedQuizPage() {
         <Card className="max-w-md mx-auto">
           <CardContent className="p-12 text-center space-y-6">
             <X className="h-12 w-12 text-muted-foreground/30 mx-auto" />
-            <h2 className="text-xl font-semibold">Quiz Not Found</h2>
+            <h2 className="text-xl font-semibold">Quiz not found</h2>
             <p className="text-muted-foreground">
               This quiz doesn&apos;t exist or has no questions yet.
             </p>
@@ -162,7 +153,7 @@ export default function SharedQuizPage() {
     );
   }
 
-  // Completion screen
+  // ── Completion screen ──────────────────────────────────────────────────────
   if (completed) {
     const percentage =
       stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0;
@@ -170,10 +161,9 @@ export default function SharedQuizPage() {
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-6 py-16">
-          {/* Header */}
-          <div className="flex items-center gap-3 mb-4">
-            <Share2 className="h-5 w-5 text-primary/60" />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+          <div className="flex items-center gap-2.5 mb-3">
+            <Share2 className="h-4 w-4 text-muted-foreground/60" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Shared Quiz
             </span>
           </div>
@@ -186,9 +176,9 @@ export default function SharedQuizPage() {
               <div className="mx-auto w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center">
                 <Trophy className="h-10 w-10 text-primary" />
               </div>
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <h2 className="text-3xl font-bold tracking-tight">
-                  Quiz Complete!
+                  Quiz complete!
                 </h2>
                 <p className="text-muted-foreground text-lg">
                   You scored{" "}
@@ -199,28 +189,32 @@ export default function SharedQuizPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-3 gap-6 pt-4">
-                <div className="p-4 rounded-2xl bg-green-500/5 border border-green-500/10">
-                  <p className="text-2xl font-bold text-green-600">
+              <div className="grid grid-cols-3 gap-4 pt-2">
+                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-200/60 dark:border-emerald-800/40">
+                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
                     {stats.correct}
                   </p>
-                  <p className="text-xs text-muted-foreground">Correct</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Correct
+                  </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-red-500/5 border border-red-500/10">
-                  <p className="text-2xl font-bold text-red-500">
+                <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/25 border border-red-200/60 dark:border-red-800/40">
+                  <p className="text-2xl font-bold text-red-500 dark:text-red-400">
                     {stats.total - stats.correct}
                   </p>
-                  <p className="text-xs text-muted-foreground">Incorrect</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Incorrect
+                  </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
+                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15">
                   <p className="text-2xl font-bold text-primary">
                     {percentage}%
                   </p>
-                  <p className="text-xs text-muted-foreground">Score</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Score</p>
                 </div>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-4 pt-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
                 <Button
                   onClick={handleRetry}
                   variant="outline"
@@ -228,10 +222,10 @@ export default function SharedQuizPage() {
                   className="rounded-xl"
                 >
                   <RefreshCw className="h-4 w-4 mr-2" />
-                  Try Again
+                  Try again
                 </Button>
                 <Link href="/">
-                  <Button variant="pill" size="lg">
+                  <Button size="lg" className="rounded-xl">
                     Explore Cognify
                   </Button>
                 </Link>
@@ -246,11 +240,11 @@ export default function SharedQuizPage() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
-        {/* Shared Quiz Header */}
-        <div className="space-y-2">
-          <div className="flex items-center gap-3">
-            <Share2 className="h-5 w-5 text-primary/60" />
-            <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
+        {/* Header */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2.5">
+            <Share2 className="h-4 w-4 text-muted-foreground/60" />
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
               Shared Quiz
             </span>
           </div>
@@ -294,53 +288,59 @@ export default function SharedQuizPage() {
           </div>
         </div>
 
-        {/* Question Card */}
-        <Card className="bg-card overflow-hidden shadow-sm border-border/50">
-          <CardHeader className="p-8 md:p-10 pb-6 border-b border-border/40 bg-muted/10">
-            <div className="space-y-6">
-              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-                <div className="flex-1 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <span className="inline-flex items-center justify-center bg-primary/10 text-primary font-bold px-3 py-1 rounded-md text-sm">
-                      Question {currentIndex + 1} / {questions.length}
-                    </span>
-                    {currentQuestion.answers.filter((a) => a.isCorrect).length >
-                      1 &&
-                      !result && (
-                        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-md">
-                          <Check className="h-3.5 w-3.5" />
-                          Select all that apply
-                        </span>
-                      )}
-                  </div>
-                  <CardTitle className="text-2xl md:text-3xl font-semibold leading-normal tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
-                    <ReactMarkdown
-                      remarkPlugins={[remarkMath]}
-                      rehypePlugins={[rehypeKatex]}
-                    >
-                      {currentQuestion.content}
-                    </ReactMarkdown>
-                  </CardTitle>
+        {/* Question card */}
+        <Card className="overflow-hidden shadow-sm border-border/50">
+          {/* ── Card header: question ── */}
+          <CardHeader className="p-8 md:p-10 pb-8 border-b border-border/40 bg-muted/10">
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="flex-1 space-y-4">
+                {/* badges row */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center bg-primary/10 text-primary font-semibold px-3 py-1 rounded-md text-xs">
+                    Question {currentIndex + 1} / {questions.length}
+                  </span>
+                  {currentQuestion.answers.filter((a) => a.isCorrect).length >
+                    1 &&
+                    !result && (
+                      <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 px-3 py-1 rounded-md">
+                        <Check className="h-3.5 w-3.5" />
+                        Select all that apply
+                      </span>
+                    )}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => {
-                    const query = encodeURIComponent(currentQuestion.content);
-                    window.open(
-                      `https://www.google.com/search?q=${query}`,
-                      "_blank",
-                    );
-                  }}
-                  className="flex items-center gap-2 text-xs font-medium shrink-0 shadow-sm whitespace-nowrap"
-                >
-                  <Search className="h-3.5 w-3.5" />
-                  Search topic
-                </Button>
+
+                {/* question text — larger, more breathing room */}
+                <CardTitle className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                  >
+                    {currentQuestion.content}
+                  </ReactMarkdown>
+                </CardTitle>
               </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  const query = encodeURIComponent(currentQuestion.content);
+                  window.open(
+                    `https://www.google.com/search?q=${query}`,
+                    "_blank",
+                  );
+                }}
+                className="flex items-center gap-2 text-xs font-medium shrink-0 shadow-sm whitespace-nowrap"
+              >
+                <Search className="h-3.5 w-3.5" />
+                Search topic
+              </Button>
             </div>
           </CardHeader>
-          <CardContent className="p-8 md:p-10 pt-8 space-y-8 bg-card">
+
+          {/* ── Card body: answers + actions ── */}
+          <CardContent className="p-8 md:p-10 pt-7 space-y-6 bg-card">
+            {/* Answer list */}
             <div className="grid gap-3">
               {currentQuestion.answers.map((answer, index) => {
                 const letter = String.fromCharCode(65 + index);
@@ -360,69 +360,131 @@ export default function SharedQuizPage() {
                     onClick={() => toggleAnswer(answer.id)}
                     disabled={!!result}
                     className={cn(
-                      "group w-full text-left p-4 rounded-xl border-2 transition-all duration-200 whitespace-normal cursor-pointer",
+                      // ── base ──────────────────────────────────────────────
+                      "group relative w-full text-left rounded-xl border transition-all duration-150",
+                      "p-4 pl-5",
+                      !!result ? "cursor-default" : "cursor-pointer",
+
+                      // ── default (not selected, no result) ─────────────────
                       !isSelected &&
                         !showResult &&
-                        "bg-background border-border hover:border-primary/50 hover:bg-muted/30 hover:shadow-sm",
+                        "bg-background border-border hover:border-primary/60 hover:bg-primary/5",
+
+                      // ── SELECTED (pre-submit) ──────────────────────────────
+                      // Strong primary tint + solid border + ring so it's unmissable
                       isSelected &&
-                        !showResult &&
-                        "bg-primary/10 border-primary ring-2 ring-primary/20 shadow-md scale-[1.01]",
+                        !showResult && [
+                          "bg-primary/[0.09] border-primary",
+                          "ring-2 ring-primary/20",
+                          "shadow-sm",
+                        ],
+
+                      // ── correct (post-submit) ──────────────────────────────
                       showResult &&
                         isCorrect &&
-                        "bg-green-500/10 border-green-500 shadow-[0_0_16px_rgba(34,197,94,0.1)]",
+                        "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-400 dark:border-emerald-600",
+
+                      // ── wrong + selected (post-submit) ────────────────────
                       showResult &&
                         wasSelected &&
                         !isCorrect &&
-                        "bg-red-500/10 border-red-500",
+                        "bg-red-50 dark:bg-red-950/25 border-red-400 dark:border-red-600",
+
+                      // ── wrong + not selected: dimmed ──────────────────────
                       showResult &&
                         !isCorrect &&
                         !wasSelected &&
-                        "opacity-40 grayscale border-border/40",
-                      !!result && "cursor-default",
+                        "opacity-35 border-border/30",
                     )}
                   >
-                    <div className="flex items-center gap-4 w-full">
+                    {/* Left accent bar — thicker when selected */}
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "absolute left-0 top-3 bottom-3 rounded-r-full transition-all duration-150",
+                        // visible only when active
+                        !isSelected && !showResult && "w-0",
+                        isSelected && !showResult && "w-1 bg-primary",
+                        showResult && isCorrect && "w-1 bg-emerald-500",
+                        showResult &&
+                          wasSelected &&
+                          !isCorrect &&
+                          "w-1 bg-red-500",
+                        showResult && !isCorrect && !wasSelected && "w-0",
+                      )}
+                    />
+
+                    <div className="flex items-center gap-3.5 w-full">
+                      {/* Letter / icon badge */}
                       <span
                         className={cn(
-                          "flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold transition-all duration-200",
+                          "flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-all duration-150 border",
+
+                          // default: outlined
                           !isSelected &&
                             !showResult &&
-                            "bg-secondary text-muted-foreground group-hover:bg-primary/15 group-hover:text-primary",
+                            "bg-background border-border text-muted-foreground group-hover:border-primary/60 group-hover:text-primary group-hover:bg-primary/5",
+
+                          // SELECTED: solid primary fill — very obvious
                           isSelected &&
                             !showResult &&
-                            "bg-primary text-white shadow-sm",
-                          showResult && isCorrect && "bg-green-500 text-white",
+                            "bg-primary border-primary text-white shadow-sm",
+
+                          // correct
+                          showResult &&
+                            isCorrect &&
+                            "bg-emerald-500 border-emerald-500 text-white",
+
+                          // wrong + selected
                           showResult &&
                             wasSelected &&
                             !isCorrect &&
-                            "bg-red-500 text-white",
+                            "bg-red-500 border-red-500 text-white",
+
+                          // wrong + unselected
+                          showResult &&
+                            !isCorrect &&
+                            !wasSelected &&
+                            "bg-muted border-border/40 text-muted-foreground/50",
                         )}
                       >
                         {showResult && isCorrect ? (
-                          <Check className="h-5 w-5" />
+                          <Check className="h-4 w-4" />
                         ) : showResult && wasSelected && !isCorrect ? (
-                          <X className="h-5 w-5" />
-                        ) : isSelected && !showResult ? (
-                          <Check className="h-5 w-5" />
+                          <X className="h-4 w-4" />
                         ) : (
                           letter
                         )}
                       </span>
 
+                      {/* Answer text */}
                       <span
                         className={cn(
-                          "text-base font-medium leading-relaxed flex-1 whitespace-normal break-words transition-colors duration-200 [&>p]:mb-2 [&>p:last-child]:mb-0",
-                          isSelected && !showResult && "text-foreground",
+                          "text-sm leading-relaxed flex-1 whitespace-normal break-words transition-colors duration-150",
+                          "[&>p]:mb-2 [&>p:last-child]:mb-0",
+
                           !isSelected &&
                             !showResult &&
                             "text-muted-foreground group-hover:text-foreground",
+
+                          // SELECTED: full-weight foreground so text is prominent
+                          isSelected &&
+                            !showResult &&
+                            "text-foreground font-medium",
+
                           showResult &&
                             isCorrect &&
-                            "text-green-800 dark:text-green-300",
+                            "text-emerald-800 dark:text-emerald-300 font-medium",
+
                           showResult &&
                             wasSelected &&
                             !isCorrect &&
                             "text-red-700 dark:text-red-300",
+
+                          showResult &&
+                            !isCorrect &&
+                            !wasSelected &&
+                            "text-muted-foreground/50",
                         )}
                       >
                         <ReactMarkdown
@@ -433,11 +495,12 @@ export default function SharedQuizPage() {
                         </ReactMarkdown>
                       </span>
 
+                      {/* Trailing result icon */}
                       {showResult && isCorrect && (
-                        <Check className="h-5 w-5 text-green-600 flex-shrink-0 animate-in zoom-in" />
+                        <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 animate-in zoom-in duration-200" />
                       )}
                       {showResult && wasSelected && !isCorrect && (
-                        <X className="h-5 w-5 text-red-500 flex-shrink-0 animate-in zoom-in" />
+                        <X className="h-4 w-4 text-red-500 flex-shrink-0 animate-in zoom-in duration-200" />
                       )}
                     </div>
                   </button>
@@ -445,87 +508,90 @@ export default function SharedQuizPage() {
               })}
             </div>
 
-            {/* Check Answer Button */}
+            {/* ── Check answer row ── */}
             {!result && (
-              <div className="mt-8 flex items-center justify-between">
-                {selectedAnswers.length > 0 && (
-                  <span className="text-sm text-muted-foreground">
-                    {selectedAnswers.length} selected
-                  </span>
-                )}
-                <div className={selectedAnswers.length === 0 ? "ml-auto" : ""}>
-                  <Button
-                    onClick={submitAnswer}
-                    disabled={selectedAnswers.length === 0}
-                    className="rounded-xl px-8 h-12 text-base font-semibold shadow-sm"
-                    size="lg"
-                  >
-                    <Check className="h-5 w-5 mr-2" />
-                    Check Answer
-                  </Button>
+              <div className="flex items-center justify-between pt-1">
+                <div className="min-h-[2rem] flex items-center">
+                  {selectedAnswers.length > 0 && (
+                    <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full animate-in fade-in duration-150">
+                      <Check className="h-3 w-3" />
+                      {selectedAnswers.length} selected
+                    </span>
+                  )}
                 </div>
+                <Button
+                  onClick={submitAnswer}
+                  disabled={selectedAnswers.length === 0}
+                  className="rounded-xl px-6 h-10 text-sm font-semibold"
+                >
+                  Check answer
+                  <Check className="h-3.5 w-3.5 ml-2" />
+                </Button>
               </div>
             )}
 
-            {/* Result */}
+            {/* ── Result feedback ── */}
             {result && (
-              <div className="mt-8 animate-in slide-in-from-top-4 fade-in duration-500">
+              <div className="space-y-5 animate-in slide-in-from-bottom-2 fade-in duration-300">
                 <div
-                  className={`p-6 rounded-2xl border ${
+                  className={cn(
+                    "flex items-start gap-4 p-5 rounded-xl border",
                     result.isCorrect
-                      ? "bg-green-500/10 border-green-500/20"
-                      : "bg-red-500/10 border-red-500/20"
-                  }`}
+                      ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/70 dark:border-emerald-700/50"
+                      : "bg-red-50 dark:bg-red-950/25 border-red-300/70 dark:border-red-700/50",
+                  )}
                 >
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                  <div
+                    className={cn(
+                      "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0",
+                      result.isCorrect
+                        ? "bg-emerald-500 text-white"
+                        : "bg-red-500 text-white",
+                    )}
+                  >
+                    {result.isCorrect ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      <X className="h-4 w-4" />
+                    )}
+                  </div>
+
+                  <div className="flex-1 space-y-2">
+                    <p
+                      className={cn(
+                        "text-sm font-semibold",
                         result.isCorrect
-                          ? "bg-green-500/20 text-green-600"
-                          : "bg-red-500/20 text-red-500"
-                      }`}
+                          ? "text-emerald-700 dark:text-emerald-300"
+                          : "text-red-600 dark:text-red-400",
+                      )}
                     >
-                      {result.isCorrect ? (
-                        <Check className="h-5 w-5" />
-                      ) : (
-                        <X className="h-5 w-5" />
-                      )}
-                    </div>
-                    <div className="flex-1 space-y-2">
-                      <p
-                        className={`text-lg font-semibold ${
-                          result.isCorrect ? "text-green-700" : "text-red-600"
-                        }`}
-                      >
-                        {result.isCorrect ? "Correct!" : "Not quite right."}
-                      </p>
-                      {result.hint && (
-                        <div className="flex items-start gap-2 pt-1">
-                          <Lightbulb className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
-                          <p className="text-sm text-muted-foreground italic">
-                            {result.hint}
-                          </p>
-                        </div>
-                      )}
-                    </div>
+                      {result.isCorrect ? "Correct!" : "Not quite right."}
+                    </p>
+                    {result.hint && (
+                      <div className="flex items-start gap-2">
+                        <Lightbulb className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {result.hint}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="flex justify-end mt-6">
+                <div className="flex justify-end">
                   <Button
                     onClick={handleNext}
-                    className="rounded-xl px-8"
-                    size="lg"
+                    className="rounded-xl px-6 h-10 text-sm font-semibold"
                   >
                     {currentIndex < questions.length - 1 ? (
                       <>
-                        Next Question
-                        <ArrowRight className="h-4 w-4 ml-2" />
+                        Next question
+                        <ArrowRight className="h-3.5 w-3.5 ml-2" />
                       </>
                     ) : (
                       <>
-                        See Results
-                        <Trophy className="h-4 w-4 ml-2" />
+                        See results
+                        <Trophy className="h-3.5 w-3.5 ml-2" />
                       </>
                     )}
                   </Button>
@@ -536,7 +602,7 @@ export default function SharedQuizPage() {
         </Card>
 
         {/* Footer */}
-        <div className="text-center pt-4">
+        <div className="text-center pt-2">
           <p className="text-xs text-muted-foreground">
             Powered by{" "}
             <Link
