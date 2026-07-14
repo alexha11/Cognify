@@ -34,7 +34,12 @@ import {
   Globe,
   BrainCircuit,
 } from "lucide-react";
-import { FeatureGate, AuthPromptModal, GenerateQuestionsModal, DraftQuestionsModal } from "@/components/ui";
+import {
+  FeatureGate,
+  AuthPromptModal,
+  GenerateQuestionsModal,
+  DraftQuestionsModal,
+} from "@/components/ui";
 import type { DraftQuestion } from "@/components/ui";
 import { toast } from "@/components/ui/toast";
 
@@ -51,8 +56,7 @@ export default function CourseDetailPage() {
   const [copied, setCopied] = useState(false);
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
-  
-  // Draft questions state
+
   const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([]);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [isSavingDrafts, setIsSavingDrafts] = useState(false);
@@ -103,10 +107,8 @@ export default function CourseDetailPage() {
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !course) return;
-
     setIsUploading(true);
     setUploadError("");
-
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -118,29 +120,38 @@ export default function CourseDetailPage() {
       setUploadError(error.response?.data?.message || "Failed to upload file");
     } finally {
       setIsUploading(false);
-      // Reset the input so the same file can be re-selected
       e.target.value = "";
     }
   };
 
-  const handleGenerateQuestions = async ({ file, topic, count, difficulty }: { file: File, topic: string, count: number, difficulty: string }) => {
+  const handleGenerateQuestions = async ({
+    file,
+    topic,
+    count,
+    difficulty,
+  }: {
+    file: File;
+    topic: string;
+    count: number;
+    difficulty: string;
+  }) => {
     if (!course) return;
     setIsGeneratingAi(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("courseId", course.id);
-      
       const material = await apiUpload<Material>("/materials/upload", formData);
-      
-      const response = await apiPost<{message: string, questions: DraftQuestion[]}>("/ai/generate-questions", {
+      const response = await apiPost<{
+        message: string;
+        questions: DraftQuestion[];
+      }>("/ai/generate-questions", {
         courseId: course.id,
         materialId: material.id,
         topic,
         count,
         difficulty,
       });
-      
       toast.success(response.message || "Questions successfully generated!");
       setIsGenerateModalOpen(false);
       setDraftQuestions(response.questions || []);
@@ -157,15 +168,16 @@ export default function CourseDetailPage() {
     if (!course) return;
     setIsSavingDrafts(true);
     try {
-      const payload = questionsToSave.map(q => ({
+      const payload = questionsToSave.map((q) => ({
         content: q.content,
         hint: q.hint || undefined,
         courseId: course.id,
         answers: q.answers,
       }));
-
       await apiPost("/questions/bulk", { questions: payload });
-      toast.success(`Successfully added ${questionsToSave.length} questions to the course!`);
+      toast.success(
+        `Successfully added ${questionsToSave.length} questions to the course!`,
+      );
       setIsDraftModalOpen(false);
       setDraftQuestions([]);
       fetchCourse();
@@ -194,99 +206,100 @@ export default function CourseDetailPage() {
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Navigation / Return */}
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* ── Breadcrumb ── */}
         <div className="flex items-center justify-between">
-          <nav className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-            <ol className="flex items-center gap-2">
-              <li>
-                <Link href="/" className="hover:text-primary transition-colors">
-                  Cognify
-                </Link>
-              </li>
-              <li className="opacity-40">/</li>
-              <li>
-                <Link
-                  href="/courses"
-                  className="hover:text-primary transition-colors"
-                >
-                  Courses
-                </Link>
-              </li>
-              <li className="opacity-40">/</li>
-              <li className="text-primary/60">{course.name}</li>
-            </ol>
+          <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <Link href="/" className="hover:text-foreground transition-colors">
+              Cognify
+            </Link>
+            <span className="opacity-40">/</span>
+            <Link
+              href="/courses"
+              className="hover:text-foreground transition-colors"
+            >
+              Courses
+            </Link>
+            <span className="opacity-40">/</span>
+            <span className="text-foreground font-medium truncate max-w-[200px]">
+              {course.name}
+            </span>
           </nav>
           <Link href="/courses">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-[10px] font-bold uppercase tracking-widest gap-2"
-            >
+            <Button variant="ghost" size="sm" className="gap-1.5 text-sm">
               <ArrowLeft className="h-3.5 w-3.5" />
-              Back to Courses
+              Back
             </Button>
           </Link>
         </div>
 
-        {/* Course Core Header */}
-        <Card className="border-border overflow-hidden">
+        {/* ── Course header card ── */}
+        <Card className="overflow-hidden shadow-sm border-border/50">
           <CardContent className="p-0">
             <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border/40">
-              {/* Info Section */}
-              <div className="p-10 md:p-12 lg:max-w-xl w-full space-y-8">
-                <div className="space-y-4">
-                  <div className="flex items-center gap-4">
-                    <h1 className="text-4xl font-semibold tracking-tight text-foreground">
-                      {course.name}
-                    </h1>
+              {/* Left: course info + CTAs */}
+              <div className="p-8 md:p-10 lg:max-w-xl w-full space-y-6">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
                     <Badge
                       variant={course.isPublic ? "outline" : "secondary"}
-                      className="gap-1.5"
+                      className={cn(
+                        "gap-1.5 text-xs",
+                        course.isPublic &&
+                          "border-emerald-300/60 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/25",
+                      )}
                     >
                       {course.isPublic ? (
-                        <Globe className="h-3.5 w-3.5 text-success" />
+                        <Globe className="h-3 w-3" />
                       ) : (
-                        <Lock className="h-3.5 w-3.5" />
+                        <Lock className="h-3 w-3" />
                       )}
                       {course.isPublic ? "Public" : "Private"}
                     </Badge>
+                    {canEdit && (
+                      <Badge variant="secondary" className="text-xs">
+                        Instructor view
+                      </Badge>
+                    )}
                   </div>
-                  <p className="text-xl text-muted-foreground font-serif leading-[1.6] italic">
-                    {course.description ||
-                      "Synthesizing deep-domain knowledge through structured course integration."}
-                  </p>
+
+                  <h1 className="text-3xl md:text-4xl font-semibold tracking-tight text-foreground">
+                    {course.name}
+                  </h1>
+
+                  {course.description && (
+                    <p className="text-base text-muted-foreground leading-relaxed">
+                      {course.description}
+                    </p>
+                  )}
                 </div>
 
-                <div className="flex flex-wrap gap-4 pt-4">
+                {/* Action buttons */}
+                <div className="flex flex-wrap gap-3 pt-2">
                   {(!user || isStudent) && approvedQuestions.length > 0 && (
                     <Link href={`/quiz/${course.id}`}>
-                      <Button
-                        variant="pill"
-                        size="lg"
-                        className="shadow-xl shadow-black/5 px-10"
-                      >
-                        <Play className="h-4 w-4 mr-3 fill-current" />
-                        Start Quiz
+                      <Button size="default" className="rounded-xl gap-2 px-5">
+                        <Play className="h-3.5 w-3.5 fill-current" />
+                        Start quiz
                       </Button>
                     </Link>
                   )}
                   {approvedQuestions.length > 0 && (
                     <Button
                       variant="outline"
-                      size="lg"
-                      className="rounded-full border-border hover:bg-secondary/50"
+                      size="default"
+                      className="rounded-xl gap-2 px-5"
                       onClick={handleShareLink}
                     >
                       {copied ? (
                         <>
-                          <Check className="h-4 w-4 mr-3 text-green-500" />
-                          Link Copied!
+                          <Check className="h-3.5 w-3.5 text-emerald-500" />
+                          Link copied!
                         </>
                       ) : (
                         <>
-                          <Share2 className="h-4 w-4 mr-3 text-primary/60" />
-                          Share Quiz
+                          <Share2 className="h-3.5 w-3.5 text-muted-foreground" />
+                          Share quiz
                         </>
                       )}
                     </Button>
@@ -294,58 +307,44 @@ export default function CourseDetailPage() {
                 </div>
               </div>
 
-              {/* Snapshot Section */}
-              <div className="flex-1 p-10 md:p-12 bg-secondary/5 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-8">
-                    Course Metrics
+              {/* Right: stats + pending alert */}
+              <div className="flex-1 p-8 md:p-10 bg-muted/10 flex flex-col justify-between gap-8">
+                {/* Stat grid */}
+                <div>
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-5">
+                    Overview
                   </p>
-                  <div className="grid grid-cols-2 gap-12">
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        Assessments
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-xl bg-background border border-border/50 space-y-1">
+                      <p className="text-2xl font-semibold text-foreground tracking-tight">
+                        {approvedQuestions.length}
                       </p>
-                      <div className="flex items-end gap-2">
-                        <p className="text-3xl font-semibold text-foreground tracking-tighter">
-                          {approvedQuestions.length}
-                        </p>
-                        <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
-                          Questions
-                        </span>
-                      </div>
+                      <p className="text-xs text-muted-foreground">Questions</p>
                     </div>
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                        Materials
+                    <div className="p-4 rounded-xl bg-background border border-border/50 space-y-1">
+                      <p className="text-2xl font-semibold text-foreground tracking-tight">
+                        {materials.length}
                       </p>
-                      <div className="flex items-end gap-2">
-                        <p className="text-3xl font-semibold text-foreground tracking-tighter">
-                          {materials.length}
-                        </p>
-                        <span className="text-xs text-muted-foreground/60 pb-1 font-serif">
-                          Documents
-                        </span>
-                      </div>
+                      <p className="text-xs text-muted-foreground">Materials</p>
                     </div>
                   </div>
                 </div>
 
+                {/* Pending review alert */}
                 {canEdit && pendingQuestions.length > 0 && (
-                  <div className="mt-12 p-6 rounded-3xl bg-yellow-500/5 border border-yellow-500/20 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-2xl bg-yellow-500/10 flex items-center justify-center">
-                        <Sparkles className="h-5 w-5 text-yellow-600" />
-                      </div>
-                      <div>
-                        <p className="text-lg font-semibold text-foreground tracking-tight">
-                          {pendingQuestions.length} pending review
-                        </p>
-                        <p className="text-[10px] font-bold text-yellow-700 uppercase tracking-widest">
-                          Awaiting verification
-                        </p>
-                      </div>
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50">
+                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
                     </div>
-                    <ArrowRight className="h-5 w-5 text-yellow-600/40" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                        {pendingQuestions.length} pending review
+                      </p>
+                      <p className="text-xs text-amber-700/70 dark:text-amber-400/70">
+                        Awaiting verification
+                      </p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-amber-500/50 flex-shrink-0" />
                   </div>
                 )}
               </div>
@@ -353,77 +352,94 @@ export default function CourseDetailPage() {
           </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-          <div className="lg:col-span-2 space-y-12">
-            {/* Pending Questions */}
+        {/* ── Main content + sidebar ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* ── Left: questions ── */}
+          <div className="lg:col-span-2 space-y-8">
+            {/* Pending questions */}
             {canEdit && pendingQuestions.length > 0 && (
-              <div className="space-y-6">
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-semibold tracking-tight text-foreground">
-                    Pending Review
-                  </h3>
-                  <Badge
-                    variant="warning"
-                    className="text-[8px] bg-yellow-500/5 border-yellow-500/20 text-yellow-700 tracking-widest font-bold"
-                  >
-                    Verification Required
-                  </Badge>
+                  <h2 className="text-base font-semibold text-foreground">
+                    Pending review
+                  </h2>
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50 px-2.5 py-1 rounded-full">
+                    {pendingQuestions.length} awaiting
+                  </span>
                 </div>
-                <div className="space-y-6">
+
+                <div className="space-y-3">
                   {pendingQuestions.map((question) => (
                     <Card
                       key={question.id}
-                      className="border-yellow-500/10 bg-yellow-500/[0.02]"
+                      className="border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 shadow-sm overflow-hidden"
                     >
-                      <CardContent className="p-8 space-y-8">
-                        <p className="text-lg font-medium text-foreground leading-relaxed">
+                      <CardContent className="p-6 space-y-5">
+                        <p className="text-sm font-medium text-foreground leading-relaxed">
                           {question.content}
                         </p>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                        {/* Answers grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                           {question.answers.map((answer, i) => (
                             <div
                               key={answer.id}
-                              className={`p-4 rounded-2xl border text-sm transition-all duration-300 flex items-center justify-between ${
+                              className={cn(
+                                "flex items-center gap-3 p-3 rounded-xl border text-sm transition-colors",
                                 answer.isCorrect
-                                  ? "bg-green-500/5 border-green-500/20 text-green-700 font-medium"
-                                  : "bg-background/50 border-border/40 text-muted-foreground"
-                              }`}
+                                  ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-300"
+                                  : "bg-background border-border/50 text-muted-foreground",
+                              )}
                             >
-                              <span className="flex-1">
-                                <span className="text-[10px] font-bold opacity-40 mr-3 italic">
-                                  {String.fromCharCode(65 + i)} /
-                                </span>
+                              <span
+                                className={cn(
+                                  "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-xs font-bold border",
+                                  answer.isCorrect
+                                    ? "bg-emerald-500 border-emerald-500 text-white"
+                                    : "bg-background border-border text-muted-foreground",
+                                )}
+                              >
+                                {answer.isCorrect ? (
+                                  <Check className="h-3 w-3" />
+                                ) : (
+                                  String.fromCharCode(65 + i)
+                                )}
+                              </span>
+                              <span className="flex-1 text-xs leading-relaxed">
                                 {answer.content}
                               </span>
-                              {answer.isCorrect && (
-                                <Check className="h-3.5 w-3.5" />
-                              )}
                             </div>
                           ))}
                         </div>
-                        <div className="pt-6 border-t border-border/40 flex items-center justify-between">
-                          {question.hint && (
-                            <p className="text-xs text-muted-foreground font-serif italic">
-                              <span className="text-[10px] font-bold uppercase tracking-widest text-primary/40 not-italic mr-3">
-                                Hint /
+
+                        {/* Hint + actions */}
+                        <div className="flex items-center justify-between pt-1 border-t border-border/40 gap-4">
+                          {question.hint ? (
+                            <p className="text-xs text-muted-foreground leading-relaxed flex-1">
+                              <span className="font-semibold text-foreground mr-1">
+                                Hint:
                               </span>
                               {question.hint}
                             </p>
+                          ) : (
+                            <span />
                           )}
-                          <div className="flex gap-3">
+                          <div className="flex gap-2 flex-shrink-0">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => handleApprove(question.id)}
-                              className="text-[10px] font-bold uppercase tracking-widest text-green-700 hover:bg-green-500/10 hover:text-green-800"
+                              className="h-8 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/25"
                             >
+                              <Check className="h-3.5 w-3.5 mr-1.5" />
                               Approve
                             </Button>
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="text-[10px] font-bold uppercase tracking-widest text-destructive/60 hover:bg-destructive/10 hover:text-destructive"
+                              className="h-8 px-3 text-xs font-semibold text-red-600/70 hover:bg-red-50 dark:hover:bg-red-950/25 hover:text-red-600"
                             >
+                              <X className="h-3.5 w-3.5 mr-1.5" />
                               Reject
                             </Button>
                           </div>
@@ -435,168 +451,146 @@ export default function CourseDetailPage() {
               </div>
             )}
 
-            {/* Approved Questions List */}
-            <div className="space-y-8">
+            {/* Approved questions */}
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-semibold tracking-tight text-foreground">
+                <h2 className="text-base font-semibold text-foreground">
                   Questions
-                </h3>
-                <div className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                </h2>
+                <span className="text-xs text-muted-foreground">
                   {approvedQuestions.length} verified
-                </div>
+                </span>
               </div>
 
               {approvedQuestions.length === 0 ? (
-                <EmptyState
-                  icon={FileQuestion}
-                  message="No approved questions yet."
-                />
+                <Card className="border-border/50 shadow-sm">
+                  <CardContent className="p-12 text-center">
+                    <FileQuestion className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+                    <p className="text-sm text-muted-foreground">
+                      No approved questions yet.
+                    </p>
+                    {canEdit && (
+                      <p className="text-xs text-muted-foreground/60 mt-1">
+                        Generate questions with AI or add them manually.
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
               ) : (
-                <div className="space-y-4">
-                  {(user
-                    ? approvedQuestions
-                    : approvedQuestions.slice(0, 10)
-                  ).map((question, index) => (
+                <div className="space-y-2.5">
+                  {approvedQuestions.map((question, index) => (
                     <div
                       key={question.id}
-                      className={cn(
-                        "group p-6 rounded-3xl border border-border/50 bg-card/30 hover:bg-card hover:border-primary/10 transition-all duration-500",
-                        !user && index >= 10
-                          ? "opacity-30 grayscale blur-[1px]"
-                          : "",
-                      )}
+                      className="group flex gap-4 p-5 rounded-xl border border-border/50 bg-card hover:border-border hover:bg-muted/20 transition-all duration-150"
                     >
-                      <div className="flex gap-6 items-start">
-                        <span className="text-2xl font-semibold text-primary/10 tracking-tighter tabular-nums pt-1 group-hover:text-primary/20 transition-colors">
-                          {String(index + 1).padStart(2, "0")}
-                        </span>
-                        <div className="space-y-4 flex-1">
-                          <p className="text-base font-medium text-foreground tracking-tight leading-relaxed">
-                            {question.content}
-                          </p>
-                          <div className="flex flex-wrap gap-2 pt-2">
-                            {question.answers.map((answer, i) => (
-                              <Badge
-                                key={answer.id}
-                                variant="outline"
-                                className={cn(
-                                  "text-[8px] font-bold tracking-widest transition-all duration-500",
-                                  answer.isCorrect
-                                    ? "bg-green-500/5 border-green-500/20 text-green-700/60"
-                                    : "bg-secondary/20 border-border/30 text-muted-foreground/40",
-                                )}
-                              >
-                                {String.fromCharCode(64 + (i + 1))}
-                              </Badge>
-                            ))}
-                          </div>
+                      {/* Index badge */}
+                      <span className="flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg bg-muted border border-border/60 text-xs font-semibold text-muted-foreground mt-0.5 group-hover:border-primary/30 group-hover:text-primary transition-colors duration-150">
+                        {index + 1}
+                      </span>
+
+                      <div className="flex-1 min-w-0 space-y-3">
+                        <p className="text-sm font-medium text-foreground leading-relaxed">
+                          {question.content}
+                        </p>
+
+                        {/* Answer indicator pills */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {question.answers.map((answer, i) => (
+                            <span
+                              key={answer.id}
+                              className={cn(
+                                "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md border font-medium",
+                                answer.isCorrect
+                                  ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-400"
+                                  : "bg-muted/40 border-border/40 text-muted-foreground/60",
+                              )}
+                            >
+                              {answer.isCorrect && (
+                                <Check className="h-2.5 w-2.5" />
+                              )}
+                              {String.fromCharCode(65 + i)}
+                            </span>
+                          ))}
                         </div>
                       </div>
                     </div>
                   ))}
-
-                  {!user && (
-                    <Card className="border-dashed border border-border/60 bg-secondary/5 mt-12 overflow-hidden relative">
-                      <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent pointer-events-none" />
-                      <CardContent className="p-12 text-center space-y-8 relative z-10">
-                        <div className="mx-auto w-16 h-16 bg-primary/5 rounded-[24px] flex items-center justify-center text-primary/40">
-                          <Lock className="h-8 w-8" />
-                        </div>
-                        <div className="space-y-3">
-                          <h4 className="text-2xl font-semibold tracking-tight text-foreground">
-                            Unlock Full Access
-                          </h4>
-                          <p className="text-muted-foreground font-serif italic max-w-sm mx-auto leading-relaxed">
-                            A total of{" "}
-                            <span className="text-primary font-bold not-italic">
-                              {approvedQuestions.length} questions
-                            </span>{" "}
-                            are available. Login to view all questions.
-                          </p>
-                        </div>
-                        <FeatureGate
-                          variant="prompt"
-                          title="Full Access"
-                          description="Sign in to access all assessment questions and track your progress."
-                        >
-                          {" "}
-                        </FeatureGate>
-                      </CardContent>
-                    </Card>
-                  )}
                 </div>
               )}
             </div>
           </div>
 
-          <aside className="space-y-12">
-            {/* Supplemental Materials */}
-            <div className="space-y-6">
+          {/* ── Right: sidebar ── */}
+          <aside className="space-y-6">
+            {/* Materials */}
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                <h2 className="text-base font-semibold text-foreground">
                   Resources
-                </h3>
+                </h2>
+                <span className="text-xs text-muted-foreground">
+                  {materials.length} files
+                </span>
               </div>
 
               {materials.length === 0 ? (
-                <div className="p-10 text-center bg-secondary/5 rounded-[32px] border border-dashed border-border/40">
-                  <p className="text-[10px] font-bold text-muted-foreground/30 uppercase tracking-[0.2em] italic">
-                    No supplemental media.
+                <div className="p-8 text-center rounded-xl border border-dashed border-border/50 bg-muted/10">
+                  <FileText className="h-8 w-8 text-muted-foreground/20 mx-auto mb-2" />
+                  <p className="text-xs text-muted-foreground">
+                    No materials uploaded yet.
                   </p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {materials.map((material) => (
-                    <Card
+                    <div
                       key={material.id}
-                      className="border-border/40 bg-card/40 hover:bg-card transition-all duration-300"
+                      className="group flex items-center gap-3 p-3.5 rounded-xl border border-border/50 bg-card hover:border-border hover:bg-muted/20 transition-all duration-150"
                     >
-                      <CardContent className="p-5 flex items-center justify-between group">
-                        <div className="flex items-center gap-4">
-                          <div className="w-10 h-10 rounded-xl bg-secondary/60 flex items-center justify-center text-primary/40 group-hover:text-primary transition-all duration-500">
-                            <FileText className="h-5 w-5" />
-                          </div>
-                          <div className="space-y-1">
-                            <p className="text-xs font-semibold text-foreground tracking-tight line-clamp-1">
-                              {material.fileName}
-                            </p>
-                            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-                              {formatFileSize(material.fileSize)} •{" "}
-                              {material.chunkCount > 0
-                                ? `${material.chunkCount} chunks`
-                                : "Doc"}
-                            </p>
-                          </div>
-                        </div>
-                        <FeatureGate
-                          variant="prompt"
-                          title="Download Resource"
-                          description="Sign in to download course materials."
+                      <div className="w-8 h-8 rounded-lg bg-muted border border-border/60 flex items-center justify-center flex-shrink-0 group-hover:border-primary/30 transition-colors">
+                        <FileText className="h-4 w-4 text-muted-foreground/60" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground truncate">
+                          {material.fileName}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          {formatFileSize(material.fileSize)}
+                          {material.chunkCount > 0 &&
+                            ` · ${material.chunkCount} chunks`}
+                        </p>
+                      </div>
+                      <FeatureGate
+                        variant="prompt"
+                        title="Download resource"
+                        description="Sign in to download course materials."
+                      >
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 rounded-lg border border-border/40 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex-shrink-0"
                         >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 rounded-full border border-border/40 group-hover:border-primary group-hover:text-primary transition-all duration-500"
-                          >
-                            <Play className="h-3 w-3 translate-x-[1px] fill-current" />
-                          </Button>
-                        </FeatureGate>
-                      </CardContent>
-                    </Card>
+                          <Play className="h-3 w-3 translate-x-px fill-current" />
+                        </Button>
+                      </FeatureGate>
+                    </div>
                   ))}
                 </div>
               )}
 
+              {/* Upload + AI generate — only for editors */}
               {canEdit && (
-                <div className="mt-4">
+                <div className="space-y-3 pt-1">
                   {uploadError && (
-                    <div className="rounded-xl bg-destructive/5 border border-destructive/20 p-3 text-xs font-medium text-destructive mb-3">
+                    <div className="rounded-xl bg-red-50 dark:bg-red-950/25 border border-red-300/60 dark:border-red-700/50 p-3 text-xs font-medium text-red-600 dark:text-red-400">
                       {uploadError}
                     </div>
                   )}
+
+                  {/* PDF upload zone */}
                   <label
                     className={cn(
-                      "flex flex-col items-center justify-center gap-3 p-6 rounded-2xl border-2 border-dashed border-border/60 bg-secondary/5 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-300",
+                      "flex items-center justify-center gap-2.5 p-4 rounded-xl border border-dashed border-border/60 bg-muted/10 cursor-pointer hover:border-primary/40 hover:bg-primary/5 transition-all duration-150",
                       isUploading && "opacity-60 pointer-events-none",
                     )}
                   >
@@ -609,49 +603,53 @@ export default function CourseDetailPage() {
                     />
                     {isUploading ? (
                       <>
-                        <Loader2 className="h-5 w-5 animate-spin text-primary" />
-                        <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
-                          Processing PDF...
+                        <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                        <span className="text-xs font-medium text-primary">
+                          Processing PDF…
                         </span>
                       </>
                     ) : (
                       <>
-                        <Upload className="h-5 w-5 text-muted-foreground/40" />
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                        <Upload className="h-4 w-4 text-muted-foreground/50" />
+                        <span className="text-xs font-medium text-muted-foreground">
                           Upload PDF
                         </span>
                       </>
                     )}
                   </label>
-                  
+
+                  {/* AI generate button */}
                   <Button
-                    variant="default"
-                    className="w-full mt-4 h-auto py-6 rounded-2xl gap-3 text-sm font-semibold tracking-tight shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all duration-300"
+                    className="w-full rounded-xl h-11 gap-2.5 font-semibold text-sm"
                     onClick={() => setIsGenerateModalOpen(true)}
                   >
-                    <BrainCircuit className="h-5 w-5" />
-                    <div className="flex flex-col items-start text-left">
-                      <span>Generate with AI</span>
-                      <span className="text-[10px] font-medium opacity-80 uppercase tracking-widest mt-0.5">From PDF Material</span>
-                    </div>
+                    <BrainCircuit className="h-4 w-4" />
+                    Generate with AI
                   </Button>
+                  <p className="text-center text-[10px] text-muted-foreground/60">
+                    Creates questions from your PDF material
+                  </p>
                 </div>
               )}
             </div>
           </aside>
         </div>
       </div>
-      <GenerateQuestionsModal 
+
+      <GenerateQuestionsModal
         isOpen={isGenerateModalOpen}
         onClose={() => setIsGenerateModalOpen(false)}
         onGenerate={handleGenerateQuestions}
         isGenerating={isGeneratingAi}
       />
-
       <DraftQuestionsModal
         isOpen={isDraftModalOpen}
         onClose={() => {
-          if (confirm("Are you sure you want to discard these generated questions?")) {
+          if (
+            confirm(
+              "Are you sure you want to discard these generated questions?",
+            )
+          ) {
             setIsDraftModalOpen(false);
           }
         }}
