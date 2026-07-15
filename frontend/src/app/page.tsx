@@ -1,8 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Brain, BarChart3, ArrowRight, Sparkles } from "lucide-react";
 import { Header } from "@/components/layout";
@@ -12,19 +10,13 @@ import { RubiksCube } from "@/components/ui/rubiks-cube";
 
 export default function HomePage() {
   const { user, isLoading } = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!isLoading && user) {
-      router.push("/dashboard");
-    }
-  }, [user, isLoading, router]);
 
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/10">
       <Header />
 
-      <main className="flex-1 pt-32 pb-32">
+      <main className="flex-1 pt-20 pb-32">
         <div className="mx-auto max-w-7xl px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center">
             {/* Left column — text */}

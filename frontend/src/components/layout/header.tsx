@@ -3,7 +3,15 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Shield, GraduationCap, BookOpen } from "lucide-react";
+import {
+  LogOut,
+  User,
+  Shield,
+  GraduationCap,
+  BookOpen,
+  Home,
+  ArrowUpRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/auth";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -45,26 +53,12 @@ export function Header({ variant = "public" }: HeaderProps) {
     logout();
   };
 
-  const isDashboard = variant === "dashboard";
-
   return (
-    <header
-      className={cn(
-        "z-100 flex items-center justify-between border-b border-border/90 backdrop-blur-md",
-        isDashboard
-          ? "sticky top-0 h-14 bg-background/90 px-8"
-          : "fixed top-0 left-0 right-0 h-16 bg-background/80",
-      )}
-    >
-      <div
-        className={cn(
-          "flex w-full items-center justify-between",
-          isDashboard ? "" : "mx-auto max-w-7xl px-6",
-        )}
-      >
+    <header className="sticky top-0 z-100 flex h-14 items-center justify-between border-b border-border/90 bg-background/90 px-8 backdrop-blur-md">
+      <div className="flex w-full items-center justify-between">
         {/* Left: Page breadcrumb / logo */}
         <div className="flex items-center gap-8">
-          <Link href={"/"} className="flex items-center">
+          <Link href={"/dashboard"} className="flex items-center">
             <CognifyLogo size={100} />
           </Link>
         </div>
@@ -93,16 +87,6 @@ export function Header({ variant = "public" }: HeaderProps) {
             </>
           ) : user ? (
             <div className="relative flex items-center gap-3" ref={ref}>
-              {!isDashboard && (
-                <Link href="/dashboard">
-                  <Button
-                    size="sm"
-                    className="rounded-full bg-zinc-950 text-white shadow-sm transition-all hover:bg-zinc-800 hover:shadow-md"
-                  >
-                    Dashboard
-                  </Button>
-                </Link>
-              )}
               <button
                 onClick={() => setOpen((v) => !v)}
                 className={cn(
@@ -120,59 +104,76 @@ export function Header({ variant = "public" }: HeaderProps) {
 
               {/* Dropdown */}
               {open && (
-                <div className="fixed right-6 top-14 w-56 overflow-hidden rounded-2xl border border-border bg-[var(--background)] shadow-2xl ring-1 ring-black/5">
-                  {/* User info */}
-                  <div className="border-b border-border px-4 py-3">
-                    <p className="text-[13px] font-semibold text-foreground">
-                      {user.firstName} {user.lastName}
-                    </p>
-                    <p className="truncate text-[11px] text-muted-foreground">
-                      {user.email}
-                    </p>
-                    <div className="mt-1.5 flex items-center gap-1.5">
+                <div className="fixed right-6 top-14 w-60 origin-top-right animate-in fade-in slide-in-from-top-1 duration-150 overflow-hidden rounded-xl border border-border/80 bg-[var(--background)] shadow-xl z-[200]">
+                  {/* User info header */}
+                  <div className="px-4 py-3.5">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9 shrink-0 border border-border/60">
+                        <AvatarFallback className="bg-primary/5 text-[11px] font-bold text-primary/70">
+                          {getInitials(user.firstName, user.lastName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold leading-tight text-foreground">
+                          {user.firstName} {user.lastName}
+                        </p>
+                        <p className="mt-0.5 truncate text-[11px] text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-2.5 flex items-center gap-1.5">
                       {(() => {
                         const role =
                           roleConfig[user.role] ?? roleConfig.STUDENT;
                         const RoleIcon = role.icon;
                         return (
-                          <>
-                            <RoleIcon
-                              className={cn("h-3.5 w-3.5", role.color)}
-                            />
-                            <span
-                              className={cn(
-                                "text-[10px] font-bold uppercase tracking-wider",
-                                role.color,
-                              )}
-                            >
-                              {role.label}
-                            </span>
-                          </>
+                          <span
+                            className={cn(
+                              "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                              role.color,
+                              "bg-current/[0.06]",
+                            )}
+                          >
+                            <RoleIcon className="h-3 w-3" />
+                            {role.label}
+                          </span>
                         );
                       })()}
                     </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="p-1.5">
+                  {/* Navigation actions */}
+                  <div className="border-t border-border/60 p-1.5">
                     <Link
                       href="/settings"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground"
                     >
-                      <User className="h-4 w-4 shrink-0" />
-                      Edit Profile
+                      <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                      My Profile
+                    </Link>
+                    <Link
+                      href="/"
+                      onClick={() => setOpen(false)}
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground"
+                    >
+                      <span className="flex items-center gap-3">
+                        <Home className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        Homepage
+                      </span>
+                      <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/60" />
                     </Link>
                   </div>
 
-                  {/* Logout */}
-                  <div className="border-t border-border p-1.5">
+                  {/* Sign out */}
+                  <div className="border-t border-border/60 p-1.5">
                     <button
                       onClick={handleLogout}
-                      className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2.5 text-sm text-destructive transition-colors hover:bg-destructive/5"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-destructive/5 hover:text-destructive"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
-                      Sign out
+                      Log out
                     </button>
                   </div>
                 </div>
