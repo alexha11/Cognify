@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState, GenerateQuestionsModal, DraftQuestionsModal } from "@/components/ui";
+import { GenerateQuestionsModal, DraftQuestionsModal } from "@/components/ui";
 import type { DraftQuestion } from "@/components/ui";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
@@ -27,7 +27,7 @@ import {
   HelpCircle,
   Lightbulb,
   ArrowRight,
-  Filter,
+  ChevronDown,
   Loader2,
   BrainCircuit,
   Pencil,
@@ -63,21 +63,16 @@ export default function QuestionsPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState("");
-  
+
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
 
-  // Draft questions state
   const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([]);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [isSavingDrafts, setIsSavingDrafts] = useState(false);
 
-  // New question form state
-  const [newQuestion, setNewQuestion] = useState({
-    content: "",
-    hint: "",
-  });
+  const [newQuestion, setNewQuestion] = useState({ content: "", hint: "" });
   const [newAnswers, setNewAnswers] = useState<Answer[]>([
     { content: "", isCorrect: true },
     { content: "", isCorrect: false },
@@ -85,16 +80,13 @@ export default function QuestionsPage() {
 
   const canManage = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
-  // Fetch courses for dropdown
   useEffect(() => {
     const fetchCourses = async () => {
       if (authLoading || !user) return;
       try {
         const data = await apiGet<Course[]>("/courses");
         setCourses(data || []);
-        if (data && data.length > 0) {
-          setSelectedCourse(data[0].id);
-        }
+        if (data && data.length > 0) setSelectedCourse(data[0].id);
       } catch (error) {
         console.error("Failed to fetch courses", error);
       } finally {
@@ -104,7 +96,6 @@ export default function QuestionsPage() {
     fetchCourses();
   }, [authLoading, user]);
 
-  // Fetch questions when course changes
   useEffect(() => {
     const fetchQuestions = async () => {
       if (!selectedCourse) return;
@@ -125,18 +116,15 @@ export default function QuestionsPage() {
   }, [selectedCourse]);
 
   const addAnswer = () => {
-    if (newAnswers.length < 6) {
+    if (newAnswers.length < 6)
       setNewAnswers([...newAnswers, { content: "", isCorrect: false }]);
-    }
   };
 
   const removeAnswer = (index: number) => {
     if (newAnswers.length > 2) {
       const updated = newAnswers.filter((_, i) => i !== index);
-      // Ensure at least one answer is correct
-      if (!updated.some((a) => a.isCorrect) && updated.length > 0) {
+      if (!updated.some((a) => a.isCorrect) && updated.length > 0)
         updated[0].isCorrect = true;
-      }
       setNewAnswers(updated);
     }
   };
@@ -147,15 +135,23 @@ export default function QuestionsPage() {
     value: string | boolean,
   ) => {
     const updated = [...newAnswers];
-    if (field === "isCorrect") {
+    if (field === "isCorrect")
       updated[index].isCorrect = !updated[index].isCorrect;
-    } else if (field === "content") {
-      updated[index].content = value as string;
-    }
+    else if (field === "content") updated[index].content = value as string;
     setNewAnswers(updated);
   };
 
-  const handleGenerateQuestions = async ({ file, topic, count, difficulty }: { file: File, topic: string, count: number, difficulty: string }) => {
+  const handleGenerateQuestions = async ({
+    file,
+    topic,
+    count,
+    difficulty,
+  }: {
+    file: File;
+    topic: string;
+    count: number;
+    difficulty: string;
+  }) => {
     if (!selectedCourse) {
       toast.error("Please select a course first");
       return;
@@ -165,17 +161,20 @@ export default function QuestionsPage() {
       const formData = new FormData();
       formData.append("file", file);
       formData.append("courseId", selectedCourse);
-      
-      const material = await apiUpload<{id: string}>("/materials/upload", formData);
-      
-      const response = await apiPost<{message: string, questions: DraftQuestion[]}>("/ai/generate-questions", {
+      const material = await apiUpload<{ id: string }>(
+        "/materials/upload",
+        formData,
+      );
+      const response = await apiPost<{
+        message: string;
+        questions: DraftQuestion[];
+      }>("/ai/generate-questions", {
         courseId: selectedCourse,
         materialId: material.id,
         topic,
         count,
         difficulty,
       });
-      
       toast.success(response.message || "Questions successfully generated!");
       setIsGenerateModalOpen(false);
       setDraftQuestions(response.questions || []);
@@ -192,20 +191,21 @@ export default function QuestionsPage() {
     if (!selectedCourse) return;
     setIsSavingDrafts(true);
     try {
-      const payload = questionsToSave.map(q => ({
+      const payload = questionsToSave.map((q) => ({
         content: q.content,
         hint: q.hint || undefined,
         courseId: selectedCourse,
         answers: q.answers,
       }));
-
       await apiPost("/questions/bulk", { questions: payload });
-      toast.success(`Successfully added ${questionsToSave.length} questions to the course!`);
+      toast.success(
+        `Successfully added ${questionsToSave.length} questions to the course!`,
+      );
       setIsDraftModalOpen(false);
       setDraftQuestions([]);
-      
-      // Refresh questions list
-      const data = await apiGet<Question[]>(`/questions/course/${selectedCourse}`);
+      const data = await apiGet<Question[]>(
+        `/questions/course/${selectedCourse}`,
+      );
       setQuestions(data || []);
     } catch (err) {
       console.error(err);
@@ -221,14 +221,12 @@ export default function QuestionsPage() {
       setError("Please select a course first");
       return;
     }
-
-    // Validation
     if (newQuestion.content.length < 10) {
       setError("Question must be at least 10 characters");
       return;
     }
     if (!newAnswers.some((a) => a.isCorrect)) {
-      setError("Please mark one answer as correct");
+      setError("Please mark at least one answer as correct");
       return;
     }
     if (newAnswers.some((a) => !a.content.trim())) {
@@ -238,7 +236,6 @@ export default function QuestionsPage() {
 
     setCreating(true);
     setError("");
-
     try {
       if (editingQuestion) {
         await apiPut(`/questions/${editingQuestion.id}`, {
@@ -254,24 +251,14 @@ export default function QuestionsPage() {
           answers: newAnswers,
         });
       }
-
-      // Reset form
-      setEditingQuestion(null);
-      setNewQuestion({ content: "", hint: "" });
-      setNewAnswers([
-        { content: "", isCorrect: true },
-        { content: "", isCorrect: false },
-      ]);
-      setShowCreate(false);
-
-      // Refresh questions
+      closeModal();
       const data = await apiGet<Question[]>(
         `/questions/course/${selectedCourse}`,
       );
       setQuestions(data || []);
     } catch (err: unknown) {
       const error = err as { response?: { data?: { message?: string } } };
-      setError(error.response?.data?.message || "Failed to create question");
+      setError(error.response?.data?.message || "Failed to save question");
     } finally {
       setCreating(false);
     }
@@ -279,7 +266,6 @@ export default function QuestionsPage() {
 
   const handleDelete = async (questionId: string) => {
     if (!confirm("Are you sure you want to delete this question?")) return;
-
     try {
       await apiDelete(`/questions/${questionId}`);
       setQuestions(questions.filter((q) => q.id !== questionId));
@@ -291,33 +277,49 @@ export default function QuestionsPage() {
   const handleEditClick = (q: Question) => {
     setEditingQuestion(q);
     setNewQuestion({ content: q.content, hint: q.hint || "" });
-    setNewAnswers(q.answers.map(a => ({ id: a.id, content: a.content, isCorrect: a.isCorrect })));
+    setNewAnswers(
+      q.answers.map((a) => ({
+        id: a.id,
+        content: a.content,
+        isCorrect: a.isCorrect,
+      })),
+    );
     setShowCreate(true);
+  };
+
+  const closeModal = () => {
+    setShowCreate(false);
+    setEditingQuestion(null);
+    setNewQuestion({ content: "", hint: "" });
+    setNewAnswers([
+      { content: "", isCorrect: true },
+      { content: "", isCorrect: false },
+    ]);
+    setError("");
   };
 
   return (
     <DashboardLayout>
-      <div className="max-w-7xl mx-auto space-y-12">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div className="space-y-4">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              Question Bank
+      <div className="max-w-4xl mx-auto space-y-8">
+        {/* ── Page header ── */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground">
+              Question bank
             </h1>
-            <p className="text-muted-foreground text-base leading-relaxed max-w-xl">
+            <p className="text-sm text-muted-foreground">
               Manage and review questions for your courses.
             </p>
           </div>
           {canManage && (
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-2.5">
               <Button
                 onClick={() => setShowCreate(true)}
                 variant="outline"
-                size="lg"
-                className="rounded-full md:w-auto"
+                className="rounded-xl gap-2 h-9 px-4 text-sm"
               >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Manually
+                <Plus className="w-3.5 h-3.5" />
+                Add manually
               </Button>
               <Button
                 onClick={() => {
@@ -327,385 +329,385 @@ export default function QuestionsPage() {
                   }
                   setIsGenerateModalOpen(true);
                 }}
-                variant="pill"
-                size="lg"
-                className="md:w-auto"
+                className="rounded-xl gap-2 h-9 px-4 text-sm font-semibold"
               >
-                <BrainCircuit className="w-4 h-4 mr-2" />
+                <BrainCircuit className="w-3.5 h-3.5" />
                 Generate with AI
               </Button>
             </div>
           )}
         </div>
 
-        {/* Filters/Selectors */}
-        <Card className="bg-card">
-          <CardContent className="p-8">
-            <div className="flex flex-col sm:flex-row items-center gap-6">
-              <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary shrink-0">
-                <Filter className="h-5 w-5" />
-              </div>
-              <div className="flex-1 w-full space-y-2">
-                <Label
-                  htmlFor="courseKey"
-                  className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground"
-                >
-                  Select course
-                </Label>
-                <select
-                  id="courseKey"
-                  value={selectedCourse}
-                  onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-4 py-3 border border-border rounded-xl bg-background text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-serif"
-                >
-                  <option value="">All courses</option>
-                  {courses.map((course) => (
-                    <option key={course.id} value={course.id}>
-                      {course.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        {/* ── Course selector ── */}
+        <div className="flex items-center gap-3 p-4 rounded-xl border border-border/50 bg-card shadow-sm">
+          <label
+            htmlFor="courseKey"
+            className="text-sm font-medium text-muted-foreground whitespace-nowrap"
+          >
+            Course
+          </label>
+          <div className="relative flex-1">
+            <select
+              id="courseKey"
+              value={selectedCourse}
+              onChange={(e) => setSelectedCourse(e.target.value)}
+              className="w-full appearance-none pl-3 pr-8 py-2 rounded-lg border border-border bg-background text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors"
+            >
+              <option value="">All courses</option>
+              {courses.map((course) => (
+                <option key={course.id} value={course.id}>
+                  {course.name}
+                </option>
+              ))}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+          </div>
+          {questions.length > 0 && (
+            <span className="text-xs text-muted-foreground whitespace-nowrap">
+              {questions.length} questions
+            </span>
+          )}
+        </div>
 
-        {/* Questions List */}
+        {/* ── Questions list ── */}
         {isLoading ? (
           <div className="flex justify-center py-20">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Loader2 className="h-7 w-7 animate-spin text-primary" />
           </div>
         ) : questions.length === 0 ? (
-          <EmptyState
-            icon={HelpCircle}
-            message={
-              selectedCourse
-                ? "Add your first question to get started."
-                : "Select a course above to see its questions."
-            }
-            action={
-              canManage && selectedCourse ? (
+          <Card className="border-border/50 shadow-sm">
+            <CardContent className="p-12 text-center">
+              <HelpCircle className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
+              <p className="text-sm font-medium text-foreground mb-1">
+                {selectedCourse ? "No questions yet" : "Select a course"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {selectedCourse
+                  ? "Add your first question to get started."
+                  : "Choose a course above to see its questions."}
+              </p>
+              {canManage && selectedCourse && (
                 <Button
                   onClick={() => setShowCreate(true)}
                   variant="outline"
-                  size="lg"
+                  className="mt-5 rounded-xl"
                 >
                   Add question
                 </Button>
-              ) : undefined
-            }
-          />
+              )}
+            </CardContent>
+          </Card>
         ) : (
-          <div className="grid gap-6">
-            <div className="flex items-center justify-between px-2">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                {questions.length} questions
-              </span>
-            </div>
+          <div className="space-y-3">
             {questions.map((question, index) => (
               <Card
                 key={question.id}
-                className="group hover:border-primary/20 transition-all duration-300"
+                className="group border-border/50 hover:border-border shadow-sm transition-all duration-150 overflow-hidden"
               >
-                <CardContent className="p-8">
-                  <div className="flex items-start justify-between gap-6">
-                    <div className="space-y-6 flex-1">
-                      <div className="flex flex-wrap items-center gap-4">
-                        <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">
-                          ID: Q{String(index + 1).padStart(3, "0")}
-                        </span>
+                <CardContent className="p-6">
+                  <div className="flex items-start gap-4">
+                    {/* Index badge */}
+                    <span className="flex-shrink-0 flex h-7 w-7 items-center justify-center rounded-lg bg-muted border border-border/60 text-xs font-semibold text-muted-foreground mt-0.5 group-hover:border-primary/30 group-hover:text-primary transition-colors duration-150">
+                      {index + 1}
+                    </span>
+
+                    <div className="flex-1 min-w-0 space-y-4">
+                      {/* Meta badges */}
+                      <div className="flex items-center gap-2 flex-wrap">
                         {question.aiGenerated && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] font-bold uppercase tracking-widest bg-primary/5 text-primary border-primary/20"
-                          >
-                            AI Generated
-                          </Badge>
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-2.5 py-0.5 rounded-full">
+                            <BrainCircuit className="h-3 w-3" />
+                            AI generated
+                          </span>
                         )}
                         {!question.approved && (
-                          <Badge
-                            variant="outline"
-                            className="text-[10px] font-bold uppercase tracking-widest bg-secondary text-muted-foreground border-border"
-                          >
+                          <span className="inline-flex items-center text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50 px-2.5 py-0.5 rounded-full">
                             Pending review
-                          </Badge>
+                          </span>
                         )}
                       </div>
-                      <p className="text-xl font-semibold text-foreground tracking-tight leading-relaxed font-serif italic pr-8">
-                        "{question.content}"
+
+                      {/* Question text */}
+                      <p className="text-sm font-medium text-foreground leading-relaxed">
+                        {question.content}
                       </p>
+
+                      {/* Hint */}
                       {question.hint && (
-                        <div className="flex items-start gap-3 p-4 rounded-xl bg-secondary/40 border border-border/40">
-                          <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                          <p className="text-sm text-muted-foreground font-serif leading-relaxed italic">
+                        <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/40 border border-border/40">
+                          <Lightbulb className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-xs text-muted-foreground leading-relaxed">
                             {question.hint}
                           </p>
                         </div>
                       )}
+
+                      {/* Answer options */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        {question.answers.map((answer, i) => (
+                          <div
+                            key={answer.id || i}
+                            className={cn(
+                              "flex items-center gap-2.5 p-3 rounded-xl border text-xs transition-colors",
+                              answer.isCorrect
+                                ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-300"
+                                : "bg-background border-border/50 text-muted-foreground",
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md text-[10px] font-bold border",
+                                answer.isCorrect
+                                  ? "bg-emerald-500 border-emerald-500 text-white"
+                                  : "bg-background border-border text-muted-foreground",
+                              )}
+                            >
+                              {answer.isCorrect ? (
+                                <Check className="h-3 w-3" />
+                              ) : (
+                                String.fromCharCode(65 + i)
+                              )}
+                            </span>
+                            <span className="leading-relaxed flex-1">
+                              {answer.content}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
+
+                    {/* Actions */}
                     {canManage && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleEditClick(question)}
-                          className="text-muted-foreground/40 hover:text-primary hover:bg-primary/5"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5"
                           title="Edit question"
                         >
-                          <Pencil className="w-5 h-5" />
+                          <Pencil className="w-3.5 h-3.5" />
                         </Button>
                         <Button
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(question.id)}
-                          className="text-muted-foreground/40 hover:text-destructive hover:bg-destructive/5"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
                           title="Delete question"
                         >
-                          <Trash2 className="w-5 h-5" />
+                          <Trash2 className="w-3.5 h-3.5" />
                         </Button>
                       </div>
                     )}
-                  </div>
-
-                  {/* Answers */}
-                  <div className="mt-10 grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {question.answers.map((answer, i) => (
-                      <div
-                        key={answer.id || i}
-                        className={`flex items-start gap-4 p-5 rounded-2xl border transition-all duration-300 ${
-                          answer.isCorrect
-                            ? "bg-primary/5 border-primary/20 text-foreground"
-                            : "bg-background border-border text-muted-foreground"
-                        }`}
-                      >
-                        <div
-                          className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${
-                            answer.isCorrect
-                              ? "bg-primary border-primary text-primary-foreground"
-                              : "border-border text-muted-foreground/20"
-                          }`}
-                        >
-                          {answer.isCorrect ? (
-                            <Check className="h-3.5 w-3.5" />
-                          ) : (
-                            <div className="h-1.5 w-1.5 rounded-full bg-current" />
-                          )}
-                        </div>
-                        <span className="text-base font-serif leading-relaxed">
-                          {answer.content}
-                        </span>
-                      </div>
-                    ))}
                   </div>
                 </CardContent>
               </Card>
             ))}
           </div>
         )}
-
-        {/* Create Question Modal */}
-        {showCreate && (
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-6">
-            <Card className="max-w-3xl w-full shadow-2xl bg-card animate-in fade-in zoom-in-95 duration-300">
-              <CardHeader className="p-10 border-b border-border/40">
-                <div className="flex items-center justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-2xl font-semibold tracking-tight">
-                      {editingQuestion ? "Edit question" : "Create question"}
-                    </CardTitle>
-                    <CardDescription>
-                      {editingQuestion ? "Update this question." : "Add a new question for this course."}
-                    </CardDescription>
-                  </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      setShowCreate(false);
-                      setEditingQuestion(null);
-                      setNewQuestion({ content: "", hint: "" });
-                      setNewAnswers([
-                        { content: "", isCorrect: true },
-                        { content: "", isCorrect: false },
-                      ]);
-                    }}
-                    className="hover:bg-secondary rounded-full"
-                  >
-                    <X className="w-6 h-6" />
-                  </Button>
-                </div>
-              </CardHeader>
-              <form onSubmit={handleCreate}>
-                <div className="p-10 space-y-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                  {error && (
-                    <div className="p-4 bg-destructive/5 border border-destructive/20 text-destructive rounded-xl text-xs font-medium">
-                      {error}
-                    </div>
-                  )}
-
-                  <div className="space-y-4">
-                    <Label
-                      htmlFor="questionContent"
-                      className="text-[10px] font-bold uppercase tracking-widest"
-                    >
-                      Question
-                    </Label>
-                    <textarea
-                      id="questionContent"
-                      value={newQuestion.content}
-                      onChange={(e) =>
-                        setNewQuestion({
-                          ...newQuestion,
-                          content: e.target.value,
-                        })
-                      }
-                      rows={3}
-                      className="w-full px-5 py-4 border border-border rounded-2xl bg-background text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 font-serif text-lg italic"
-                      placeholder="Enter your question..."
-                      required
-                      minLength={10}
-                    />
-                    <div className="flex justify-end pr-2">
-                      <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-widest">
-                        {newQuestion.content.length} characters
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <Label
-                      htmlFor="hintContent"
-                      className="text-[10px] font-bold uppercase tracking-widest"
-                    >
-                      Hint (optional)
-                    </Label>
-                    <Input
-                      id="hintContent"
-                      value={newQuestion.hint}
-                      onChange={(e) =>
-                        setNewQuestion({ ...newQuestion, hint: e.target.value })
-                      }
-                      className="font-serif italic text-base px-5 py-6 rounded-xl"
-                      placeholder="Add a hint for students..."
-                    />
-                  </div>
-
-                  <div className="space-y-6">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
-                        Answer options
-                      </Label>
-                      {newAnswers.length < 6 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={addAnswer}
-                          className="text-[10px] font-bold uppercase tracking-widest text-primary"
-                        >
-                          + Add option
-                        </Button>
-                      )}
-                    </div>
-                    <div className="space-y-4">
-                      {newAnswers.map((answer, index) => (
-                        <div key={index} className="flex items-center gap-4">
-                          <Button
-                            type="button"
-                            variant={answer.isCorrect ? "default" : "ghost"}
-                            size="icon"
-                            onClick={() =>
-                              updateAnswer(index, "isCorrect", true)
-                            }
-                            className={cn(
-                              "h-10 w-10 shrink-0 rounded-xl transition-all duration-300",
-                              answer.isCorrect
-                                ? "shadow-lg shadow-primary/20"
-                                : "text-muted-foreground/20 hover:border-primary/40",
-                            )}
-                            title="Mark as correct"
-                          >
-                            <Check className="w-5 h-5" />
-                          </Button>
-                          <Input
-                            value={answer.content}
-                            onChange={(e) =>
-                              updateAnswer(index, "content", e.target.value)
-                            }
-                            className="flex-1 font-serif text-base px-5 py-6 rounded-xl"
-                            placeholder={`Option ${index + 1}...`}
-                            required
-                          />
-                          {newAnswers.length > 2 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeAnswer(index)}
-                              className="text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5"
-                            >
-                              <X className="w-5 h-5" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="p-10 border-t border-border/40 bg-secondary/10 flex justify-end gap-6 rounded-b-[32px]">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => {
-                      setShowCreate(false);
-                      setEditingQuestion(null);
-                      setNewQuestion({ content: "", hint: "" });
-                      setNewAnswers([
-                        { content: "", isCorrect: true },
-                        { content: "", isCorrect: false },
-                      ]);
-                    }}
-                    className="font-bold text-[10px] uppercase tracking-widest"
-                  >
-                    Discard
-                  </Button>
-                  <Button
-                    type="submit"
-                    disabled={creating}
-                    variant="pill"
-                    size="xl"
-                    className="px-10"
-                  >
-                    {creating ? (
-                      "Saving..."
-                    ) : editingQuestion ? (
-                      "Save changes"
-                    ) : (
-                      "Save question"
-                    )}
-                    {!creating && <ArrowRight className="ml-2 h-5 w-5" />}
-                  </Button>
-                </div>
-              </form>
-            </Card>
-          </div>
-        )}
       </div>
 
-      <GenerateQuestionsModal 
+      {/* ── Create / Edit modal ── */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-2xl w-full shadow-xl border-border/50 animate-in fade-in zoom-in-95 duration-200">
+            <CardHeader className="p-6 border-b border-border/40">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <CardTitle className="text-base font-semibold">
+                    {editingQuestion ? "Edit question" : "Add question"}
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    {editingQuestion
+                      ? "Update the question and its answers."
+                      : "Add a new question for this course."}
+                  </CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={closeModal}
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+
+            <form onSubmit={handleCreate}>
+              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                {error && (
+                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/25 border border-red-300/60 dark:border-red-700/50 text-xs font-medium text-red-600 dark:text-red-400">
+                    {error}
+                  </div>
+                )}
+
+                {/* Question content */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="questionContent"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
+                    Question
+                  </Label>
+                  <textarea
+                    id="questionContent"
+                    value={newQuestion.content}
+                    onChange={(e) =>
+                      setNewQuestion({
+                        ...newQuestion,
+                        content: e.target.value,
+                      })
+                    }
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors resize-none"
+                    placeholder="Enter your question…"
+                    required
+                    minLength={10}
+                  />
+                  <div className="flex justify-end">
+                    <span className="text-[10px] text-muted-foreground/50">
+                      {newQuestion.content.length} characters
+                    </span>
+                  </div>
+                </div>
+
+                {/* Hint */}
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="hintContent"
+                    className="text-xs font-medium text-muted-foreground"
+                  >
+                    Hint{" "}
+                    <span className="text-muted-foreground/50 font-normal">
+                      (optional)
+                    </span>
+                  </Label>
+                  <Input
+                    id="hintContent"
+                    value={newQuestion.hint}
+                    onChange={(e) =>
+                      setNewQuestion({ ...newQuestion, hint: e.target.value })
+                    }
+                    className="rounded-xl text-sm h-10"
+                    placeholder="Add a hint to guide students…"
+                  />
+                </div>
+
+                {/* Answer options */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      Answer options
+                    </Label>
+                    {newAnswers.length < 6 && (
+                      <button
+                        type="button"
+                        onClick={addAnswer}
+                        className="text-xs font-semibold text-primary hover:text-primary/80 transition-colors"
+                      >
+                        + Add option
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    {newAnswers.map((answer, index) => (
+                      <div key={index} className="flex items-center gap-2.5">
+                        {/* Correct toggle */}
+                        <button
+                          type="button"
+                          onClick={() => updateAnswer(index, "isCorrect", true)}
+                          title="Mark as correct"
+                          className={cn(
+                            "h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg border transition-all duration-150",
+                            answer.isCorrect
+                              ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                              : "bg-background border-border text-muted-foreground/30 hover:border-emerald-400 hover:text-emerald-600",
+                          )}
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Answer text */}
+                        <Input
+                          value={answer.content}
+                          onChange={(e) =>
+                            updateAnswer(index, "content", e.target.value)
+                          }
+                          className="flex-1 rounded-xl text-sm h-10"
+                          placeholder={`Option ${String.fromCharCode(65 + index)}…`}
+                          required
+                        />
+
+                        {/* Remove */}
+                        {newAnswers.length > 2 && (
+                          <button
+                            type="button"
+                            onClick={() => removeAnswer(index)}
+                            className="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/25 transition-colors"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-[10px] text-muted-foreground/50">
+                    Click the check button to mark the correct answer(s).
+                  </p>
+                </div>
+              </div>
+
+              {/* Modal footer */}
+              <div className="p-4 border-t border-border/40 bg-muted/10 flex items-center justify-end gap-2.5 rounded-b-xl">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={closeModal}
+                  className="rounded-xl h-9 px-4 text-sm"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={creating}
+                  className="rounded-xl h-9 px-5 text-sm font-semibold gap-2"
+                >
+                  {creating ? (
+                    <>
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      Saving…
+                    </>
+                  ) : (
+                    <>
+                      {editingQuestion ? "Save changes" : "Save question"}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      <GenerateQuestionsModal
         isOpen={isGenerateModalOpen}
         onClose={() => setIsGenerateModalOpen(false)}
         onGenerate={handleGenerateQuestions}
         isGenerating={isGeneratingAi}
       />
-
       <DraftQuestionsModal
         isOpen={isDraftModalOpen}
         onClose={() => {
-          if (confirm("Are you sure you want to discard these generated questions?")) {
+          if (
+            confirm(
+              "Are you sure you want to discard these generated questions?",
+            )
+          )
             setIsDraftModalOpen(false);
-          }
         }}
         questions={draftQuestions}
         onSave={handleSaveDrafts}
