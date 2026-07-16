@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { BookOpen, Brain, BarChart3, ArrowRight, Sparkles } from "lucide-react";
 import { Header } from "@/components/layout";
@@ -109,42 +110,15 @@ export default function HomePage() {
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
-                  {/* Mockup UI */}
-                  <div className="relative z-10 w-full max-w-[300px] rounded-2xl border border-border bg-card p-8 shadow-xl flex flex-col items-center gap-5 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
-                    <div className="w-20 h-20 rounded-2xl border border-border bg-secondary/50 flex items-center justify-center mb-2 shadow-sm transition-transform duration-500 group-hover:rotate-6">
-                      <Brain className="h-10 w-10 text-primary transition-transform duration-500 group-hover:scale-110" />
-                    </div>
-                    <div className="text-center space-y-1.5 w-full transition-all duration-500 delay-75 group-hover:-translate-y-1">
-                      <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                        Source Material
-                      </div>
-                      <div className="text-lg text-foreground font-medium flex items-center justify-center gap-2">
-                        Biology_101.pdf
-                        <ArrowRight className="h-4 w-4 text-muted-foreground transition-transform duration-500 group-hover:translate-x-1" />
-                      </div>
-                    </div>
-
-                    <div className="w-full h-px bg-border my-2"></div>
-
-                    <div className="flex justify-between w-full text-sm transition-all duration-500 delay-150 group-hover:-translate-y-1">
-                      <div className="flex flex-col items-start gap-1">
-                        <span className="text-muted-foreground text-[10px] uppercase tracking-wider">
-                          Questions
-                        </span>
-                        <span className="text-foreground font-medium text-base transition-colors duration-500 group-hover:text-primary">
-                          15 Generated
-                        </span>
-                      </div>
-                      <div className="flex flex-col items-end gap-1">
-                        <span className="text-muted-foreground text-[10px] uppercase tracking-wider">
-                          Status
-                        </span>
-                        <span className="text-primary font-medium flex items-center gap-1.5 text-base">
-                          <div className="w-2 h-2 rounded-full bg-primary animate-pulse"></div>
-                          Ready
-                        </span>
-                      </div>
-                    </div>
+                  {/* Real Image */}
+                  <div className="relative z-10 w-full h-full rounded-2xl border border-border overflow-hidden shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+                    <Image
+                      src="/images/features/ai_generation.png"
+                      alt="AI Question Generation Interface"
+                      fill
+                      className="object-cover object-left-top"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                   </div>
                 </div>
               </div>
@@ -180,53 +154,15 @@ export default function HomePage() {
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
-                  {/* Mockup UI */}
-                  <div className="relative z-10 w-full max-w-[340px] rounded-2xl border border-border bg-card p-8 shadow-xl flex flex-col gap-8 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
-                    <div className="flex justify-between items-start transition-all duration-500 group-hover:-translate-y-1">
-                      <div className="space-y-1">
-                        <div className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                          Average Score
-                        </div>
-                        <div className="text-5xl text-foreground font-semibold tracking-tight">
-                          85%
-                        </div>
-                      </div>
-                      <div className="p-3 rounded-xl bg-secondary border border-border shadow-sm transition-transform duration-500 group-hover:rotate-12 group-hover:scale-110">
-                        <BarChart3 className="h-6 w-6 text-primary" />
-                      </div>
-                    </div>
-
-                    <div className="space-y-5">
-                      <div className="space-y-2 transition-all duration-500 delay-75 group-hover:-translate-y-1">
-                        <div className="flex justify-between text-sm">
-                          <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                            <div className="w-2.5 h-2.5 rounded-full bg-primary"></div>
-                            Easy Level
-                          </div>
-                          <span className="text-foreground font-medium">
-                            92%
-                          </span>
-                        </div>
-                        <div className="w-full h-2 bg-secondary rounded-full overflow-hidden border border-border/50">
-                          <div className="h-full bg-primary w-0 group-hover:w-[92%] transition-all duration-1000 ease-out rounded-full"></div>
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 transition-all duration-500 delay-150 group-hover:-translate-y-1">
-                        <div className="flex justify-between text-sm pt-2">
-                          <div className="flex items-center gap-2 text-muted-foreground font-medium">
-                            <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground"></div>
-                            Hard Level
-                          </div>
-                          <span className="text-foreground font-medium">
-                            41%
-                          </span>
-                        </div>
-                        <div className="w-full h-2 bg-secondary rounded-full overflow-hidden border border-border/50">
-                          <div className="h-full bg-muted-foreground w-0 group-hover:w-[41%] transition-all duration-1000 delay-300 ease-out rounded-full"></div>
-                        </div>
-                      </div>
-                    </div>
+                  {/* Real Image */}
+                  <div className="relative z-10 w-full h-full rounded-2xl border border-border overflow-hidden shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+                    <Image
+                      src="/images/features/analytics.png"
+                      alt="Modern Assessment Engine Analytics"
+                      fill
+                      className="object-cover object-left-top"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                   </div>
                 </div>
               </div>
@@ -262,39 +198,15 @@ export default function HomePage() {
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
-                  {/* Mockup UI */}
-                  <div className="relative z-10 w-full max-w-[320px] rounded-2xl border border-border bg-card p-6 shadow-xl flex flex-col gap-4 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
-                    <div className="flex items-center gap-4 p-4 rounded-xl border border-border bg-secondary/30 shadow-sm transition-all duration-500 delay-75 group-hover:translate-x-2 group-hover:-translate-y-1 group-hover:shadow-md">
-                      <div className="p-3 bg-card border border-border text-primary rounded-lg shadow-sm transition-transform duration-500 group-hover:rotate-[10deg]">
-                        <BookOpen className="h-5 w-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-base font-medium text-foreground">
-                          Lecture_Slides.pdf
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          Processed • 2.4 MB
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 p-4 rounded-xl border border-border bg-secondary/30 shadow-sm transition-all duration-500 delay-150 group-hover:-translate-x-2 group-hover:-translate-y-1 group-hover:shadow-md">
-                      <div className="p-3 bg-card border border-border text-primary rounded-lg shadow-sm transition-transform duration-500 group-hover:rotate-[-10deg]">
-                        <BookOpen className="h-5 w-5" />
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-base font-medium text-foreground">
-                          Syllabus_2026.docx
-                        </span>
-                        <span className="text-sm text-muted-foreground">
-                          Processed • 1.1 MB
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="mt-3 text-center text-sm font-medium text-primary bg-secondary/50 border border-border py-3 rounded-xl shadow-inner transition-colors duration-500 delay-300 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
-                      Semantic embeddings active
-                    </div>
+                  {/* Real Image */}
+                  <div className="relative z-10 w-full h-full rounded-2xl border border-border overflow-hidden shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+                    <Image
+                      src="/images/features/processing.png"
+                      alt="Smart Document Processing"
+                      fill
+                      className="object-cover object-left-top"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                   </div>
                 </div>
               </div>
@@ -330,47 +242,15 @@ export default function HomePage() {
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
-                  {/* Mockup UI */}
-                  <div className="relative z-10 w-full max-w-[320px] rounded-2xl border border-border bg-card p-6 shadow-xl flex flex-col gap-5 transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
-                    <div className="flex justify-between items-center pb-3 border-b border-border transition-all duration-500 group-hover:-translate-y-1">
-                      <span className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                        Progress
-                      </span>
-                      <span className="text-base font-bold text-primary">
-                        3/4 Correct
-                      </span>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div className="p-4 rounded-xl border border-border bg-card text-sm text-muted-foreground flex items-center gap-3 shadow-sm transition-all duration-500 delay-75 group-hover:-translate-x-2">
-                        <div className="w-5 h-5 rounded-full border border-muted"></div>
-                        <span className="font-medium">Option A</span>
-                      </div>
-                      <div className="p-4 rounded-xl border-2 border-primary bg-secondary/50 text-primary flex items-center gap-3 relative overflow-hidden shadow-sm transition-all duration-500 delay-150 group-hover:scale-[1.03] group-hover:shadow-md group-hover:bg-primary/10">
-                        <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center shadow-sm transition-transform duration-500 group-hover:scale-110">
-                          <svg
-                            className="w-3.5 h-3.5 text-card"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={3}
-                              d="M5 13l4 4L19 7"
-                            />
-                          </svg>
-                        </div>
-                        <span className="font-medium text-base">
-                          Option B (Correct)
-                        </span>
-                      </div>
-                      <div className="p-4 rounded-xl border border-border bg-card text-sm text-muted-foreground flex items-center gap-3 shadow-sm transition-all duration-500 delay-225 group-hover:translate-x-2">
-                        <div className="w-5 h-5 rounded-full border border-muted"></div>
-                        <span className="font-medium">Option C</span>
-                      </div>
-                    </div>
+                  {/* Real Image */}
+                  <div className="relative z-10 w-full h-full rounded-2xl border border-border overflow-hidden shadow-2xl transition-all duration-500 group-hover:-translate-y-2 group-hover:scale-[1.02]">
+                    <Image
+                      src="/images/features/quiz.png"
+                      alt="Interactive Quiz Experience"
+                      fill
+                      className="object-cover object-left-top"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
                   </div>
                 </div>
               </div>
