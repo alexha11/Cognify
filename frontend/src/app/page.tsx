@@ -9,9 +9,6 @@ import { useAuth } from "@/lib/auth";
 import { RubiksCube } from "@/components/ui/rubiks-cube";
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth();
-
-
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/10">
       <Header />
@@ -59,11 +56,6 @@ export default function HomePage() {
                       <span className="absolute bottom-0 right-0 block h-[20%] w-1/2 rounded-br-[10px] border-b-2 border-r-2 border-black transition-all duration-300" />
                     </button>
                   </div>
-                </Link>
-                <Link href="/register">
-                  <Button size="lg" variant="ghost" className="rounded-full">
-                    Create an account
-                  </Button>
                 </Link>
               </div>
             </div>
