@@ -11,6 +11,7 @@ import { useAuth } from "@/lib/auth";
 import { apiPut } from "@/lib/api";
 import { User as UserType } from "@/types";
 import { useToast } from "@/components/ui/toast";
+import { useTheme } from "@/components/ui/theme-provider";
 import { cn } from "@/lib/utils";
 import {
   Shield,
@@ -21,6 +22,9 @@ import {
   EyeOff,
   ChevronRight,
   AlertTriangle,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 
 interface Preferences {
@@ -33,6 +37,7 @@ export default function SettingsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
+  const { theme, setTheme } = useTheme();
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -285,6 +290,51 @@ export default function SettingsPage() {
                 )}
                 Save profile
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* ── Appearance ── */}
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-border/40 bg-muted/10">
+            <h2 className="text-sm font-semibold text-foreground">Appearance</h2>
+          </div>
+          <CardContent className="p-6 space-y-4">
+            <p className="text-xs text-muted-foreground">
+              Choose how Cognify looks to you. Select a theme or follow your system setting.
+            </p>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { value: "light" as const, label: "Light", icon: Sun, desc: "Always light" },
+                { value: "dark" as const, label: "Dark", icon: Moon, desc: "Always dark" },
+                { value: "system" as const, label: "System", icon: Monitor, desc: "Match OS" },
+              ].map(({ value, label, icon: Icon, desc }) => (
+                <button
+                  key={value}
+                  onClick={() => setTheme(value)}
+                  className={cn(
+                    "flex flex-col items-center gap-2.5 rounded-xl border p-4 transition-all duration-200",
+                    theme === value
+                      ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/20"
+                      : "border-border/50 text-muted-foreground hover:border-foreground/20 hover:bg-secondary/30",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+                      theme === value
+                        ? "bg-primary/10 text-primary"
+                        : "bg-muted/50 text-muted-foreground",
+                    )}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="text-[10px] text-muted-foreground">{desc}</p>
+                  </div>
+                </button>
+              ))}
             </div>
           </CardContent>
         </Card>

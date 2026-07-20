@@ -41,20 +41,20 @@ export default function HomePage() {
                       }}
                     />
 
-                    <button className="relative cursor-pointer overflow-hidden rounded-[10px] bg-white px-8 py-4 text-base font-bold text-black shadow-sm transition-all duration-300">
+                    <button className="relative cursor-pointer overflow-hidden rounded-[10px] bg-card px-8 py-4 text-base font-bold text-foreground shadow-sm transition-all duration-300">
                       <span className="relative z-20 flex items-center gap-2">
                         Get Started
                         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </span>
 
                       {/* Shine */}
-                      <span className="absolute left-[-75%] top-0 z-10 h-full w-[50%] rotate-12 bg-black/10 blur-lg transition-all duration-1000 ease-in-out group-hover:left-[125%]" />
+                      <span className="absolute left-[-75%] top-0 z-10 h-full w-[50%] rotate-12 bg-foreground/10 blur-lg transition-all duration-1000 ease-in-out group-hover:left-[125%]" />
 
                       {/* Border animation */}
-                      <span className="absolute left-0 top-0 block h-[20%] w-1/2 rounded-tl-[10px] border-l-2 border-t-2 border-black transition-all duration-300" />
-                      <span className="absolute right-0 top-0 block h-[60%] w-1/2 rounded-tr-[10px] border-r-2 border-t-2 border-black transition-all duration-300 group-hover:h-[90%]" />
-                      <span className="absolute bottom-0 left-0 block h-[60%] w-1/2 rounded-bl-[10px] border-b-2 border-l-2 border-black transition-all duration-300 group-hover:h-[90%]" />
-                      <span className="absolute bottom-0 right-0 block h-[20%] w-1/2 rounded-br-[10px] border-b-2 border-r-2 border-black transition-all duration-300" />
+                      <span className="absolute left-0 top-0 block h-[20%] w-1/2 rounded-tl-[10px] border-l-2 border-t-2 border-foreground transition-all duration-300" />
+                      <span className="absolute right-0 top-0 block h-[60%] w-1/2 rounded-tr-[10px] border-r-2 border-t-2 border-foreground transition-all duration-300 group-hover:h-[90%]" />
+                      <span className="absolute bottom-0 left-0 block h-[60%] w-1/2 rounded-bl-[10px] border-b-2 border-l-2 border-foreground transition-all duration-300 group-hover:h-[90%]" />
+                      <span className="absolute bottom-0 right-0 block h-[20%] w-1/2 rounded-br-[10px] border-b-2 border-r-2 border-foreground transition-all duration-300" />
                     </button>
                   </div>
                 </Link>

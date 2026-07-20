@@ -17,3 +17,5 @@ export { SectionHeader } from './section-header';
 export { EmptyState } from './empty-state';
 export { ProgressBar } from './progress-bar';
 export { toast, ToastProvider, useToast } from './toast';
+export { ThemeProvider, useTheme } from './theme-provider';
+export { ThemeToggle } from './theme-toggle';

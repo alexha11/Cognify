@@ -18,6 +18,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { getInitials } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 const roleConfig: Record<
   string,
@@ -67,6 +68,7 @@ export function Header({ variant = "public" }: HeaderProps) {
         <div className="flex items-center gap-3">
           {!isLoading && !user ? (
             <>
+              <ThemeToggle />
               <Link href="/login">
                 <Button
                   size="sm"
@@ -79,7 +81,7 @@ export function Header({ variant = "public" }: HeaderProps) {
               <Link href="/register">
                 <Button
                   size="sm"
-                  className="rounded-full bg-zinc-950 text-white shadow-sm transition-all hover:bg-zinc-800 hover:shadow-md"
+                  className="rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/85 hover:shadow-md"
                 >
                   Sign up
                 </Button>
@@ -87,6 +89,7 @@ export function Header({ variant = "public" }: HeaderProps) {
             </>
           ) : user ? (
             <div className="relative flex items-center gap-3" ref={ref}>
+              <ThemeToggle />
               <button
                 onClick={() => setOpen((v) => !v)}
                 className={cn(

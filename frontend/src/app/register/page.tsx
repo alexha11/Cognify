@@ -168,7 +168,7 @@ export default function RegisterPage() {
                         onClick={() => setValue("role", "STUDENT")}
                         className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
                           role === "STUDENT"
-                            ? "border-zinc-950 bg-zinc-950 text-white"
+                            ? "border-primary bg-primary text-primary-foreground"
                             : "border-border text-muted-foreground hover:border-foreground/30"
                         }`}
                       >
@@ -180,7 +180,7 @@ export default function RegisterPage() {
                         onClick={() => setValue("role", "INSTRUCTOR")}
                         className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
                           role === "INSTRUCTOR"
-                            ? "border-zinc-950 bg-zinc-950 text-white"
+                            ? "border-primary bg-primary text-primary-foreground"
                             : "border-border text-muted-foreground hover:border-foreground/30"
                         }`}
                       >

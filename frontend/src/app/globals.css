@@ -1,6 +1,7 @@
 @import "tailwindcss";
 
 :root {
+  color-scheme: light;
   --background: #F9F9F7;
   --foreground: #141413;
   --muted: #B0AEA5;
@@ -22,6 +23,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: #141413;
   --foreground: #FAF9F5;
   --muted: #3D3D3D;
@@ -47,6 +49,7 @@ body {
   font-family: serif; /* Default to serif for reading */
   font-feature-settings: "kern";
   -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
