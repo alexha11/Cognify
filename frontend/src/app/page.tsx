@@ -15,7 +15,7 @@ export default function HomePage() {
       {/* ── Ambient Background Effects ── */}
       {/* Top-left warm glow */}
       <div
-        className="pointer-events-none absolute -top-[20%] -left-[10%] w-[60vw] h-[60vw] max-w-[900px] max-h-[900px] rounded-full opacity-[0.07] dark:opacity-[0.12] blur-[120px] animate-ambient-pulse"
+        className="pointer-events-none absolute -top-[20%] -left-[10%] w-[60vw] h-[60vw] max-w-[900px] max-h-[900px] rounded-full opacity-[0.12] dark:opacity-[0.12] blur-[120px] animate-ambient-pulse"
         style={{
           background:
             "radial-gradient(circle, hsl(260 60% 60%) 0%, transparent 70%)",
@@ -23,7 +23,7 @@ export default function HomePage() {
       />
       {/* Top-right cool glow */}
       <div
-        className="pointer-events-none absolute -top-[10%] -right-[15%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] rounded-full opacity-[0.05] dark:opacity-[0.10] blur-[100px] animate-ambient-pulse-slow"
+        className="pointer-events-none absolute -top-[10%] -right-[15%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] rounded-full opacity-[0.10] dark:opacity-[0.10] blur-[100px] animate-ambient-pulse-slow"
         style={{
           background:
             "radial-gradient(circle, hsl(210 80% 55%) 0%, transparent 70%)",
@@ -31,7 +31,7 @@ export default function HomePage() {
       />
       {/* Center accent glow — strongest in dark mode */}
       <div
-        className="pointer-events-none absolute top-[30%] left-[40%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full opacity-[0.03] dark:opacity-[0.08] blur-[140px]"
+        className="pointer-events-none absolute top-[30%] left-[40%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full opacity-[0.08] dark:opacity-[0.08] blur-[140px]"
         style={{
           background:
             "radial-gradient(circle, hsl(180 50% 50%) 0%, transparent 70%)",
@@ -47,7 +47,7 @@ export default function HomePage() {
       />
       {/* Dot grid pattern — subtle texture */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.04]"
         style={{
           backgroundImage:
             "radial-gradient(circle, var(--foreground) 1px, transparent 1px)",
