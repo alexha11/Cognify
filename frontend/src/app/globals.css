@@ -120,3 +120,24 @@ h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
 .animate-rotate-glow {
   animation: rotateGlow 4s ease-in-out infinite;
 }
+
+/* Ambient glow pulsing for background orbs */
+@keyframes ambientPulse {
+  0%, 100% {
+    opacity: var(--pulse-min, 0.05);
+    transform: scale(1);
+  }
+  50% {
+    opacity: var(--pulse-max, 0.12);
+    transform: scale(1.05);
+  }
+}
+
+.animate-ambient-pulse {
+  animation: ambientPulse 8s ease-in-out infinite;
+}
+
+.animate-ambient-pulse-slow {
+  animation: ambientPulse 12s ease-in-out infinite;
+  animation-delay: -4s;
+}

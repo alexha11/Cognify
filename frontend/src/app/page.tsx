@@ -11,10 +11,53 @@ import { RubiksCube } from "@/components/ui/rubiks-cube";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/10">
+    <div className="min-h-screen flex flex-col bg-background selection:bg-primary/10 relative overflow-hidden">
+      {/* ── Ambient Background Effects ── */}
+      {/* Top-left warm glow */}
+      <div
+        className="pointer-events-none absolute -top-[20%] -left-[10%] w-[60vw] h-[60vw] max-w-[900px] max-h-[900px] rounded-full opacity-[0.07] dark:opacity-[0.12] blur-[120px] animate-ambient-pulse"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(260 60% 60%) 0%, transparent 70%)",
+        }}
+      />
+      {/* Top-right cool glow */}
+      <div
+        className="pointer-events-none absolute -top-[10%] -right-[15%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] rounded-full opacity-[0.05] dark:opacity-[0.10] blur-[100px] animate-ambient-pulse-slow"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(210 80% 55%) 0%, transparent 70%)",
+        }}
+      />
+      {/* Center accent glow — strongest in dark mode */}
+      <div
+        className="pointer-events-none absolute top-[30%] left-[40%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full opacity-[0.03] dark:opacity-[0.08] blur-[140px]"
+        style={{
+          background:
+            "radial-gradient(circle, hsl(180 50% 50%) 0%, transparent 70%)",
+        }}
+      />
+      {/* Bottom gradient fade */}
+      <div
+        className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40vh] opacity-30 dark:opacity-50"
+        style={{
+          background:
+            "linear-gradient(to top, var(--background), transparent)",
+        }}
+      />
+      {/* Dot grid pattern — subtle texture */}
+      <div
+        className="pointer-events-none absolute inset-0 opacity-[0.015] dark:opacity-[0.04]"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle, var(--foreground) 1px, transparent 1px)",
+          backgroundSize: "32px 32px",
+        }}
+      />
+
       <Header />
 
-      <main className="flex-1 pt-20 pb-32">
+      <main className="flex-1 pt-20 pb-32 relative z-10">
         <div className="mx-auto max-w-7xl px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center">
             {/* Left column — text */}
