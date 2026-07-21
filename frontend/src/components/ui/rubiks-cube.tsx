@@ -3,7 +3,7 @@
 import { useRef, useMemo, useEffect, useState } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import {
-  PresentationControls,
+  OrbitControls,
   Environment,
   ContactShadows,
   Float,
@@ -305,15 +305,16 @@ export function RubiksCube() {
         )}
         <Environment preset={isDark ? "night" : "city"} />
 
-        <PresentationControls
-          rotation={[0, 0.3, 0]}
-          polar={[-Math.PI / 3, Math.PI / 3]}
-          azimuth={[-Math.PI / 1.4, Math.PI / 2]}
-        >
-          <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.8}>
-            <CubeCluster isDark={isDark} />
-          </Float>
-        </PresentationControls>
+        <OrbitControls
+          enableZoom={false}
+          enablePan={false}
+          enableDamping
+          dampingFactor={0.05}
+        />
+
+        <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.8}>
+          <CubeCluster isDark={isDark} />
+        </Float>
 
         <ContactShadows
           position={[0, -2.5, 0]}
