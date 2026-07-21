@@ -55,27 +55,41 @@ const DARK_MATERIALS = [
 ];
 
 const LIGHT_MATERIALS = [
+  // Glossy porcelain white
   new THREE.MeshPhysicalMaterial({
-    color: "#ffffff",
-    metalness: 0.1,
-    roughness: 0.1,
+    color: "#f8f8f8",
+    metalness: 0.05,
+    roughness: 0.08,
     clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    reflectivity: 0.9,
+  }),
+  // Pearl off-white — subtle warmth
+  new THREE.MeshPhysicalMaterial({
+    color: "#f0ede8",
+    metalness: 0.15,
+    roughness: 0.25,
+    clearcoat: 0.8,
     clearcoatRoughness: 0.1,
+    reflectivity: 0.7,
   }),
-  new THREE.MeshStandardMaterial({
-    color: "#f0f0f0",
-    metalness: 0.2,
-    roughness: 0.8,
+  // Polished chrome silver
+  new THREE.MeshPhysicalMaterial({
+    color: "#dcdcdc",
+    metalness: 0.85,
+    roughness: 0.12,
+    clearcoat: 0.9,
+    clearcoatRoughness: 0.08,
+    reflectivity: 1,
   }),
-  new THREE.MeshStandardMaterial({
-    color: "#e0e0e0",
-    metalness: 0.8,
-    roughness: 0.3,
-  }),
-  new THREE.MeshStandardMaterial({
-    color: "#fafafa",
-    metalness: 1,
-    roughness: 1,
+  // Satin ivory
+  new THREE.MeshPhysicalMaterial({
+    color: "#eeeae4",
+    metalness: 0.1,
+    roughness: 0.35,
+    clearcoat: 0.6,
+    clearcoatRoughness: 0.15,
+    reflectivity: 0.5,
   }),
 ];
 
@@ -286,24 +300,23 @@ export function RubiksCube() {
   return (
     <div className="w-full h-full min-h-[400px] md:min-h-[500px]">
       <Canvas camera={{ position: [5, 4, 6], fov: 45 }}>
-        <ambientLight intensity={isDark ? 0.3 : 0.7} />
+        <ambientLight intensity={isDark ? 0.3 : 0.4} />
         <directionalLight
           position={[10, 10, 5]}
-          intensity={isDark ? 2 : 1.5}
+          intensity={isDark ? 2 : 1.8}
           castShadow
         />
         <directionalLight
           position={[-10, -10, -5]}
-          intensity={isDark ? 0.3 : 0.5}
+          intensity={isDark ? 0.3 : 0.4}
         />
-        {isDark && (
-          <pointLight
-            position={[-5, 5, -5]}
-            intensity={0.6}
-            color="#4466ff"
-          />
-        )}
-        <Environment preset={isDark ? "night" : "city"} />
+        {/* Accent rim light — blue for dark, warm for light */}
+        <pointLight
+          position={isDark ? [-5, 5, -5] : [5, 3, -6]}
+          intensity={isDark ? 0.6 : 0.5}
+          color={isDark ? "#4466ff" : "#c8a87c"}
+        />
+        <Environment preset={isDark ? "night" : "studio"} />
 
         <OrbitControls
           enableZoom={false}
@@ -318,11 +331,11 @@ export function RubiksCube() {
 
         <ContactShadows
           position={[0, -2.5, 0]}
-          opacity={isDark ? 0.6 : 0.4}
+          opacity={isDark ? 0.6 : 0.5}
           scale={10}
           blur={2.5}
           far={4}
-          color={isDark ? "#000000" : "#666666"}
+          color={isDark ? "#000000" : "#444444"}
         />
       </Canvas>
     </div>
