@@ -14,6 +14,7 @@ import { AiModule } from './modules/ai';
 import { AccessControlModule } from './modules/access-control';
 import { EmbeddingModule } from './modules/embedding';
 import { EmailModule } from './modules/email/email.module';
+import { LeaderboardModule } from './modules/leaderboard';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { EmailModule } from './modules/email/email.module';
     AccessControlModule,
     EmbeddingModule,
     EmailModule,
+    LeaderboardModule,
   ],
 })
 export class AppModule {}

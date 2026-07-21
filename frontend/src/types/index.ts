@@ -147,6 +147,22 @@ export interface CourseProgress {
   percentage: number;
 }
 
+// Leaderboard types
+export interface LeaderboardEntry {
+  id: string;
+  displayName: string;
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  completedAt: string;
+  userId: string | null;
+}
+
+export interface LeaderboardResponse {
+  courseName: string;
+  entries: LeaderboardEntry[];
+}
+
 // Billing types
 export interface SubscriptionStatus {
   plan: 'FREE' | 'PRO' | 'ENTERPRISE';

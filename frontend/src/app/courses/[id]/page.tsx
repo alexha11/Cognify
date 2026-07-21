@@ -33,6 +33,7 @@ import {
   Share2,
   Globe,
   BrainCircuit,
+  Trophy,
 } from "lucide-react";
 import {
   FeatureGate,
@@ -303,6 +304,18 @@ export default function CourseDetailPage() {
                         </>
                       )}
                     </Button>
+                  )}
+                  {approvedQuestions.length > 0 && (
+                    <Link href={`/ranking/${course.id}`}>
+                      <Button
+                        variant="outline"
+                        size="default"
+                        className="rounded-xl gap-2 px-5"
+                      >
+                        <Trophy className="h-3.5 w-3.5 text-muted-foreground" />
+                        Leaderboard
+                      </Button>
+                    </Link>
                   )}
                 </div>
               </div>

@@ -6,9 +6,10 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { QuizCard } from "@/components/ui/quiz-card";
-import { apiGet } from "@/lib/api";
+import { GuestNameModal } from "@/components/ui/guest-name-modal";
+import { apiGet, apiPost } from "@/lib/api";
 import { Question, AttemptResult } from "@/types";
-import { Loader2, X, Trophy, RefreshCw, Share2 } from "lucide-react";
+import { Loader2, X, Trophy, RefreshCw, Share2, Medal } from "lucide-react";
 
 interface PublicCourseData {
   course: { id: string; name: string; description: string | null };
@@ -28,6 +29,8 @@ export default function SharedQuizPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [completed, setCompleted] = useState(false);
   const [stats, setStats] = useState({ correct: 0, total: 0 });
+  const [showGuestNameModal, setShowGuestNameModal] = useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -106,6 +109,31 @@ export default function SharedQuizPage() {
     setCompleted(false);
     setStats({ correct: 0, total: 0 });
     await fetchData();
+  };
+
+  // Show guest name modal on completion
+  useEffect(() => {
+    if (completed && !scoreSubmitted && stats.total > 0) {
+      setShowGuestNameModal(true);
+    }
+  }, [completed, scoreSubmitted, stats]);
+
+  const handleGuestScoreSubmit = async (name: string) => {
+    setShowGuestNameModal(false);
+    try {
+      await apiPost("/leaderboard", {
+        courseId,
+        score: stats.correct,
+        totalQuestions: stats.total,
+        guestName: name,
+      });
+    } catch {}
+    setScoreSubmitted(true);
+  };
+
+  const handleGuestScoreSkip = () => {
+    setShowGuestNameModal(false);
+    setScoreSubmitted(true);
   };
 
   if (!isMounted) return null;
@@ -204,6 +232,12 @@ export default function SharedQuizPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
+                <Link href={`/ranking/${courseId}`}>
+                  <Button size="lg" className="rounded-xl w-full">
+                    <Medal className="h-4 w-4 mr-2" />
+                    View Ranking
+                  </Button>
+                </Link>
                 <Button
                   onClick={handleRetry}
                   variant="outline"
@@ -214,13 +248,21 @@ export default function SharedQuizPage() {
                   Try again
                 </Button>
                 <Link href="/">
-                  <Button size="lg" className="rounded-xl">
+                  <Button size="lg" variant="ghost" className="rounded-xl w-full">
                     Explore Cognify
                   </Button>
                 </Link>
               </div>
             </CardContent>
           </Card>
+
+          <GuestNameModal
+            isOpen={showGuestNameModal}
+            onSubmit={handleGuestScoreSubmit}
+            onSkip={handleGuestScoreSkip}
+            score={stats.correct}
+            total={stats.total}
+          />
 
           <p className="text-center text-xs text-muted-foreground mt-8">
             Powered by{" "}

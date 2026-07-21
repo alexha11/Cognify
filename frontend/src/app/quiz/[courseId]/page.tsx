@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuizCard } from "@/components/ui/quiz-card";
 import { AuthPromptModal } from "@/components/ui/auth-prompt-modal";
+import { GuestNameModal } from "@/components/ui/guest-name-modal";
 import { apiGet, apiPost } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Question, AttemptResult, CourseProgress } from "@/types";
-import { ArrowLeft, Trophy, Loader2, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowLeft, Trophy, Loader2, Sparkles, RefreshCw, Medal } from "lucide-react";
 
 export default function QuizPage() {
   const params = useParams();
@@ -30,6 +31,8 @@ export default function QuizPage() {
   const [completed, setCompleted] = useState(false);
   const [sessionStats, setSessionStats] = useState({ correct: 0, total: 0 });
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showGuestNameModal, setShowGuestNameModal] = useState(false);
+  const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
@@ -146,6 +149,43 @@ export default function QuizPage() {
     }
   };
 
+  // Auto-submit score for logged-in users when quiz completes
+  useEffect(() => {
+    if (completed && user && !scoreSubmitted && sessionStats.total > 0) {
+      apiPost("/leaderboard", {
+        courseId,
+        score: sessionStats.correct,
+        totalQuestions: sessionStats.total,
+      }).catch(() => {});
+      setScoreSubmitted(true);
+    }
+  }, [completed, user, scoreSubmitted, sessionStats, courseId]);
+
+  // Show guest name modal when guest completes quiz
+  useEffect(() => {
+    if (completed && isGuest && !scoreSubmitted && sessionStats.total > 0) {
+      setShowGuestNameModal(true);
+    }
+  }, [completed, isGuest, scoreSubmitted, sessionStats]);
+
+  const handleGuestScoreSubmit = async (name: string) => {
+    setShowGuestNameModal(false);
+    try {
+      await apiPost("/leaderboard", {
+        courseId,
+        score: sessionStats.correct,
+        totalQuestions: sessionStats.total,
+        guestName: name,
+      });
+    } catch {}
+    setScoreSubmitted(true);
+  };
+
+  const handleGuestScoreSkip = () => {
+    setShowGuestNameModal(false);
+    setScoreSubmitted(true);
+  };
+
   const handleRetry = async () => {
     setCurrentIndex(0);
     setSelectedAnswers([]);
@@ -238,6 +278,16 @@ export default function QuizPage() {
                   <Sparkles className="mr-2 h-4 w-4" />
                   Save progress
                 </Button>
+                <Link href={`/ranking/${courseId}`}>
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="rounded-xl px-8 w-full"
+                  >
+                    <Medal className="mr-2 h-4 w-4" />
+                    View Ranking
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
                   variant="outline"
@@ -250,23 +300,24 @@ export default function QuizPage() {
               </>
             ) : (
               <>
+                <Link href={`/ranking/${courseId}`}>
+                  <Button
+                    size="lg"
+                    className="rounded-xl px-8 font-semibold"
+                  >
+                    <Medal className="mr-2 h-4 w-4" />
+                    View Ranking
+                  </Button>
+                </Link>
                 <Button
                   size="lg"
-                  className="rounded-xl px-8 font-semibold"
+                  variant="outline"
+                  className="rounded-xl px-8"
                   onClick={handleRetry}
                 >
                   <RefreshCw className="mr-2 h-4 w-4" />
                   Retry quiz
                 </Button>
-                <Link href="/progress">
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="rounded-xl px-8"
-                  >
-                    View progress
-                  </Button>
-                </Link>
                 <Link href="/courses">
                   <Button size="lg" variant="ghost" className="rounded-xl px-8">
                     Back to courses
@@ -282,6 +333,14 @@ export default function QuizPage() {
           onClose={() => setShowAuthModal(false)}
           title="Don't lose your progress"
           description={`You answered ${sessionStats.correct} out of ${sessionStats.total} correctly! Create a free account to save your results.`}
+        />
+
+        <GuestNameModal
+          isOpen={showGuestNameModal}
+          onSubmit={handleGuestScoreSubmit}
+          onSkip={handleGuestScoreSkip}
+          score={sessionStats.correct}
+          total={sessionStats.total}
         />
       </DashboardLayout>
     );

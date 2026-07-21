@@ -30,6 +30,7 @@ model User {
   createdQuestions  Question[]    @relation("QuestionCreator")
   emailVerification EmailVerification?
   subscriptions     Subscription[]
+  leaderboardEntries LeaderboardEntry[]
 
   @@index([email])
 }
@@ -45,6 +46,7 @@ model Course {
   createdBy      User         @relation("CourseCreator", fields: [createdById], references: [id], onDelete: Cascade)
   materials      Material[]
   questions      Question[]
+  leaderboardEntries LeaderboardEntry[]
 
   @@index([createdById])
 }
@@ -106,6 +108,22 @@ model Attempt {
   @@index([userId])
   @@index([questionId])
   @@index([createdAt])
+}
+
+model LeaderboardEntry {
+  id              String   @id @default(uuid())
+  courseId        String
+  userId          String?
+  guestName       String?
+  score           Int
+  totalQuestions  Int
+  percentage      Int
+  completedAt     DateTime @default(now())
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user            User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, percentage])
+  @@index([userId])
 }
 
 model Subscription {
