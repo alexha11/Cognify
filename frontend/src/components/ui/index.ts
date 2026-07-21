@@ -19,3 +19,4 @@ export { ProgressBar } from './progress-bar';
 export { toast, ToastProvider, useToast } from './toast';
 export { ThemeProvider, useTheme } from './theme-provider';
 export { ThemeToggle } from './theme-toggle';
+export { GuestNameModal } from './guest-name-modal';
