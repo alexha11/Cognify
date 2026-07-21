@@ -11,21 +11,20 @@ import {
 } from "@react-three/drei";
 import * as THREE from "three";
 
-// Array to hold the offset positions for the 27 sub-cubes
-const POSITIONS: [number, number, number][] = [];
-const SPACING = 1.08; // Slightly wider gap for rounded cubes
+/* ── Constants ── */
+const SPACING = 1.08;
+const CUBE_SIZE = 0.95;
+const CORNER_RADIUS = 0.12;
+const MOVE_DURATION = 0.55; // seconds per 90° layer turn
+const PAUSE_BETWEEN = 1.4; // seconds between scramble moves
 
-for (let x = -1; x <= 1; x++) {
-  for (let y = -1; y <= 1; y++) {
-    for (let z = -1; z <= 1; z++) {
-      POSITIONS.push([x * SPACING, y * SPACING, z * SPACING]);
-    }
-  }
+/* ── Easing ── */
+function easeInOutQuart(t: number): number {
+  return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
 }
 
-// Dark theme materials — deep, reflective, premium look
+/* ── Materials ── */
 const DARK_MATERIALS = [
-  // Glossy dark
   new THREE.MeshPhysicalMaterial({
     color: "#1a1a1a",
     metalness: 0.4,
@@ -34,13 +33,11 @@ const DARK_MATERIALS = [
     clearcoatRoughness: 0.05,
     reflectivity: 1,
   }),
-  // Matte charcoal
   new THREE.MeshStandardMaterial({
     color: "#2a2a2a",
     metalness: 0.3,
     roughness: 0.7,
   }),
-  // Metallic gunmetal
   new THREE.MeshPhysicalMaterial({
     color: "#333333",
     metalness: 0.9,
@@ -48,7 +45,6 @@ const DARK_MATERIALS = [
     clearcoat: 0.8,
     clearcoatRoughness: 0.1,
   }),
-  // Deep obsidian
   new THREE.MeshPhysicalMaterial({
     color: "#111111",
     metalness: 0.6,
@@ -58,9 +54,7 @@ const DARK_MATERIALS = [
   }),
 ];
 
-// Light theme materials — clean white premium look
 const LIGHT_MATERIALS = [
-  // Glossy White
   new THREE.MeshPhysicalMaterial({
     color: "#ffffff",
     metalness: 0.1,
@@ -68,19 +62,16 @@ const LIGHT_MATERIALS = [
     clearcoat: 1.0,
     clearcoatRoughness: 0.1,
   }),
-  // Matte Light Gray
   new THREE.MeshStandardMaterial({
     color: "#f0f0f0",
     metalness: 0.2,
     roughness: 0.8,
   }),
-  // Metallic Silver
   new THREE.MeshStandardMaterial({
     color: "#e0e0e0",
     metalness: 0.8,
     roughness: 0.3,
   }),
-  // Soft White
   new THREE.MeshStandardMaterial({
     color: "#fafafa",
     metalness: 1,
@@ -88,49 +79,187 @@ const LIGHT_MATERIALS = [
   }),
 ];
 
+/* ── Types ── */
+type Axis = "x" | "y" | "z";
+
+interface CubeData {
+  position: THREE.Vector3; // grid coords (-1 | 0 | 1)
+  quaternion: THREE.Quaternion; // accumulated rotation from past moves
+  materialIndex: number;
+}
+
+interface ActiveMove {
+  axis: Axis;
+  layerValue: number; // -1, 0, or 1
+  direction: number; // 1 or -1
+  affected: number[]; // indices of cubes in this layer
+  elapsed: number;
+}
+
+/* ── Scramble cube cluster ── */
 function CubeCluster({ isDark }: { isDark: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
+  const pieceRefs = useRef<(THREE.Group | null)[]>([]);
 
-  // Pre-assign material indices so they don't change on re-render
-  const materialIndices = useMemo(
-    () => POSITIONS.map(() => Math.floor(Math.random() * 4)),
-    [],
-  );
+  // Cube state — survives re-renders via ref
+  const cubes = useRef<CubeData[]>([]);
+  const moveRef = useRef<ActiveMove | null>(null);
+  const pauseRef = useRef(2.0); // initial delay before first scramble
 
-  // Pick materials based on theme
+  // Stable material indices
+  const materialIndices = useMemo(() => {
+    const indices: number[] = [];
+    const data: CubeData[] = [];
+    for (let x = -1; x <= 1; x++) {
+      for (let y = -1; y <= 1; y++) {
+        for (let z = -1; z <= 1; z++) {
+          const idx = Math.floor(Math.random() * 4);
+          indices.push(idx);
+          data.push({
+            position: new THREE.Vector3(x, y, z),
+            quaternion: new THREE.Quaternion(),
+            materialIndex: idx,
+          });
+        }
+      }
+    }
+    cubes.current = data;
+    return indices;
+  }, []);
+
   const materials = isDark ? DARK_MATERIALS : LIGHT_MATERIALS;
 
-  // Smooth, organic rotation using sine curves instead of constant delta
-  useFrame((state) => {
+  /* Start a random scramble move */
+  const startMove = () => {
+    const axes: Axis[] = ["x", "y", "z"];
+    const axis = axes[Math.floor(Math.random() * 3)];
+    const layers = [-1, 0, 1];
+    const layerValue = layers[Math.floor(Math.random() * 3)];
+    const direction = Math.random() > 0.5 ? 1 : -1;
+
+    const affected: number[] = [];
+    cubes.current.forEach((cube, i) => {
+      if (Math.round(cube.position[axis]) === layerValue) {
+        affected.push(i);
+      }
+    });
+
+    moveRef.current = { axis, layerValue, direction, affected, elapsed: 0 };
+  };
+
+  /* Temp vectors to avoid per-frame allocations */
+  const _axisVec = useMemo(() => new THREE.Vector3(), []);
+  const _animQuat = useMemo(() => new THREE.Quaternion(), []);
+  const _pos = useMemo(() => new THREE.Vector3(), []);
+
+  useFrame((state, delta) => {
+    /* ── Overall gentle drift rotation ── */
     if (groupRef.current) {
       const t = state.clock.elapsedTime;
-      // Smooth eased rotation — varies speed organically
-      groupRef.current.rotation.y =
-        t * 0.15 + Math.sin(t * 0.3) * 0.4;
+      groupRef.current.rotation.y = t * 0.15 + Math.sin(t * 0.3) * 0.4;
       groupRef.current.rotation.x =
         Math.sin(t * 0.2) * 0.3 + Math.cos(t * 0.15) * 0.2;
       groupRef.current.rotation.z = Math.sin(t * 0.1) * 0.08;
+    }
+
+    const move = moveRef.current;
+
+    /* ── Idle: countdown to next move ── */
+    if (!move) {
+      pauseRef.current -= delta;
+      if (pauseRef.current <= 0) {
+        startMove();
+        pauseRef.current = PAUSE_BETWEEN;
+      }
+      // Sync cubes to their resting state
+      cubes.current.forEach((cube, i) => {
+        const g = pieceRefs.current[i];
+        if (!g) return;
+        g.position.copy(cube.position).multiplyScalar(SPACING);
+        g.quaternion.copy(cube.quaternion);
+      });
+      return;
+    }
+
+    /* ── Animating a layer ── */
+    move.elapsed += delta;
+    const rawProgress = Math.min(move.elapsed / MOVE_DURATION, 1);
+    const eased = easeInOutQuart(rawProgress);
+    const currentAngle = (Math.PI / 2) * move.direction * eased;
+
+    _axisVec.set(
+      move.axis === "x" ? 1 : 0,
+      move.axis === "y" ? 1 : 0,
+      move.axis === "z" ? 1 : 0,
+    );
+    _animQuat.setFromAxisAngle(_axisVec, currentAngle);
+
+    cubes.current.forEach((cube, i) => {
+      const g = pieceRefs.current[i];
+      if (!g) return;
+
+      if (move.affected.includes(i)) {
+        // Rotate position around the layer axis
+        _pos
+          .copy(cube.position)
+          .applyAxisAngle(_axisVec, currentAngle)
+          .multiplyScalar(SPACING);
+        g.position.copy(_pos);
+        // Combine move rotation with cube's accumulated rotation
+        g.quaternion.copy(_animQuat).multiply(cube.quaternion);
+      } else {
+        // Not in this layer — just rest
+        g.position.copy(cube.position).multiplyScalar(SPACING);
+        g.quaternion.copy(cube.quaternion);
+      }
+    });
+
+    /* ── Move complete → bake rotation into cube state ── */
+    if (rawProgress >= 1) {
+      const finalAngle = (Math.PI / 2) * move.direction;
+      const finalQuat = new THREE.Quaternion().setFromAxisAngle(
+        _axisVec,
+        finalAngle,
+      );
+
+      for (const i of move.affected) {
+        const cube = cubes.current[i];
+        cube.position.applyAxisAngle(_axisVec, finalAngle);
+        // Snap to integer grid to prevent floating-point drift
+        cube.position.x = Math.round(cube.position.x);
+        cube.position.y = Math.round(cube.position.y);
+        cube.position.z = Math.round(cube.position.z);
+        cube.quaternion.premultiply(finalQuat);
+      }
+
+      moveRef.current = null;
     }
   });
 
   return (
     <group ref={groupRef}>
-      {POSITIONS.map((pos, i) => (
-        <RoundedBox
+      {materialIndices.map((matIdx, i) => (
+        <group
           key={i}
-          args={[0.95, 0.95, 0.95]}
-          radius={0.12}
-          smoothness={4}
-          position={pos}
-          material={materials[materialIndices[i]]}
-          castShadow
-          receiveShadow
-        />
+          ref={(el: THREE.Group | null) => {
+            pieceRefs.current[i] = el;
+          }}
+        >
+          <RoundedBox
+            args={[CUBE_SIZE, CUBE_SIZE, CUBE_SIZE]}
+            radius={CORNER_RADIUS}
+            smoothness={4}
+            material={materials[matIdx]}
+            castShadow
+            receiveShadow
+          />
+        </group>
       ))}
     </group>
   );
 }
 
+/* ── Dark mode detection hook ── */
 function useIsDark(): boolean {
   const [isDark, setIsDark] = useState(false);
 
@@ -139,7 +268,6 @@ function useIsDark(): boolean {
       setIsDark(document.documentElement.classList.contains("dark"));
     check();
 
-    // Watch for class changes on <html>
     const observer = new MutationObserver(check);
     observer.observe(document.documentElement, {
       attributes: true,
@@ -151,13 +279,13 @@ function useIsDark(): boolean {
   return isDark;
 }
 
+/* ── Exported component ── */
 export function RubiksCube() {
   const isDark = useIsDark();
 
   return (
     <div className="w-full h-full min-h-[400px] md:min-h-[500px]">
       <Canvas camera={{ position: [5, 4, 6], fov: 45 }}>
-        {/* Lighting adjusted per theme */}
         <ambientLight intensity={isDark ? 0.3 : 0.7} />
         <directionalLight
           position={[10, 10, 5]}
@@ -168,7 +296,6 @@ export function RubiksCube() {
           position={[-10, -10, -5]}
           intensity={isDark ? 0.3 : 0.5}
         />
-        {/* Subtle rim light for dark mode edge definition */}
         {isDark && (
           <pointLight
             position={[-5, 5, -5]}
@@ -188,7 +315,6 @@ export function RubiksCube() {
           </Float>
         </PresentationControls>
 
-        {/* Soft shadow on the floor */}
         <ContactShadows
           position={[0, -2.5, 0]}
           opacity={isDark ? 0.6 : 0.4}
