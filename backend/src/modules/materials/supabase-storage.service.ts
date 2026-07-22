@@ -32,8 +32,10 @@ export class SupabaseStorageService {
     courseId: string,
   ): Promise<string> {
     if (!this.client) {
-      // Fallback: return a placeholder URL when Supabase is not configured
-      return `local://${courseId}/${fileName}`;
+      // Fallback: return data URI when Supabase is not configured
+      const base64 = buffer.toString('base64');
+      const mime = contentType || 'image/png';
+      return `data:${mime};base64,${base64}`;
     }
 
     const path = `${courseId}/${Date.now()}-${fileName}`;

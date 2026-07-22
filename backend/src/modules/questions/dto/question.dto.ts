@@ -12,6 +12,10 @@ import { Type } from 'class-transformer';
 
 export class CreateAnswerDto {
   @IsString()
+  @IsOptional()
+  id?: string;
+
+  @IsString()
   @IsNotEmpty()
   content: string;
 
@@ -69,6 +73,12 @@ export class UpdateQuestionDto {
   @IsBoolean()
   @IsOptional()
   approved?: boolean;
+
+  @IsArray()
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreateAnswerDto)
+  answers?: CreateAnswerDto[];
 }
 
 export class GenerateQuestionsDto {

@@ -301,14 +301,37 @@ export class QuestionsService {
       throw new NotFoundException('Question not found');
     }
 
+    if (dto.answers && dto.answers.length > 0) {
+      const correctAnswers = dto.answers.filter((a) => a.isCorrect);
+      if (correctAnswers.length !== 1) {
+        throw new ForbiddenException(
+          'Exactly one answer must be marked as correct',
+        );
+      }
+    }
+
     return this.prisma.$transaction(async (tx) => {
+      if (dto.answers && dto.answers.length > 0) {
+        await tx.answer.deleteMany({
+          where: { questionId: id },
+        });
+        await tx.answer.createMany({
+          data: dto.answers.map((a) => ({
+            content: a.content,
+            isCorrect: a.isCorrect,
+            questionId: id,
+          })),
+        });
+      }
+
       return tx.question.update({
         where: { id },
         data: {
-          content: dto.content,
-          hint: dto.hint,
+          ...(dto.content !== undefined && { content: dto.content }),
+          ...(dto.hint !== undefined && { hint: dto.hint }),
           ...(dto.contentType !== undefined && { contentType: dto.contentType }),
           ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
+          ...(dto.approved !== undefined && { approved: dto.approved }),
         },
         include: {
           answers: true,
