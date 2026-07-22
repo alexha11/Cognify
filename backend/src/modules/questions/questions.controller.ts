@@ -7,7 +7,14 @@ import {
   Body,
   Param,
   UseGuards,
+  UseInterceptors,
+  UploadedFile,
+  ParseFilePipe,
+  MaxFileSizeValidator,
+  FileTypeValidator,
+  BadRequestException,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { QuestionsService } from './questions.service';
 import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
@@ -50,6 +57,44 @@ export class QuestionsController {
     return this.questionsService.createBulk(
       dto,
       user.userId,
+    );
+  }
+
+  /**
+   * Create a question with an uploaded image
+   * POST /questions/upload-image
+   */
+  @Post('upload-image')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  @UseInterceptors(FileInterceptor('image'))
+  async uploadImage(
+    @UploadedFile(
+      new ParseFilePipe({
+        validators: [
+          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }), // 5MB
+          new FileTypeValidator({ fileType: /^image\/(jpeg|png|gif|webp)$/ }),
+        ],
+      }),
+    )
+    file: Express.Multer.File,
+    @Body() body: { courseId: string; hint?: string; answers: string; content?: string },
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    let answers: { content: string; isCorrect: boolean }[];
+    try {
+      answers = JSON.parse(body.answers);
+    } catch {
+      throw new BadRequestException('Invalid answers format — must be a JSON array');
+    }
+
+    return this.questionsService.createWithImage(
+      file,
+      body.courseId,
+      body.hint,
+      answers,
+      user.userId,
+      body.content,
     );
   }
 

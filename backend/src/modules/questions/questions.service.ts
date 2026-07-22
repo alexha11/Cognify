@@ -6,11 +6,13 @@ import {
 import { PrismaService } from '../../prisma';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
 import { Role } from '@prisma/client';
+import { SupabaseStorageService } from '../materials/supabase-storage.service';
 
 @Injectable()
 export class QuestionsService {
   constructor(
     private readonly prisma: PrismaService,
+    private readonly supabaseStorage: SupabaseStorageService,
   ) {}
 
   /**
@@ -40,6 +42,8 @@ export class QuestionsService {
       data: {
         content: dto.content,
         hint: dto.hint,
+        contentType: dto.contentType || 'text',
+        imageUrl: dto.imageUrl,
         courseId: dto.courseId,
         createdById: userId,
         approved: true, // Manual questions are auto-approved
@@ -60,6 +64,68 @@ export class QuestionsService {
       },
     });
 
+  }
+
+  /**
+   * Create a question with an uploaded image
+   */
+  async createWithImage(
+    file: { buffer: Buffer; originalname: string; mimetype: string },
+    courseId: string,
+    hint: string | undefined,
+    answers: { content: string; isCorrect: boolean }[],
+    userId: string,
+    caption?: string,
+  ): Promise<any> {
+    const course = await this.prisma.course.findFirst({
+      where: { id: courseId },
+    });
+
+    if (!course) {
+      throw new NotFoundException('Course not found');
+    }
+
+    // Validate exactly one correct answer
+    const correctAnswers = answers.filter((a) => a.isCorrect);
+    if (correctAnswers.length !== 1) {
+      throw new ForbiddenException(
+        'Exactly one answer must be marked as correct',
+      );
+    }
+
+    // Upload image to Supabase storage
+    const imageUrl = await this.supabaseStorage.uploadFile(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      courseId,
+    );
+
+    return this.prisma.question.create({
+      data: {
+        content: caption || file.originalname,
+        hint,
+        contentType: 'image',
+        imageUrl,
+        courseId,
+        createdById: userId,
+        approved: true,
+        aiGenerated: false,
+        answers: {
+          create: answers,
+        },
+      },
+      include: {
+        answers: true,
+        createdBy: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+          },
+        },
+      },
+    });
   }
 
   /**
@@ -241,6 +307,8 @@ export class QuestionsService {
         data: {
           content: dto.content,
           hint: dto.hint,
+          ...(dto.contentType !== undefined && { contentType: dto.contentType }),
+          ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
         },
         include: {
           answers: true,

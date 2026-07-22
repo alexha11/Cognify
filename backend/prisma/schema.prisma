@@ -70,6 +70,8 @@ model Question {
   id          String    @id @default(uuid())
   content     String
   hint        String?
+  contentType String    @default("text")
+  imageUrl    String?
   aiGenerated Boolean   @default(false)
   approved    Boolean   @default(true)
   createdAt   DateTime  @default(now())

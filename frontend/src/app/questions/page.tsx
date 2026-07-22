@@ -31,6 +31,10 @@ import {
   Loader2,
   BrainCircuit,
   Pencil,
+  ImagePlus,
+  Image as ImageIcon,
+  Type,
+  Upload,
 } from "lucide-react";
 
 interface Answer {
@@ -43,6 +47,8 @@ interface Question {
   id: string;
   content: string;
   hint?: string;
+  contentType?: 'text' | 'image';
+  imageUrl?: string;
   courseId: string;
   answers: Answer[];
   approved: boolean;
@@ -77,6 +83,9 @@ export default function QuestionsPage() {
     { content: "", isCorrect: true },
     { content: "", isCorrect: false },
   ]);
+  const [questionType, setQuestionType] = useState<'text' | 'image'>('text');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const canManage = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
@@ -215,14 +224,25 @@ export default function QuestionsPage() {
     }
   };
 
+  const handleImageSelect = (file: File) => {
+    setImageFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(file);
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCourse) {
       setError("Please select a course first");
       return;
     }
-    if (newQuestion.content.length < 10) {
+    if (questionType === 'text' && newQuestion.content.length < 10) {
       setError("Question must be at least 10 characters");
+      return;
+    }
+    if (questionType === 'image' && !imageFile && !editingQuestion?.imageUrl) {
+      setError("Please upload an image for the question");
       return;
     }
     if (!newAnswers.some((a) => a.isCorrect)) {
@@ -239,10 +259,19 @@ export default function QuestionsPage() {
     try {
       if (editingQuestion) {
         await apiPut(`/questions/${editingQuestion.id}`, {
-          content: newQuestion.content,
+          content: newQuestion.content || editingQuestion.content,
           hint: newQuestion.hint || undefined,
+          contentType: questionType,
           answers: newAnswers,
         });
+      } else if (questionType === 'image' && imageFile) {
+        const formData = new FormData();
+        formData.append('image', imageFile);
+        formData.append('courseId', selectedCourse);
+        formData.append('answers', JSON.stringify(newAnswers));
+        if (newQuestion.hint) formData.append('hint', newQuestion.hint);
+        if (newQuestion.content) formData.append('content', newQuestion.content);
+        await apiUpload('/questions/upload-image', formData);
       } else {
         await apiPost("/questions", {
           content: newQuestion.content,
@@ -284,6 +313,8 @@ export default function QuestionsPage() {
         isCorrect: a.isCorrect,
       })),
     );
+    setQuestionType(q.contentType === 'image' ? 'image' : 'text');
+    if (q.imageUrl) setImagePreview(q.imageUrl);
     setShowCreate(true);
   };
 
@@ -295,6 +326,9 @@ export default function QuestionsPage() {
       { content: "", isCorrect: true },
       { content: "", isCorrect: false },
     ]);
+    setQuestionType('text');
+    setImageFile(null);
+    setImagePreview(null);
     setError("");
   };
 
@@ -427,10 +461,28 @@ export default function QuestionsPage() {
                         )}
                       </div>
 
-                      {/* Question text */}
-                      <p className="text-sm font-medium text-foreground leading-relaxed">
-                        {question.content}
-                      </p>
+                      {/* Question content: image or text */}
+                      {question.contentType === 'image' && question.imageUrl ? (
+                        <div className="space-y-2">
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/25 border border-indigo-200/60 dark:border-indigo-700/50 px-2 py-0.5 rounded-full">
+                            <ImageIcon className="h-3 w-3" />
+                            Image question
+                          </span>
+                          <img
+                            src={question.imageUrl}
+                            alt={question.content}
+                            className="max-h-48 rounded-xl border border-border/50 object-contain bg-muted/20"
+                            loading="lazy"
+                          />
+                          {question.content && (
+                            <p className="text-xs text-muted-foreground">{question.content}</p>
+                          )}
+                        </div>
+                      ) : (
+                        <p className="text-sm font-medium text-foreground leading-relaxed">
+                          {question.content}
+                        </p>
+                      )}
 
                       {/* Hint */}
                       {question.hint && (
@@ -542,35 +594,150 @@ export default function QuestionsPage() {
                   </div>
                 )}
 
-                {/* Question content */}
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="questionContent"
-                    className="text-xs font-medium text-muted-foreground"
-                  >
-                    Question
-                  </Label>
-                  <textarea
-                    id="questionContent"
-                    value={newQuestion.content}
-                    onChange={(e) =>
-                      setNewQuestion({
-                        ...newQuestion,
-                        content: e.target.value,
-                      })
-                    }
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors resize-none"
-                    placeholder="Enter your question…"
-                    required
-                    minLength={10}
-                  />
-                  <div className="flex justify-end">
-                    <span className="text-[10px] text-muted-foreground/50">
-                      {newQuestion.content.length} characters
-                    </span>
+                {/* Question Type selector */}
+                {!editingQuestion && (
+                  <div className="space-y-2">
+                    <Label className="text-xs font-medium text-muted-foreground">
+                      Question format
+                    </Label>
+                    <div className="grid grid-cols-2 gap-2 p-1 bg-muted/30 rounded-xl border border-border/50">
+                      <button
+                        type="button"
+                        onClick={() => setQuestionType("text")}
+                        className={cn(
+                          "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all",
+                          questionType === "text"
+                            ? "bg-background text-foreground shadow-sm border border-border/50 font-semibold"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <Type className="w-3.5 h-3.5" />
+                        Text Question
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setQuestionType("image")}
+                        className={cn(
+                          "flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-medium transition-all",
+                          questionType === "image"
+                            ? "bg-background text-foreground shadow-sm border border-border/50 font-semibold"
+                            : "text-muted-foreground hover:text-foreground"
+                        )}
+                      >
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        Image Question
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
+
+                {/* Question content based on format */}
+                {questionType === "text" ? (
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="questionContent"
+                      className="text-xs font-medium text-muted-foreground"
+                    >
+                      Question
+                    </Label>
+                    <textarea
+                      id="questionContent"
+                      value={newQuestion.content}
+                      onChange={(e) =>
+                        setNewQuestion({
+                          ...newQuestion,
+                          content: e.target.value,
+                        })
+                      }
+                      rows={3}
+                      className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors resize-none"
+                      placeholder="Enter your question…"
+                      required
+                      minLength={10}
+                    />
+                    <div className="flex justify-end">
+                      <span className="text-[10px] text-muted-foreground/50">
+                        {newQuestion.content.length} characters
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label className="text-xs font-medium text-muted-foreground">
+                        Upload Image
+                      </Label>
+                      {imagePreview ? (
+                        <div className="relative rounded-xl border border-border overflow-hidden bg-muted/10 p-2 group">
+                          <img
+                            src={imagePreview}
+                            alt="Question preview"
+                            className="max-h-48 w-full object-contain rounded-lg"
+                          />
+                          {!editingQuestion && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setImageFile(null);
+                                setImagePreview(null);
+                              }}
+                              className="absolute top-3 right-3 p-1.5 rounded-lg bg-background/80 hover:bg-background border border-border text-foreground shadow-sm transition-colors"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <label className="flex flex-col items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/50 bg-muted/10 hover:bg-primary/5 cursor-pointer transition-all">
+                          <div className="p-3 rounded-full bg-primary/10 text-primary">
+                            <Upload className="w-5 h-5" />
+                          </div>
+                          <div className="text-center">
+                            <p className="text-xs font-medium text-foreground">
+                              Click or drag image to upload
+                            </p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                              PNG, JPG, WEBP, GIF up to 5MB
+                            </p>
+                          </div>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) handleImageSelect(file);
+                            }}
+                          />
+                        </label>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="imageCaption"
+                        className="text-xs font-medium text-muted-foreground"
+                      >
+                        Caption / Description{" "}
+                        <span className="text-muted-foreground/50 font-normal">
+                          (optional)
+                        </span>
+                      </Label>
+                      <Input
+                        id="imageCaption"
+                        value={newQuestion.content}
+                        onChange={(e) =>
+                          setNewQuestion({
+                            ...newQuestion,
+                            content: e.target.value,
+                          })
+                        }
+                        className="rounded-xl text-sm h-10"
+                        placeholder="e.g. What does this diagram represent?"
+                      />
+                    </div>
+                  </div>
+                )}
 
                 {/* Hint */}
                 <div className="space-y-2">

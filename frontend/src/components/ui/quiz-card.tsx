@@ -62,15 +62,37 @@ export function QuizCard({
                 )}
             </div>
 
-            {/* Question text */}
-            <CardTitle className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
-              <ReactMarkdown
-                remarkPlugins={[remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-              >
-                {question.content}
-              </ReactMarkdown>
-            </CardTitle>
+            {/* Question text / image */}
+            {question.contentType === 'image' && question.imageUrl ? (
+              <div className="space-y-3">
+                <div className="rounded-2xl overflow-hidden border border-border/60 bg-muted/20 p-2">
+                  <img
+                    src={question.imageUrl}
+                    alt={question.content || "Question image"}
+                    className="max-h-72 w-full object-contain rounded-xl"
+                  />
+                </div>
+                {question.content && (
+                  <CardTitle className="text-xl md:text-2xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                    >
+                      {question.content}
+                    </ReactMarkdown>
+                  </CardTitle>
+                )}
+              </div>
+            ) : (
+              <CardTitle className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
+                <ReactMarkdown
+                  remarkPlugins={[remarkMath]}
+                  rehypePlugins={[rehypeKatex]}
+                >
+                  {question.content}
+                </ReactMarkdown>
+              </CardTitle>
+            )}
           </div>
 
           <button

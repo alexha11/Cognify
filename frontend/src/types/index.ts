@@ -81,6 +81,8 @@ export interface Question {
   id: string;
   content: string;
   hint?: string;
+  contentType?: 'text' | 'image';
+  imageUrl?: string;
   aiGenerated: boolean;
   approved: boolean;
   courseId: string;

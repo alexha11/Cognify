@@ -6,6 +6,7 @@ import {
   IsArray,
   ValidateNested,
   ArrayMinSize,
+  IsIn,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -28,6 +29,15 @@ export class CreateQuestionDto {
   hint?: string;
 
   @IsString()
+  @IsOptional()
+  @IsIn(['text', 'image'])
+  contentType?: string;
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
+
+  @IsString()
   @IsNotEmpty()
   courseId: string;
 
@@ -46,6 +56,15 @@ export class UpdateQuestionDto {
   @IsString()
   @IsOptional()
   hint?: string;
+
+  @IsString()
+  @IsOptional()
+  @IsIn(['text', 'image'])
+  contentType?: string;
+
+  @IsString()
+  @IsOptional()
+  imageUrl?: string;
 
   @IsBoolean()
   @IsOptional()
