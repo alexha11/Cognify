@@ -159,7 +159,7 @@ export class QuestionsController {
     @Body() dto: UpdateQuestionDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.questionsService.update(id, dto);
+    return this.questionsService.update(id, dto, user.userId, user.role);
   }
 
   /**
@@ -181,11 +181,11 @@ export class QuestionsController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async remove(
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.questionsService.remove(id);
+    return this.questionsService.remove(id, user.userId, user.role);
   }
 }

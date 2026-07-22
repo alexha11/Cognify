@@ -292,13 +292,27 @@ export class QuestionsService {
   async update(
     id: string,
     dto: UpdateQuestionDto,
+    userId?: string,
+    userRole?: Role,
   ): Promise<any> {
     const question = await this.prisma.question.findFirst({
       where: { id },
+      include: {
+        course: { select: { createdById: true } },
+      },
     });
 
     if (!question) {
       throw new NotFoundException('Question not found');
+    }
+
+    if (
+      userRole &&
+      userRole !== Role.ADMIN &&
+      question.createdById !== userId &&
+      question.course?.createdById !== userId
+    ) {
+      throw new ForbiddenException('Not authorized to update this question');
     }
 
     if (dto.answers && dto.answers.length > 0) {
@@ -364,13 +378,27 @@ export class QuestionsService {
    */
   async remove(
     id: string,
+    userId?: string,
+    userRole?: Role,
   ): Promise<{ message: string }> {
     const question = await this.prisma.question.findFirst({
       where: { id },
+      include: {
+        course: { select: { createdById: true } },
+      },
     });
 
     if (!question) {
       throw new NotFoundException('Question not found');
+    }
+
+    if (
+      userRole &&
+      userRole !== Role.ADMIN &&
+      question.createdById !== userId &&
+      question.course?.createdById !== userId
+    ) {
+      throw new ForbiddenException('Not authorized to delete this question');
     }
 
     await this.prisma.question.delete({

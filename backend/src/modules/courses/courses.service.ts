@@ -292,13 +292,17 @@ export class CoursesService {
   /**
    * Delete course
    */
-  async remove(id: string): Promise<{ message: string }> {
+  async remove(id: string, userId?: string, role?: Role): Promise<{ message: string }> {
     const course = await this.prisma.course.findFirst({
       where: { id },
     });
 
     if (!course) {
       throw new NotFoundException('Course not found');
+    }
+
+    if (role && role !== Role.ADMIN && course.createdById !== userId) {
+      throw new ForbiddenException('Not authorized to delete this course');
     }
 
     await this.prisma.course.delete({

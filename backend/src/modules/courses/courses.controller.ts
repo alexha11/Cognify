@@ -114,11 +114,12 @@ export class CoursesController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async remove(
     @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.coursesService.remove(id);
+    return this.coursesService.remove(id, user.userId, user.role);
   }
 
   /**
