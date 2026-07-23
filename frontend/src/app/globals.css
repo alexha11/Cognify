@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
 :root {
   color-scheme: light;
   --background: #F9F9F7;
@@ -140,4 +142,23 @@ h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
 .animate-ambient-pulse-slow {
   animation: ambientPulse 12s ease-in-out infinite;
   animation-delay: -4s;
+}
+
+/* Logo light/dark theme toggling */
+.cognify-logo-light {
+  display: block !important;
+}
+.cognify-logo-dark {
+  display: none !important;
+}
+
+.dark .cognify-logo-light {
+  display: none !important;
+}
+.dark .cognify-logo-dark {
+  display: block !important;
+}
+
+.dark img[src*="logo.png"]:not(.cognify-logo-dark) {
+  filter: invert(1) brightness(1.1);
 }

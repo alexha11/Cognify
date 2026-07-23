@@ -8,13 +8,26 @@ interface CognifyLogoProps {
 
 export function CognifyLogo({ size = 50, className }: CognifyLogoProps) {
   return (
-    <Image
-      src="/logo.png"
-      alt="Cognify"
-      width={size}
-      height={size}
-      className={cn("object-contain", className)}
-      priority
-    />
+    <div
+      className={cn("relative inline-flex items-center justify-center shrink-0", className)}
+      style={{ width: size, height: size }}
+    >
+      <Image
+        src="/logo.png"
+        alt="Cognify"
+        width={size}
+        height={size}
+        className="object-contain cognify-logo-light w-full h-full"
+        priority
+      />
+      <Image
+        src="/logo-dark.png"
+        alt="Cognify"
+        width={size}
+        height={size}
+        className="object-contain cognify-logo-dark w-full h-full"
+        priority
+      />
+    </div>
   );
 }
