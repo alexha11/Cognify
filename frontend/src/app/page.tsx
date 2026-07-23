@@ -163,15 +163,29 @@ export default function HomePage() {
       <main className="flex-1 pt-20 pb-36 relative z-10">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           {/* ── Hero ───────────────────────────────────────────────────────── */}
-          {/* unchanged — cube + "Get Started" button kept as-is */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center">
-            <div className="space-y-8 text-center md:text-left">
-              <h1 className="text-5xl font-semibold tracking-tight text-foreground leading-[1.05] md:text-7xl">
-                Enable real learning
+            <div className="space-y-6 text-center md:text-left">
+              {/* Top Badge Tag */}
+
+              {/* Main Hero Title */}
+              <h1 className="text-5xl md:text-7xl lg:text-[5.25rem] font-semibold tracking-tight leading-[1.04] text-foreground">
+                Enable real{" "}
+                <span className="bg-gradient-to-r from-foreground via-foreground/85 to-foreground/45 bg-clip-text text-transparent dark:from-white dark:via-white/90 dark:to-white/40">
+                  learning.
+                </span>
               </h1>
-              <p className="max-w-lg text-xl leading-relaxed text-muted-foreground">
-                Cognify turns your learning materials into smart assessments,
-                giving students and instructors actionable insights.
+
+              {/* Subtitle with highlighted key phrases */}
+              <p className="max-w-xl text-lg md:text-xl leading-relaxed text-muted-foreground/90 font-normal mx-auto md:mx-0">
+                Cognify turns your learning materials into{" "}
+                <span className="text-foreground font-medium">
+                  smart assessments
+                </span>
+                , giving students and instructors{" "}
+                <span className="text-foreground font-medium">
+                  actionable insights
+                </span>
+                .
               </p>
               <div className="flex items-center justify-start gap-3 pt-2">
                 <Link href="/courses">
