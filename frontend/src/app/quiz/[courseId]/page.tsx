@@ -41,19 +41,38 @@ export default function QuizPage() {
 
   const isGuest = !authLoading && !user;
 
+  // Helper to Fisher-Yates shuffle an array
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  // Helper to scramble answer choices inside every question and shuffle question order
+  const scrambleQuestions = (qs: Question[]): Question[] => {
+    const shuffledQs = shuffleArray(qs || []);
+    return shuffledQs.map((q) => ({
+      ...q,
+      answers: q.answers ? shuffleArray(q.answers) : [],
+    }));
+  };
+
   useEffect(() => {
     const fetchData = async () => {
       if (authLoading) return;
       try {
-        const allQuestions = await apiGet<Question[]>(
+        const rawQuestions = await apiGet<Question[]>(
           `/questions/course/${courseId}`,
         );
 
         if (isGuest) {
-          // Guests see all questions, no progress tracking
-          setQuestions(allQuestions || []);
+          // Guests see all questions scrambled
+          setQuestions(scrambleQuestions(rawQuestions || []));
         } else {
-          // Logged-in: filter out already-answered questions
+          // Logged-in: filter out already-answered questions and scramble
           const [progressData, attemptsData] = await Promise.all([
             apiGet<CourseProgress>(`/attempts/course/${courseId}`),
             apiGet<{ question: Question }[]>("/attempts/me"),
@@ -62,10 +81,10 @@ export default function QuizPage() {
           (attemptsData || []).forEach((a) => {
             if (a.question) attemptedIds.add(a.question.id);
           });
-          const unanswered = (allQuestions || []).filter(
+          const unanswered = (rawQuestions || []).filter(
             (q) => !attemptedIds.has(q.id),
           );
-          setQuestions(unanswered);
+          setQuestions(scrambleQuestions(unanswered));
           setProgress(progressData);
           if (unanswered.length === 0) setCompleted(true);
         }
@@ -205,7 +224,7 @@ export default function QuizPage() {
       const allQuestions = await apiGet<Question[]>(
         `/questions/course/${courseId}`,
       );
-      setQuestions(allQuestions || []);
+      setQuestions(scrambleQuestions(allQuestions || []));
     } catch (error) {
       console.error("Failed to fetch questions", error);
     } finally {

@@ -37,6 +37,23 @@ export default function SharedQuizPage() {
     setIsMounted(true);
   }, []);
 
+  const shuffleArray = <T,>(array: T[]): T[] => {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  };
+
+  const scrambleQuestions = (qs: Question[]): Question[] => {
+    const shuffledQs = shuffleArray(qs || []);
+    return shuffledQs.map((q) => ({
+      ...q,
+      answers: q.answers ? shuffleArray(q.answers) : [],
+    }));
+  };
+
   const fetchData = async () => {
     try {
       setIsLoading(true);
@@ -45,10 +62,7 @@ export default function SharedQuizPage() {
       );
       setCourseName(data.course.name);
       setCourseDescription(data.course.description || "");
-      const shuffled = [...(data.questions || [])].sort(
-        () => Math.random() - 0.5,
-      );
-      setQuestions(shuffled);
+      setQuestions(scrambleQuestions(data.questions || []));
     } catch (error) {
       console.error("Failed to fetch shared quiz data", error);
     } finally {
