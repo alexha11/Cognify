@@ -207,10 +207,6 @@ export default function AnalyticsPage() {
               Platform performance metrics and learning progress.
             </p>
           </div>
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-            Live data
-          </span>
         </div>
 
         {/* ── Overview stat grid ── */}
