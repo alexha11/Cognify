@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card";
 import { useAuth } from "@/lib/auth";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
+import { CardLightFlare } from "@/components/ui/ambient-lights";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -102,8 +103,16 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="flex min-h-screen items-center justify-center p-6">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Background spotlight */}
+      <div
+        className="pointer-events-none absolute -top-[150px] left-1/2 -translate-x-1/2 w-[700px] h-[350px] opacity-40 dark:opacity-70 blur-[80px]"
+        style={{
+          background:
+            "conic-gradient(from 180deg at 50% 0%, rgba(255, 255, 255, 0.25) 0deg, rgba(139, 92, 246, 0.15) 60deg, transparent 120deg, transparent 240deg, rgba(59, 130, 246, 0.15) 300deg, rgba(255, 255, 255, 0.25) 360deg)",
+        }}
+      />
+      <main className="flex min-h-screen items-center justify-center p-6 relative z-10">
         <div className="w-full max-w-md">
           <Link
             href="/"
@@ -113,7 +122,8 @@ export default function RegisterPage() {
             Back to home
           </Link>
 
-          <Card className="border border-border p-1">
+          <Card className="border border-border/80 p-1 relative overflow-hidden">
+            <CardLightFlare />
             <CardHeader className="text-center pt-10 pb-8">
               <div className="mx-auto mb-6 flex justify-center animate-in zoom-in duration-500">
                 <CognifyLogo size={100} />

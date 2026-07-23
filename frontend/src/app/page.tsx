@@ -8,46 +8,17 @@ import { Header } from "@/components/layout";
 import { useAuth } from "@/lib/auth";
 // Direct import — no dynamic(), no loading flash, no hydration mismatch
 import { RubiksCube } from "@/components/ui/rubiks-cube";
+import { AmbientLights, CardLightFlare } from "@/components/ui/ambient-lights";
 
 export default function HomePage() {
   return (
     <div className="min-h-screen flex flex-col bg-background selection:bg-primary/10 relative overflow-hidden">
       {/* ── Ambient Background Effects ── */}
-      {/* Top-left warm glow */}
-      <div
-        className="pointer-events-none absolute -top-[20%] -left-[10%] w-[60vw] h-[60vw] max-w-[900px] max-h-[900px] rounded-full opacity-[0.12] dark:opacity-[0.12] blur-[120px] animate-ambient-pulse"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(260 60% 60%) 0%, transparent 70%)",
-        }}
-      />
-      {/* Top-right cool glow */}
-      <div
-        className="pointer-events-none absolute -top-[10%] -right-[15%] w-[50vw] h-[50vw] max-w-[800px] max-h-[800px] rounded-full opacity-[0.10] dark:opacity-[0.10] blur-[100px] animate-ambient-pulse-slow"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(210 80% 55%) 0%, transparent 70%)",
-        }}
-      />
-      {/* Center accent glow — strongest in dark mode */}
-      <div
-        className="pointer-events-none absolute top-[30%] left-[40%] w-[40vw] h-[40vw] max-w-[600px] max-h-[600px] rounded-full opacity-[0.08] dark:opacity-[0.08] blur-[140px]"
-        style={{
-          background:
-            "radial-gradient(circle, hsl(180 50% 50%) 0%, transparent 70%)",
-        }}
-      />
-      {/* Bottom gradient fade */}
-      <div
-        className="pointer-events-none absolute bottom-0 left-0 right-0 h-[40vh] opacity-30 dark:opacity-50"
-        style={{
-          background:
-            "linear-gradient(to top, var(--background), transparent)",
-        }}
-      />
+      <AmbientLights />
+
       {/* Dot grid pattern — subtle texture */}
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.04] dark:opacity-[0.04]"
+        className="pointer-events-none absolute inset-0 opacity-[0.03] dark:opacity-[0.05]"
         style={{
           backgroundImage:
             "radial-gradient(circle, var(--foreground) 1px, transparent 1px)",
@@ -149,7 +120,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Visual Area */}
-                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border bg-secondary/30 overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border/80 bg-secondary/30 backdrop-blur-xs overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                  <CardLightFlare />
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
@@ -193,7 +165,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Visual Area */}
-                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border bg-secondary/30 overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border/80 bg-secondary/30 backdrop-blur-xs overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                  <CardLightFlare />
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
@@ -237,7 +210,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Visual Area */}
-                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border bg-secondary/30 overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border/80 bg-secondary/30 backdrop-blur-xs overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                  <CardLightFlare />
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
@@ -281,7 +255,8 @@ export default function HomePage() {
                 </div>
 
                 {/* Visual Area */}
-                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border bg-secondary/30 overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                <div className="flex-1 w-full relative h-[26rem] rounded-3xl border border-border/80 bg-secondary/30 backdrop-blur-xs overflow-hidden flex items-center justify-center p-8 transition-colors duration-300 group-hover:bg-secondary/50 shadow-sm">
+                  <CardLightFlare />
                   {/* Glow */}
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-muted/40 blur-[100px] rounded-full transition-opacity duration-500 group-hover:opacity-100 opacity-50"></div>
 
