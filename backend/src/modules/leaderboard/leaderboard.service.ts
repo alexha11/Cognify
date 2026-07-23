@@ -35,7 +35,7 @@ export class LeaderboardService {
       orderBy: [
         { percentage: 'desc' },
         { score: 'desc' },
-        { completedAt: 'asc' },
+        { completedAt: 'desc' },
       ],
       include: {
         user: {
@@ -48,14 +48,20 @@ export class LeaderboardService {
       },
     });
 
-    // Group by player (userId or guestName) and keep best score
+    // Group by player (userId or guestName) and keep best score (or newest score on tie)
     const bestByPlayer = new Map<string, typeof entries[number]>();
 
     for (const entry of entries) {
       const key = entry.userId ? `user:${entry.userId}` : `guest:${entry.guestName || 'Anonymous'}`;
       const existing = bestByPlayer.get(key);
-      if (!existing || entry.percentage > existing.percentage || 
-          (entry.percentage === existing.percentage && entry.score > existing.score)) {
+      if (
+        !existing ||
+        entry.percentage > existing.percentage ||
+        (entry.percentage === existing.percentage && entry.score > existing.score) ||
+        (entry.percentage === existing.percentage &&
+          entry.score === existing.score &&
+          entry.completedAt.getTime() > existing.completedAt.getTime())
+      ) {
         bestByPlayer.set(key, entry);
       }
     }

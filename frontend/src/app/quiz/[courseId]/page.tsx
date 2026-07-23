@@ -152,12 +152,19 @@ export default function QuizPage() {
   // Auto-submit score for logged-in users when quiz completes
   useEffect(() => {
     if (completed && user && !scoreSubmitted && sessionStats.total > 0) {
+      setScoreSubmitted(true);
       apiPost("/leaderboard", {
         courseId,
         score: sessionStats.correct,
         totalQuestions: sessionStats.total,
-      }).catch(() => {});
-      setScoreSubmitted(true);
+      }).catch((err) => {
+        console.error("Failed to submit leaderboard score", err);
+      });
+
+      // Refetch course progress so overall user stats are updated
+      apiGet<CourseProgress>(`/attempts/course/${courseId}`)
+        .then((newProgress) => setProgress(newProgress))
+        .catch(() => {});
     }
   }, [completed, user, scoreSubmitted, sessionStats, courseId]);
 
@@ -191,6 +198,7 @@ export default function QuizPage() {
     setSelectedAnswers([]);
     setResult(null);
     setCompleted(false);
+    setScoreSubmitted(false);
     setSessionStats({ correct: 0, total: 0 });
     setIsLoading(true);
     try {
@@ -220,12 +228,8 @@ export default function QuizPage() {
 
   // ── Completion screen ─────────────────────────────────────────────────────
   if (completed) {
-    const correct = isGuest
-      ? sessionStats.correct
-      : (progress?.correct ?? sessionStats.correct);
-    const total = isGuest
-      ? sessionStats.total
-      : (progress?.totalQuestions ?? sessionStats.total);
+    const correct = sessionStats.correct;
+    const total = sessionStats.total;
     const pct = total > 0 ? Math.round((correct / total) * 100) : 0;
 
     return (

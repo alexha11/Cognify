@@ -107,6 +107,7 @@ export default function SharedQuizPage() {
     setSelectedAnswers([]);
     setResult(null);
     setCompleted(false);
+    setScoreSubmitted(false);
     setStats({ correct: 0, total: 0 });
     await fetchData();
   };

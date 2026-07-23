@@ -33,7 +33,7 @@ export default function RankingPage() {
     const fetchLeaderboard = async () => {
       try {
         const res = await apiGet<LeaderboardResponse>(
-          `/leaderboard/${courseId}`,
+          `/leaderboard/${courseId}?t=${Date.now()}`,
         );
         setData(res);
       } catch (error) {
