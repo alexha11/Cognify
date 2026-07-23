@@ -17,7 +17,10 @@ import {
 } from "lucide-react";
 import { Header } from "@/components/layout";
 import { RubiksCube } from "@/components/ui/rubiks-cube";
-import { AmbientLights } from "@/components/ui/ambient-lights";
+import {
+  AmbientLights,
+  SectionLightDivider,
+} from "@/components/ui/ambient-lights";
 
 // ── Feature card data ──────────────────────────────────────────────────────────
 const features = [
@@ -204,8 +207,11 @@ export default function HomePage() {
             </div>
           </div>
 
+          {/* Section Divider with Light Flare */}
+          <SectionLightDivider className="my-32" />
+
           {/* ── Features ───────────────────────────────────────────────────── */}
-          <div id="features" className="mt-44">
+          <div id="features" className="mt-12">
             {/* Section heading — left-aligned, two-tone like Resend */}
             <div className="max-w-2xl mb-10">
               <h2 className="text-4xl md:text-[3.25rem] font-semibold tracking-tight leading-[1.07] text-foreground">
@@ -312,8 +318,11 @@ export default function HomePage() {
               })}
             </div>
 
+            {/* Section Divider with Light Flare */}
+            <SectionLightDivider className="my-20 md:my-28" />
+
             {/* ── "Everything in your control" — Resend capabilities grid ── */}
-            <div className="mt-44 pt-16 border-t border-border/30">
+            <div className="pt-6 md:pt-10">
               {/* Left-aligned heading */}
               <div className="mb-16 max-w-lg">
                 <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-foreground leading-[1.08]">
@@ -347,8 +356,11 @@ export default function HomePage() {
               </div>
             </div>
 
+            {/* Section Divider with Light Flare */}
+            <SectionLightDivider className="my-20 md:my-28" />
+
             {/* ── CTA — "Assessment reimagined. Available today." ── */}
-            <div className="mt-44 text-center">
+            <div className="text-center pt-6 md:pt-10">
               <h2 className="text-4xl md:text-[3.5rem] font-semibold tracking-tight text-foreground leading-[1.06]">
                 Assessment reimagined.
                 <br />
