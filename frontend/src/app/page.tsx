@@ -170,7 +170,7 @@ export default function HomePage() {
               {/* Main Hero Title */}
               <h1 className="text-5xl md:text-7xl lg:text-[5.25rem] font-semibold tracking-tight leading-[1.04] text-foreground">
                 Enable real{" "}
-                <span className="bg-gradient-to-r from-foreground via-foreground/85 to-foreground/45 bg-clip-text text-transparent dark:from-white dark:via-white/90 dark:to-white/40">
+                <span className="text-muted-foreground/60 dark:text-muted-foreground/50">
                   learning.
                 </span>
               </h1>
