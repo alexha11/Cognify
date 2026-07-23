@@ -28,7 +28,15 @@ export default function RootLayout({
             __html: `
               (function() {
                 try {
-                  var theme = localStorage.getItem('cognify-theme') || 'light';
+                  var explicit = localStorage.getItem('cognify-theme-explicit') === 'true';
+                  var stored = localStorage.getItem('cognify-theme');
+                  var pathname = window.location.pathname;
+                  var theme = 'light';
+                  if (explicit && stored) {
+                    theme = stored;
+                  } else {
+                    theme = (pathname === '/' || pathname === '') ? 'dark' : 'light';
+                  }
                   var resolved = theme;
                   if (theme === 'system') {
                     resolved = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -45,7 +53,7 @@ export default function RootLayout({
         />
       </head>
       <body className={inter.className}>
-        <ThemeProvider defaultTheme="light">
+        <ThemeProvider>
           <AuthProvider>
             <ToastProvider>{children}</ToastProvider>
           </AuthProvider>
