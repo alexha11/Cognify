@@ -30,12 +30,11 @@ export default function RootLayout({
                 try {
                   var explicit = localStorage.getItem('cognify-theme-explicit') === 'true';
                   var stored = localStorage.getItem('cognify-theme');
-                  var pathname = window.location.pathname;
-                  var theme = 'light';
+                  var theme = 'dark';
                   if (explicit && stored) {
                     theme = stored;
                   } else {
-                    theme = (pathname === '/' || pathname === '') ? 'dark' : 'light';
+                    theme = 'dark';
                   }
                   var resolved = theme;
                   if (theme === 'system') {

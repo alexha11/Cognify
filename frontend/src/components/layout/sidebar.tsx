@@ -12,6 +12,7 @@ import {
   Lock,
   Shield,
   Building2,
+  HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
@@ -25,6 +26,7 @@ const navItems = {
 
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/settings", label: "Settings", icon: Settings },
+    { href: "/contact", label: "Contact Us", icon: HelpCircle },
   ],
   INSTRUCTOR: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -32,12 +34,14 @@ const navItems = {
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/questions", label: "Questions", icon: FileQuestion },
     { href: "/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/contact", label: "Contact Us", icon: HelpCircle },
   ],
   STUDENT: [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
 
     { href: "/courses", label: "Courses", icon: BookOpen },
     { href: "/progress", label: "My Progress", icon: BarChart3 },
+    { href: "/contact", label: "Contact Us", icon: HelpCircle },
   ],
 };
 
@@ -57,6 +61,7 @@ export function Sidebar() {
           icon: BarChart3,
           gated: true,
         },
+        { href: "/contact", label: "Contact Us", icon: HelpCircle },
       ];
 
   return (

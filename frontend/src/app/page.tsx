@@ -390,8 +390,8 @@ export default function HomePage() {
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </Link>
-                <Link href="/courses">
-                  <button className="inline-flex items-center gap-1.5 px-6 py-3 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors">
+                <Link href="/contact">
+                  <button className="inline-flex items-center gap-1.5 px-6 py-3 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors cursor-pointer">
                     Contact us
                     <ArrowRight className="h-4 w-4" />
                   </button>
@@ -407,9 +407,14 @@ export default function HomePage() {
           <p className="text-xs font-serif text-muted-foreground/50">
             © 2026 Cognify. All rights reserved.
           </p>
-          <p className="text-xs font-serif italic text-muted-foreground/40">
-            Built for students and educators worldwide
-          </p>
+          <div className="flex items-center gap-6">
+            <Link href="/courses" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
+              Courses
+            </Link>
+            <Link href="/contact" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
+              Contact Us
+            </Link>
+          </div>
         </div>
       </footer>
     </div>

@@ -51,7 +51,7 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
   const [mounted, setMounted] = useState(false);
 
-  // Sync theme based on explicit preference or route defaults (Landing: dark, Others: light)
+  // Sync theme based on explicit preference or default to dark
   useEffect(() => {
     const isExplicit = localStorage.getItem(EXPLICIT_KEY) === "true";
     const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
@@ -60,8 +60,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     if (isExplicit && stored) {
       targetTheme = stored;
     } else {
-      // Landing page ("/") defaults to dark, all other pages default to light
-      targetTheme = pathname === "/" ? "dark" : "light";
+      // Default theme is always dark mode
+      targetTheme = "dark";
     }
 
     setThemeState(targetTheme);
