@@ -93,4 +93,75 @@ export class EmailService {
       throw err;
     }
   }
+
+  async sendContactEmail(dto: {
+    name: string;
+    email: string;
+    category: string;
+    message: string;
+  }): Promise<void> {
+    this.logger.log(
+      `📩 [CONTACT SUPPORT REQUEST] From: ${dto.name} <${dto.email}> | Category: ${dto.category} | Message: ${dto.message}`
+    );
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+        </head>
+        <body style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; background: #f9f9f9; padding: 30px 10px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center">
+                <table width="560" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.06);">
+                  <tr>
+                    <td style="background:#0a0a0a; padding:28px 36px; text-align:left;">
+                      <h1 style="margin:0; color:#ffffff; font-size:20px; font-weight:700;">
+                        Cognify Support Inquiry
+                      </h1>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td style="padding:32px 36px;">
+                      <div style="background:#f4f4f5; border-left:4px solid #141413; border-radius:6px; padding:16px 20px; margin-bottom:24px;">
+                        <p style="margin:0 0 6px; font-size:14px; color:#141413;"><strong>From:</strong> ${dto.name} (&lt;<a href="mailto:${dto.email}" style="color:#0066cc;">${dto.email}</a>&gt;)</p>
+                        <p style="margin:0; font-size:14px; color:#141413;"><strong>Category:</strong> ${dto.category}</p>
+                      </div>
+
+                      <h3 style="margin:0 0 10px; font-size:15px; color:#333;">Message Details:</h3>
+                      <div style="background:#fafafa; border:1px solid #e8e8e1; border-radius:12px; padding:20px; font-size:14px; line-height:1.6; color:#141413; white-space:pre-wrap;">${dto.message}</div>
+
+                      <p style="margin:24px 0 0; font-size:13px; color:#666; line-height:1.5;">
+                        To reply to this student, simply hit <strong>Reply</strong> in your email client (Reply-To: ${dto.email}).
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+        </body>
+      </html>
+    `;
+
+    try {
+      const recipient = this.fromEmail || 'support@cognify.edu';
+      const { error } = await this.resend.emails.send({
+        from: `Cognify Support <${this.fromEmail}>`,
+        to: recipient,
+        replyTo: dto.email,
+        subject: `[Cognify Support] ${dto.category} from ${dto.name}`,
+        html,
+      });
+
+      if (error) {
+        this.logger.warn(`Resend API response: ${error.message}`);
+      } else {
+        this.logger.log(`Support notification email successfully sent to ${recipient}`);
+      }
+    } catch (err: any) {
+      this.logger.warn(`Contact email fallback: ${err?.message || err}`);
+    }
+  }
 }

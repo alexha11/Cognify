@@ -21,6 +21,7 @@ import { Header } from "@/components/layout";
 import { AmbientLights, SectionLightDivider } from "@/components/ui/ambient-lights";
 import { useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/toast";
+import { apiPost } from "@/lib/api";
 
 const categories = [
   { id: "technical", label: "Technical Issue", icon: Bug },
@@ -48,7 +49,7 @@ export default function ContactPage() {
     }
   }, [user]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
       toast.error("Please fill in your name, email, and message before submitting.");
@@ -57,12 +58,24 @@ export default function ContactPage() {
 
     setIsSubmitting(true);
 
-    // Simulate swift network dispatch
-    setTimeout(() => {
+    try {
+      await apiPost("/contact", {
+        name,
+        email,
+        category: categories.find((c) => c.id === category)?.label || category,
+        message,
+      });
       setIsSubmitting(false);
       setSubmitted(true);
-      toast.success("Thank you for reaching out! We will get back to you shortly.");
-    }, 900);
+      toast.success("Message sent! We have received your support request.");
+    } catch (err: any) {
+      setIsSubmitting(false);
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to send message. Please try again."
+      );
+    }
   };
 
   const handleReset = () => {
