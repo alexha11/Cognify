@@ -162,9 +162,9 @@ export default function LoginPage() {
                       type="email"
                       placeholder="e.g. curator@cognify.io"
                       {...register("email")}
-                      className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                      className={`h-12 rounded-xl text-sm transition-all focus:ring-2 focus:ring-primary/20 ${
                         errors.email
-                          ? "border-destructive/40 focus:ring-destructive/5"
+                          ? "border-destructive/40 focus:ring-destructive/20"
                           : ""
                       }`}
                     />
@@ -196,9 +196,9 @@ export default function LoginPage() {
                       type="password"
                       placeholder="••••••••"
                       {...register("password")}
-                      className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                      className={`h-12 rounded-xl text-sm transition-all focus:ring-2 focus:ring-primary/20 ${
                         errors.password
-                          ? "border-destructive/40 focus:ring-destructive/5"
+                          ? "border-destructive/40 focus:ring-destructive/20"
                           : ""
                       }`}
                     />

@@ -213,7 +213,7 @@ export default function RegisterPage() {
                         id="firstName"
                         placeholder="John"
                         {...register("firstName")}
-                        className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        className={`h-12 rounded-xl text-sm transition-all focus:ring-2 focus:ring-primary/20 ${
                           errors.firstName
                             ? "border-destructive/40 focus:ring-destructive/5"
                             : ""
@@ -236,7 +236,7 @@ export default function RegisterPage() {
                         id="lastName"
                         placeholder="Doe"
                         {...register("lastName")}
-                        className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                        className={`h-12 rounded-xl text-sm transition-all focus:ring-2 focus:ring-primary/20 ${
                           errors.lastName
                             ? "border-destructive/40 focus:ring-destructive/5"
                             : ""
@@ -262,7 +262,7 @@ export default function RegisterPage() {
                       type="email"
                       placeholder="name@example.com"
                       {...register("email")}
-                      className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                      className={`h-12 rounded-xl text-sm transition-all focus:ring-2 focus:ring-primary/20 ${
                         errors.email
                           ? "border-destructive/40 focus:ring-destructive/5"
                           : ""
@@ -287,7 +287,7 @@ export default function RegisterPage() {
                       type="password"
                       placeholder="••••••••"
                       {...register("password")}
-                      className={`h-12 rounded-xl text-sm transition-all focus:ring-primary/5 ${
+                      className={`h-12 rounded-xl text-sm transition-all focus:ring-2 focus:ring-primary/20 ${
                         errors.password
                           ? "border-destructive/40 focus:ring-destructive/5"
                           : ""

@@ -33,15 +33,15 @@ export function StatCard({
         "transition-all duration-300",
         onClick && "cursor-pointer",
         active
-          ? "border-primary/30 bg-secondary/30"
-          : "hover:bg-secondary/20",
+          ? "border-primary/30 bg-primary/5 shadow-[0_0_15px_rgba(139,92,246,0.08)]"
+          : "hover:bg-secondary/20 hover:border-primary/15",
         className,
       )}
       onClick={onClick}
     >
       <CardContent className="p-6 space-y-4">
         <div className="flex items-center justify-between">
-          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/5 text-primary">
+          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary">
             <Icon className="h-5 w-5" />
           </div>
           {badge && (

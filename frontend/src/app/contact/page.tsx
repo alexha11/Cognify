@@ -111,7 +111,7 @@ export default function ContactPage() {
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
           {/* Header Banner */}
           <div className="max-w-3xl mx-auto text-center pt-8 pb-12 space-y-4">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-semibold text-primary">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3.5 py-1 text-xs font-semibold text-primary">
               <MessageSquare className="h-3.5 w-3.5" />
               <span>Student Support & Feedback</span>
             </div>
@@ -187,7 +187,7 @@ export default function ContactPage() {
                         value={name}
                         onChange={(e) => setName(e.target.value)}
                         placeholder="Jane Doe"
-                        className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                        className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
                     </div>
 
@@ -201,7 +201,7 @@ export default function ContactPage() {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="jane@student.edu"
-                        className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors"
+                        className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
                     </div>
                   </div>
@@ -222,14 +222,14 @@ export default function ContactPage() {
                             onClick={() => setCategory(cat.id)}
                             className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-medium text-left transition-all duration-200 cursor-pointer select-none ${
                               isSelected
-                                ? "border-foreground bg-foreground text-background font-bold shadow-md ring-2 ring-foreground/20 scale-[1.02]"
-                                : "border-border/80 bg-secondary/30 text-muted-foreground hover:bg-secondary hover:text-foreground hover:border-foreground/30"
+                                ? "border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 font-bold shadow-md ring-2 ring-violet-500/20 scale-[1.02]"
+                                : "border-border/80 bg-secondary/30 text-muted-foreground hover:bg-violet-500/10 hover:text-foreground hover:border-violet-500/30"
                             }`}
                           >
                             <Icon
                               className={`h-4 w-4 shrink-0 pointer-events-none ${
                                 isSelected
-                                  ? "text-background"
+                                  ? "text-violet-600 dark:text-violet-400"
                                   : "text-muted-foreground/70"
                               }`}
                             />
@@ -253,7 +253,7 @@ export default function ContactPage() {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Describe your question, bug details, or feedback here..."
-                      className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-colors resize-y min-h-[120px]"
+                      className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors resize-y min-h-[120px]"
                     />
                   </div>
 
@@ -261,7 +261,7 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 transition-all disabled:opacity-50 cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
                       <span>Sending message...</span>

@@ -81,14 +81,14 @@ export function Sidebar() {
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground",
+                    ? "bg-primary/12 text-primary border-l-2 border-primary ml-[-1px]"
+                    : "text-muted-foreground hover:bg-primary/6 hover:text-foreground",
                 )}
               >
                 <Icon
                   className={cn(
                     "h-[18px] w-[18px] shrink-0",
-                    isActive ? "text-foreground" : "text-muted-foreground",
+                    isActive ? "text-primary" : "text-muted-foreground",
                   )}
                 />
                 <span className="whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">

@@ -82,7 +82,7 @@ export function Header({ variant = "public" }: HeaderProps) {
               <Link href="/register">
                 <Button
                   size="sm"
-                  className="rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/85 hover:shadow-md"
+                  className="rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/85 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]"
                 >
                   Sign up
                 </Button>
@@ -152,7 +152,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                     <Link
                       href="/settings"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-primary/8 hover:text-foreground"
                     >
                       <User className="h-4 w-4 shrink-0 text-muted-foreground" />
                       My Profile
@@ -160,7 +160,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                     <Link
                       href="/contact"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground"
+                      className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-primary/8 hover:text-foreground"
                     >
                       <HelpCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
                       Contact Support
@@ -168,7 +168,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                     <Link
                       href="/"
                       onClick={() => setOpen(false)}
-                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-secondary hover:text-foreground"
+                      className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-primary/8 hover:text-foreground"
                     >
                       <span className="flex items-center gap-3">
                         <Home className="h-4 w-4 shrink-0 text-muted-foreground" />

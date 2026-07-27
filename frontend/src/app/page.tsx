@@ -306,7 +306,7 @@ export default function HomePage() {
                       <div className="flex items-start gap-4">
                         {/* Icon chip */}
                         <div className="shrink-0 mt-0.5 p-2 rounded-xl bg-foreground/5 border border-border/40">
-                          <Icon className="h-4 w-4 text-foreground/50" />
+                          <Icon className="h-4 w-4 text-primary/60" />
                         </div>
 
                         {/* Text */}
@@ -357,7 +357,7 @@ export default function HomePage() {
                   const Icon = cap.icon;
                   return (
                     <div key={idx} className="space-y-3">
-                      <Icon className="h-5 w-5 text-muted-foreground/50" />
+                      <Icon className="h-5 w-5 text-primary/50" />
                       <h4 className="text-sm font-semibold text-foreground">
                         {cap.title}
                       </h4>
