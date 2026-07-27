@@ -137,11 +137,11 @@ export function QuizCard({
                     !showResult &&
                     "bg-background border-border hover:border-primary/60 hover:bg-primary/5",
 
-                  // SELECTED — unmissable primary fill
+                  // SELECTED — unmissable violet fill
                   isSelected &&
                     !showResult && [
-                      "bg-primary/[0.09] border-primary",
-                      "ring-2 ring-primary/20",
+                      "bg-violet-500/[0.09] border-violet-500",
+                      "ring-2 ring-violet-500/20",
                       "shadow-sm",
                     ],
 
@@ -166,7 +166,7 @@ export function QuizCard({
                   className={cn(
                     "absolute left-0 top-3 bottom-3 rounded-r-full transition-all duration-150",
                     !isSelected && !showResult && "w-0",
-                    isSelected && !showResult && "w-1 bg-primary",
+                    isSelected && !showResult && "w-1 bg-violet-500",
                     showResult && isCorrect && "w-1 bg-emerald-500",
                     showResult && wasSelected && !isCorrect && "w-1 bg-red-500",
                     showResult && !isCorrect && !wasSelected && "w-0",
@@ -183,7 +183,7 @@ export function QuizCard({
                         "bg-background border-border text-muted-foreground group-hover:border-primary/60 group-hover:text-primary group-hover:bg-primary/5",
                       isSelected &&
                         !showResult &&
-                        "bg-primary border-primary text-white shadow-sm",
+                        "bg-violet-500 border-violet-500 text-white shadow-sm",
                       showResult && isCorrect && "bg-emerald-500 border-emerald-500 text-white",
                       showResult && wasSelected && !isCorrect && "bg-red-500 border-red-500 text-white",
                       showResult && !isCorrect && !wasSelected && "bg-muted border-border/40 text-muted-foreground/50",
@@ -237,7 +237,7 @@ export function QuizCard({
           <div className="flex items-center justify-between pt-1">
             <div className="min-h-[2rem] flex items-center">
               {selectedAnswers.length > 0 && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 px-3 py-1 rounded-full animate-in fade-in duration-150">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-full animate-in fade-in duration-150">
                   <Check className="h-3 w-3" />
                   {selectedAnswers.length} selected
                 </span>
