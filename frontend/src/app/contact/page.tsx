@@ -18,7 +18,10 @@ import {
   User,
 } from "lucide-react";
 import { Header } from "@/components/layout";
-import { AmbientLights, SectionLightDivider } from "@/components/ui/ambient-lights";
+import {
+  AmbientLights,
+  SectionLightDivider,
+} from "@/components/ui/ambient-lights";
 import { useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/toast";
 import { apiPost } from "@/lib/api";
@@ -43,7 +46,9 @@ export default function ContactPage() {
 
   useEffect(() => {
     if (user) {
-      const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+      const fullName = [user.firstName, user.lastName]
+        .filter(Boolean)
+        .join(" ");
       if (fullName && !name) setName(fullName);
       if (user.email && !email) setEmail(user.email);
     }
@@ -52,7 +57,9 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error("Please fill in your name, email, and message before submitting.");
+      toast.error(
+        "Please fill in your name, email, and message before submitting.",
+      );
       return;
     }
 
@@ -73,7 +80,7 @@ export default function ContactPage() {
       toast.error(
         err?.response?.data?.message ||
           err?.message ||
-          "Failed to send message. Please try again."
+          "Failed to send message. Please try again.",
       );
     }
   };
@@ -109,10 +116,13 @@ export default function ContactPage() {
               <span>Student Support & Feedback</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-foreground">
-              We're here to <span className="text-muted-foreground/60">help.</span>
+              We're here to{" "}
+              <span className="text-muted-foreground/60">help.</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto font-normal">
-              Have a question about Cognify, encountering a technical issue, or want to connect? Reach out using the form below or connect directly via LinkedIn.
+              Have a question about Cognify, encountering a technical issue, or
+              want to connect? Reach out using the form below or connect
+              directly via LinkedIn.
             </p>
           </div>
 
@@ -129,7 +139,19 @@ export default function ContactPage() {
                       Message Received!
                     </h3>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                      Thank you for contacting us, <span className="text-foreground font-medium">{name}</span>. Your inquiry regarding <span className="text-foreground font-medium">{categories.find(c => c.id === category)?.label}</span> has been logged. We'll reply to <span className="text-foreground font-medium">{email}</span> as quickly as possible.
+                      Thank you for contacting us,{" "}
+                      <span className="text-foreground font-medium">
+                        {name}
+                      </span>
+                      . Your inquiry regarding{" "}
+                      <span className="text-foreground font-medium">
+                        {categories.find((c) => c.id === category)?.label}
+                      </span>{" "}
+                      has been logged. We'll reply to{" "}
+                      <span className="text-foreground font-medium">
+                        {email}
+                      </span>{" "}
+                      as quickly as possible.
                     </p>
                   </div>
                   <div className="pt-4">
@@ -148,7 +170,8 @@ export default function ContactPage() {
                       Send a Message
                     </h2>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Fill in the details and we'll reply directly to your email.
+                      Fill in the details and we'll reply directly to your
+                      email.
                     </p>
                   </div>
 
@@ -188,7 +211,7 @@ export default function ContactPage() {
                     <label className="text-xs font-medium text-foreground/80">
                       What can we help you with?
                     </label>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {categories.map((cat) => {
                         const Icon = cat.icon;
                         const isSelected = category === cat.id;
@@ -197,14 +220,22 @@ export default function ContactPage() {
                             type="button"
                             key={cat.id}
                             onClick={() => setCategory(cat.id)}
-                            className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-medium text-left transition-all duration-200 ${
+                            className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-medium text-left transition-all duration-200 cursor-pointer select-none ${
                               isSelected
-                                ? "border-primary bg-primary/10 text-foreground font-semibold shadow-sm"
-                                : "border-border/60 bg-background/40 text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                                ? "border-foreground bg-foreground text-background font-bold shadow-md ring-2 ring-foreground/20 scale-[1.02]"
+                                : "border-border/80 bg-secondary/30 text-muted-foreground hover:bg-secondary hover:text-foreground hover:border-foreground/30"
                             }`}
                           >
-                            <Icon className={`h-3.5 w-3.5 shrink-0 ${isSelected ? "text-primary" : "text-muted-foreground/70"}`} />
-                            <span className="truncate">{cat.label}</span>
+                            <Icon
+                              className={`h-4 w-4 shrink-0 pointer-events-none ${
+                                isSelected
+                                  ? "text-background"
+                                  : "text-muted-foreground/70"
+                              }`}
+                            />
+                            <span className="truncate pointer-events-none">
+                              {cat.label}
+                            </span>
                           </button>
                         );
                       })}
@@ -253,21 +284,18 @@ export default function ContactPage() {
                   <Linkedin className="h-28 w-28 text-blue-400" />
                 </div>
                 <div className="relative z-10 space-y-4">
-                  <div className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-500/10 px-3 py-1 text-[11px] font-semibold text-blue-400">
-                    <Linkedin className="h-3 w-3" />
-                    <span>Direct Professional Messaging</span>
-                  </div>
-
                   <h3 className="text-xl font-semibold text-foreground">
                     Connect on LinkedIn
                   </h3>
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Prefer direct networking or messaging? Connect directly on LinkedIn for quick responses, course guidance, or career discussions.
+                    Prefer direct networking or messaging? Connect directly on
+                    LinkedIn for quick responses, course guidance, or career
+                    discussions.
                   </p>
 
                   <a
-                    href="https://www.linkedin.com"
+                    href="https://www.linkedin.com/in/duc-thanh-duong-ha/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center justify-between w-full rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition-all shadow-md group/btn"
@@ -280,60 +308,8 @@ export default function ContactPage() {
                   </a>
                 </div>
               </div>
-
-              {/* Email & Info Cards */}
-              <div className="rounded-2xl border border-border/80 bg-card/60 backdrop-blur-md p-6 space-y-5 shadow-lg">
-                <div className="flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-primary/10 text-primary border border-primary/20 shrink-0">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">
-                      Direct Email Support
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Send your questions directly to our support inbox.
-                    </p>
-                    <a
-                      href="mailto:support@cognify.edu"
-                      className="inline-block mt-2 text-xs font-mono font-medium text-primary hover:underline"
-                    >
-                      support@cognify.edu
-                    </a>
-                  </div>
-                </div>
-
-                <div className="border-t border-border/60 pt-4 flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 shrink-0">
-                    <Clock className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">
-                      Response Expectation
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      We aim to respond to all student messages within 24 hours on business days.
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-t border-border/60 pt-4 flex items-start gap-4">
-                  <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0">
-                    <ShieldCheck className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-semibold text-foreground">
-                      Student Data Privacy
-                    </h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">
-                      Your messages and contact info are strictly confidential and used solely for addressing your request.
-                    </p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
-
           <SectionLightDivider className="my-16" />
         </div>
       </main>
@@ -344,13 +320,22 @@ export default function ContactPage() {
             © 2026 Cognify. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
+            <Link
+              href="/"
+              className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
+            >
               Home
             </Link>
-            <Link href="/courses" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
+            <Link
+              href="/courses"
+              className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
+            >
               Courses
             </Link>
-            <Link href="/contact" className="text-xs text-foreground font-medium transition-colors">
+            <Link
+              href="/contact"
+              className="text-xs text-foreground font-medium transition-colors"
+            >
               Contact Us
             </Link>
           </div>

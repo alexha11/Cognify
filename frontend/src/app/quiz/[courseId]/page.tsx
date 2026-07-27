@@ -12,7 +12,14 @@ import { GuestNameModal } from "@/components/ui/guest-name-modal";
 import { apiGet, apiPost } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { Question, AttemptResult, CourseProgress } from "@/types";
-import { ArrowLeft, Trophy, Loader2, Sparkles, RefreshCw, Medal } from "lucide-react";
+import {
+  ArrowLeft,
+  Trophy,
+  Loader2,
+  Sparkles,
+  RefreshCw,
+  Medal,
+} from "lucide-react";
 
 export default function QuizPage() {
   const params = useParams();
@@ -324,10 +331,7 @@ export default function QuizPage() {
             ) : (
               <>
                 <Link href={`/ranking/${courseId}`}>
-                  <Button
-                    size="lg"
-                    className="rounded-xl px-8 font-semibold"
-                  >
+                  <Button size="lg" className="rounded-xl px-8 font-semibold">
                     <Medal className="mr-2 h-4 w-4" />
                     View Ranking
                   </Button>
@@ -420,7 +424,7 @@ export default function QuizPage() {
           </div>
           <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden shadow-inner ring-1 ring-inset ring-black/5 dark:ring-white/5">
             <div
-              className="h-full bg-[#FAF9F5] rounded-full transition-all duration-700 ease-out shadow-md"
+              className="h-full bg-[#FAF9F5] dark:bg-[#141413] rounded-full transition-all duration-700 ease-out shadow-md"
               style={{
                 width: `${
                   ((currentIndex + (result ? 1 : 0)) / questions.length) * 100
