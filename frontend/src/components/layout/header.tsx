@@ -20,6 +20,7 @@ import { getInitials } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { LanguageToggle } from "@/components/ui/language-toggle";
 import { useLanguage } from "@/lib/i18n";
 
 const roleConfig: Record<
@@ -74,6 +75,7 @@ export function Header({ variant = "public" }: HeaderProps) {
           {!isLoading && !user ? (
             <>
               <ThemeToggle />
+              <LanguageToggle />
               <Link href="/login">
                 <Button
                   size="sm"
@@ -95,6 +97,7 @@ export function Header({ variant = "public" }: HeaderProps) {
           ) : user ? (
             <div className="relative flex items-center gap-3" ref={ref}>
               <ThemeToggle />
+              <LanguageToggle />
               <button
                 onClick={() => setOpen((v) => !v)}
                 className={cn(
