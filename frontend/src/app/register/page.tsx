@@ -21,6 +21,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { CardLightFlare } from "@/components/ui/ambient-lights";
+import { useLanguage } from "@/lib/i18n";
 
 const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
@@ -68,6 +69,8 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const router = useRouter();
   const { register: authRegister } = useAuth();
+  const { t } = useLanguage();
+  const a = t.auth;
 
   const {
     register,

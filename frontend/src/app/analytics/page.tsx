@@ -10,6 +10,7 @@ import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { AttemptStats, Course, CourseProgress } from "@/types";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/lib/i18n";
 import {
   BarChart3,
   TrendingUp,

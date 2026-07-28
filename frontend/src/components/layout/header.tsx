@@ -20,6 +20,7 @@ import { getInitials } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { useLanguage } from "@/lib/i18n";
 
 const roleConfig: Record<
   string,
@@ -37,6 +38,9 @@ interface HeaderProps {
 export function Header({ variant = "public" }: HeaderProps) {
   const { user, isLoading, logout } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
+  const n = t.nav;
+  const h = t.header;
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -58,7 +62,7 @@ export function Header({ variant = "public" }: HeaderProps) {
   return (
     <header className="sticky top-0 z-100 flex h-14 items-center justify-between border-b border-border/90 bg-background/90 px-8 backdrop-blur-md">
       <div className="flex w-full items-center justify-between">
-        {/* Left: Page breadcrumb / logo */}
+        {/* Left: Logo */}
         <div className="flex items-center gap-8">
           <Link href={user ? "/dashboard" : "/"} className="flex items-center">
             <CognifyLogo size={100} />
@@ -76,7 +80,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                   variant="ghost"
                   className="rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/5"
                 >
-                  Log in
+                  {h.loginButton}
                 </Button>
               </Link>
               <Link href="/register">
@@ -84,7 +88,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                   size="sm"
                   className="rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/85 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]"
                 >
-                  Sign up
+                  {h.signupButton}
                 </Button>
               </Link>
             </>
@@ -128,8 +132,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                     </div>
                     <div className="mt-2.5 flex items-center gap-1.5">
                       {(() => {
-                        const role =
-                          roleConfig[user.role] ?? roleConfig.STUDENT;
+                        const role = roleConfig[user.role] ?? roleConfig.STUDENT;
                         const RoleIcon = role.icon;
                         return (
                           <span
@@ -155,7 +158,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-primary/8 hover:text-foreground"
                     >
                       <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      My Profile
+                      {n.myProfile}
                     </Link>
                     <Link
                       href="/contact"
@@ -163,7 +166,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-primary/8 hover:text-foreground"
                     >
                       <HelpCircle className="h-4 w-4 shrink-0 text-muted-foreground" />
-                      Contact Support
+                      {n.contactSupport}
                     </Link>
                     <Link
                       href="/"
@@ -172,7 +175,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                     >
                       <span className="flex items-center gap-3">
                         <Home className="h-4 w-4 shrink-0 text-muted-foreground" />
-                        Homepage
+                        {n.homepage}
                       </span>
                       <ArrowUpRight className="h-3.5 w-3.5 text-muted-foreground/60" />
                     </Link>
@@ -185,7 +188,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                       className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-foreground/80 transition-colors hover:bg-destructive/5 hover:text-destructive"
                     >
                       <LogOut className="h-4 w-4 shrink-0" />
-                      Log out
+                      {n.logout}
                     </button>
                   </div>
                 </div>

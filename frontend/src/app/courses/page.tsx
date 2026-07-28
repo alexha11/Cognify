@@ -15,10 +15,13 @@ import { useToast } from "@/components/ui/toast";
 import { Course } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock } from "lucide-react";
+import { useLanguage } from "@/lib/i18n";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { showToast } = useToast();
+  const { t } = useLanguage();
+  const c = t.courses;
   const [courses, setCourses] = useState<Course[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
@@ -70,16 +73,16 @@ export default function CoursesPage() {
         <div className="flex items-center justify-between pb-4">
           <div className="space-y-1">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              Courses
+              {c.title}
             </h1>
             <p className="text-muted-foreground font-serif">
-              {canCreate ? "Manage your course" : "Explore available courses"}
+              {canCreate ? c.manageCourses : c.exploreCourses}
             </p>
           </div>
           {canCreate && !showCreate && (
             <Button onClick={() => setShowCreate(true)} size="sm">
               <Plus className="h-4 w-4" />
-              New Course
+              {c.newCourse}
             </Button>
           )}
         </div>
@@ -88,7 +91,7 @@ export default function CoursesPage() {
         {showCreate && (
           <Card className="border border-border">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl">Create new course</CardTitle>
+              <CardTitle className="text-xl">{c.createNewCourse}</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
@@ -101,10 +104,10 @@ export default function CoursesPage() {
             <CardContent>
               <form onSubmit={handleCreate} className="space-y-6 max-w-2xl">
                 <div className="space-y-3">
-                  <Label htmlFor="name">Course name</Label>
+                  <Label htmlFor="name">{c.courseName}</Label>
                   <Input
                     id="name"
-                    placeholder="e.g., Foundations of AI"
+                    placeholder={c.nameplaceholder}
                     value={newCourse.name}
                     onChange={(e) =>
                       setNewCourse({ ...newCourse, name: e.target.value })
@@ -113,10 +116,10 @@ export default function CoursesPage() {
                   />
                 </div>
                 <div className="space-y-3">
-                  <Label htmlFor="description">Description (optional)</Label>
+                  <Label htmlFor="description">{c.description}</Label>
                   <Input
                     id="description"
-                    placeholder="A brief overview of the course content..."
+                    placeholder={c.descPlaceholder}
                     value={newCourse.description}
                     onChange={(e) =>
                       setNewCourse({
@@ -129,11 +132,9 @@ export default function CoursesPage() {
                 {/* isPublic toggle */}
                 <div className="flex items-center justify-between p-4 rounded-xl border border-border bg-secondary/30">
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Visibility</p>
+                    <p className="text-sm font-semibold text-foreground">{c.visibility}</p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {newCourse.isPublic
-                        ? "Public — everyone can see this course"
-                        : "Private — only you can access this course"}
+                      {newCourse.isPublic ? c.publicDesc : c.privateDesc}
                     </p>
                   </div>
                   <button
@@ -155,10 +156,10 @@ export default function CoursesPage() {
                     {creating ? (
                       <>
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        Creating...
+                        {c.creating}
                       </>
                     ) : (
-                      "Create course"
+                      c.createCourse
                     )}
                   </Button>
                   <Button
@@ -167,7 +168,7 @@ export default function CoursesPage() {
                     size="lg"
                     onClick={() => setShowCreate(false)}
                   >
-                    Cancel
+                    {c.cancel}
                   </Button>
                 </div>
               </form>
@@ -185,14 +186,14 @@ export default function CoursesPage() {
             icon={BookOpen}
             message={
               canCreate
-                ? "Begin by creating your first educational courses."
-                : "Check back later for newly published courses."
+                ? c.noCoursesInstructor
+                : c.noCoursesStudent
             }
             action={
               canCreate ? (
                 <Button onClick={() => setShowCreate(true)}>
                   <Plus className="h-4 w-4" />
-                  Create course
+                  {c.createCourse}
                 </Button>
               ) : undefined
             }
@@ -214,24 +215,24 @@ export default function CoursesPage() {
                     <Badge
                       variant={course.isPublic ? "success" : "secondary"}
                     >
-                      {course.isPublic ? "Public" : "Private"}
+                      {course.isPublic ? c.public : c.private}
                     </Badge>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <Link href={`/courses/${course.id}`}>
                     <p className="text-base text-muted-foreground font-serif line-clamp-2 min-h-[3rem] leading-relaxed">
-                      {course.description || "No description yet."}
+                      {course.description || t.common.noDescription}
                     </p>
                   </Link>
                   <div className="flex items-center gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
                     <span className="flex items-center gap-2">
                       <FileQuestion className="h-3.5 w-3.5" />
-                      {course._count.questions} questions
+                      {course._count.questions} {c.questions}
                     </span>
                     <span className="flex items-center gap-2">
                       <BookOpen className="h-3.5 w-3.5" />
-                      {course._count.materials} materials
+                      {course._count.materials} {c.materials}
                     </span>
                   </div>
 
@@ -239,13 +240,13 @@ export default function CoursesPage() {
                   <Link href={`/quiz/${course.id}`} className="block">
                     <Button variant="pill" size="lg" className="w-full">
                       <Play className="h-4 w-4 text-xs" />
-                      Start Quiz
+                      {c.startQuiz}
                     </Button>
                   </Link>
 
                   <div className="pt-4 border-t border-border">
                     <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
-                      Created {formatDate(course.createdAt)}
+                      {c.created} {formatDate(course.createdAt)}
                     </p>
                   </div>
                 </CardContent>

@@ -12,6 +12,8 @@ import { apiPut } from "@/lib/api";
 import { User as UserType } from "@/types";
 import { useToast } from "@/components/ui/toast";
 import { useTheme } from "@/components/ui/theme-provider";
+import { useLanguage } from "@/lib/i18n";
+import type { Language } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import {
   Shield,
@@ -25,19 +27,16 @@ import {
   Sun,
   Moon,
   Monitor,
+  Languages,
 } from "lucide-react";
-
-interface Preferences {
-  emailNotifications: boolean;
-  weeklyDigest: boolean;
-  progressAlerts: boolean;
-}
 
 export default function SettingsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
   const { theme, setTheme } = useTheme();
+  const { language, setLanguage, t } = useLanguage();
+  const s = t.settings;
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
@@ -90,10 +89,10 @@ export default function SettingsPage() {
           "user",
           JSON.stringify({ ...JSON.parse(stored), ...response.user }),
         );
-      showToast("Profile updated successfully.", "success");
+      showToast(s.profileUpdated, "success");
       window.location.reload();
     } catch {
-      showToast("Failed to save profile. Please try again.", "error");
+      showToast(s.profileFailed, "error");
     } finally {
       setIsSavingProfile(false);
     }
@@ -102,11 +101,11 @@ export default function SettingsPage() {
   const handleSavePassword = async () => {
     setPwError("");
     if (newPassword.length < 8) {
-      setPwError("Password must be at least 8 characters.");
+      setPwError(s.passwordTooShort);
       return;
     }
     if (newPassword !== confirmPassword) {
-      setPwError("Passwords do not match.");
+      setPwError(s.passwordsNoMatch);
       return;
     }
     setIsSavingPassword(true);
@@ -115,9 +114,9 @@ export default function SettingsPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
-      showToast("Password updated successfully.", "success");
+      showToast(s.passwordUpdated, "success");
     } catch {
-      setPwError("Current password is incorrect or update failed.");
+      setPwError(s.passwordIncorrect);
     } finally {
       setIsSavingPassword(false);
     }
@@ -142,11 +141,17 @@ export default function SettingsPage() {
     lastName !== user.lastName ||
     role !== user.role;
 
-  const roleDescriptions: Record<string, string> = {
-    ADMIN: "Full platform access, manage all courses and users.",
-    INSTRUCTOR: "Create and manage courses, generate questions.",
-    STUDENT: "Access courses and track your learning progress.",
-  };
+  const themeOptions: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun; desc: string }[] = [
+    { value: "light", label: s.themeLight, icon: Sun, desc: s.themeAlwaysLight },
+    { value: "dark", label: s.themeDark, icon: Moon, desc: s.themeAlwaysDark },
+    { value: "system", label: s.themeSystem, icon: Monitor, desc: s.themeMatchOS },
+  ];
+
+  const langOptions: { value: Language; label: string; flag: string; desc: string }[] = [
+    { value: "en", label: s.langEnglish, flag: "🇬🇧", desc: s.langDefault },
+    { value: "vi", label: s.langVietnamese, flag: "🇻🇳", desc: s.langOfficial },
+    { value: "fi", label: s.langFinnish, flag: "🇫🇮", desc: s.langNordic },
+  ];
 
   return (
     <DashboardLayout>
@@ -154,25 +159,21 @@ export default function SettingsPage() {
         {/* ── Header ── */}
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
-            Settings
+            {s.title}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            Manage your account, preferences, and security.
-          </p>
+          <p className="text-sm text-muted-foreground">{s.subtitle}</p>
         </div>
 
         {/* ── Profile ── */}
         <Card className="border-border/50 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-border/40 bg-muted/10">
-            <h2 className="text-sm font-semibold text-foreground">Profile</h2>
+            <h2 className="text-sm font-semibold text-foreground">{s.profile}</h2>
           </div>
           <CardContent className="p-6 space-y-6">
             {/* Avatar + meta */}
             <div className="flex items-center gap-4">
               <div className="h-14 w-14 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-xl font-bold text-primary">
-                  {initials}
-                </span>
+                <span className="text-xl font-bold text-primary">{initials}</span>
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">
@@ -197,11 +198,8 @@ export default function SettingsPage() {
             {/* Form fields */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="firstName"
-                  className="text-xs font-medium text-muted-foreground"
-                >
-                  First name
+                <Label htmlFor="firstName" className="text-xs font-medium text-muted-foreground">
+                  {s.firstName}
                 </Label>
                 <Input
                   id="firstName"
@@ -211,11 +209,8 @@ export default function SettingsPage() {
                 />
               </div>
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="lastName"
-                  className="text-xs font-medium text-muted-foreground"
-                >
-                  Last name
+                <Label htmlFor="lastName" className="text-xs font-medium text-muted-foreground">
+                  {s.lastName}
                 </Label>
                 <Input
                   id="lastName"
@@ -227,11 +222,8 @@ export default function SettingsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label
-                htmlFor="email"
-                className="text-xs font-medium text-muted-foreground"
-              >
-                Email address
+              <Label htmlFor="email" className="text-xs font-medium text-muted-foreground">
+                {s.emailAddress}
               </Label>
               <Input
                 id="email"
@@ -239,24 +231,17 @@ export default function SettingsPage() {
                 disabled
                 className="h-9 rounded-xl text-sm bg-muted/40"
               />
-              <p className="text-[10px] text-muted-foreground/60">
-                Email cannot be changed. Contact support if needed.
-              </p>
+              <p className="text-[10px] text-muted-foreground/60">{s.emailCannotBeChanged}</p>
             </div>
 
             <div className="space-y-1.5">
-              <Label
-                htmlFor="role"
-                className="text-xs font-medium text-muted-foreground"
-              >
-                Role
+              <Label htmlFor="role" className="text-xs font-medium text-muted-foreground">
+                {s.role}
               </Label>
               {user.role === "ADMIN" ? (
                 <div className="flex items-center gap-3 h-9 px-3 rounded-xl border border-border/50 bg-muted/40">
                   <Shield className="h-3.5 w-3.5 text-muted-foreground/60" />
-                  <span className="text-sm text-muted-foreground">
-                    Administrator
-                  </span>
+                  <span className="text-sm text-muted-foreground">{s.administrator}</span>
                 </div>
               ) : (
                 <div className="relative">
@@ -266,14 +251,14 @@ export default function SettingsPage() {
                     onChange={(e) => setRole(e.target.value as typeof role)}
                     className="w-full h-9 appearance-none pl-3 pr-8 rounded-xl border border-border bg-background text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors"
                   >
-                    <option value="STUDENT">Student</option>
-                    <option value="INSTRUCTOR">Instructor</option>
+                    <option value="STUDENT">{t.auth.student}</option>
+                    <option value="INSTRUCTOR">{t.auth.instructor}</option>
                   </select>
                   <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none rotate-90" />
                 </div>
               )}
               <p className="text-[10px] text-muted-foreground/60">
-                {roleDescriptions[role]}
+                {s.roleDescriptions[role]}
               </p>
             </div>
 
@@ -288,7 +273,7 @@ export default function SettingsPage() {
                 ) : (
                   <Save className="h-3.5 w-3.5" />
                 )}
-                Save profile
+                {s.saveProfile}
               </Button>
             </div>
           </CardContent>
@@ -297,18 +282,12 @@ export default function SettingsPage() {
         {/* ── Appearance ── */}
         <Card className="border-border/50 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-border/40 bg-muted/10">
-            <h2 className="text-sm font-semibold text-foreground">Appearance</h2>
+            <h2 className="text-sm font-semibold text-foreground">{s.appearance}</h2>
           </div>
           <CardContent className="p-6 space-y-4">
-            <p className="text-xs text-muted-foreground">
-              Choose how Cognify looks to you. Select a theme or follow your system setting.
-            </p>
+            <p className="text-xs text-muted-foreground">{s.themeTitle}</p>
             <div className="grid grid-cols-3 gap-3">
-              {[
-                { value: "light" as const, label: "Light", icon: Sun, desc: "Always light" },
-                { value: "dark" as const, label: "Dark", icon: Moon, desc: "Always dark" },
-                { value: "system" as const, label: "System", icon: Monitor, desc: "Match OS" },
-              ].map(({ value, label, icon: Icon, desc }) => (
+              {themeOptions.map(({ value, label, icon: Icon, desc }) => (
                 <button
                   key={value}
                   onClick={() => setTheme(value)}
@@ -339,15 +318,52 @@ export default function SettingsPage() {
           </CardContent>
         </Card>
 
+        {/* ── Language ── */}
+        <Card className="border-border/50 shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-border/40 bg-muted/10 flex items-center gap-2">
+            <Languages className="h-3.5 w-3.5 text-muted-foreground/70" />
+            <h2 className="text-sm font-semibold text-foreground">{s.language}</h2>
+          </div>
+          <CardContent className="p-6 space-y-4">
+            <p className="text-xs text-muted-foreground">{s.languageTitle}</p>
+            <div className="grid grid-cols-3 gap-3">
+              {langOptions.map(({ value, label, flag, desc }) => (
+                <button
+                  key={value}
+                  onClick={() => setLanguage(value)}
+                  className={cn(
+                    "flex flex-col items-center gap-2.5 rounded-xl border p-4 transition-all duration-200",
+                    language === value
+                      ? "border-primary bg-primary/5 text-foreground ring-1 ring-primary/20"
+                      : "border-border/50 text-muted-foreground hover:border-foreground/20 hover:bg-secondary/30",
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "flex h-10 w-10 items-center justify-center rounded-lg text-2xl transition-colors",
+                      language === value ? "bg-primary/10" : "bg-muted/50",
+                    )}
+                  >
+                    {flag}
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold">{label}</p>
+                    <p className="text-[10px] text-muted-foreground">{desc}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* ── Security ── */}
         <Card className="border-border/50 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-border/40 bg-muted/10">
-            <h2 className="text-sm font-semibold text-foreground">Security</h2>
+            <h2 className="text-sm font-semibold text-foreground">{s.security}</h2>
           </div>
           <CardContent className="p-6 space-y-4">
             <p className="text-xs text-muted-foreground">
-              Update your password. Use at least 8 characters with a mix of
-              letters and numbers.
+              Update your password. Use at least 8 characters with a mix of letters and numbers.
             </p>
 
             {pwError && (
@@ -358,11 +374,8 @@ export default function SettingsPage() {
 
             <div className="space-y-3">
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="currentPw"
-                  className="text-xs font-medium text-muted-foreground"
-                >
-                  Current password
+                <Label htmlFor="currentPw" className="text-xs font-medium text-muted-foreground">
+                  {s.currentPassword}
                 </Label>
                 <div className="relative">
                   <Input
@@ -378,22 +391,15 @@ export default function SettingsPage() {
                     onClick={() => setShowCurrentPw(!showCurrentPw)}
                     className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    {showCurrentPw ? (
-                      <EyeOff className="h-3.5 w-3.5" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5" />
-                    )}
+                    {showCurrentPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label
-                    htmlFor="newPw"
-                    className="text-xs font-medium text-muted-foreground"
-                  >
-                    New password
+                  <Label htmlFor="newPw" className="text-xs font-medium text-muted-foreground">
+                    {s.newPassword}
                   </Label>
                   <div className="relative">
                     <Input
@@ -409,20 +415,13 @@ export default function SettingsPage() {
                       onClick={() => setShowNewPw(!showNewPw)}
                       className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      {showNewPw ? (
-                        <EyeOff className="h-3.5 w-3.5" />
-                      ) : (
-                        <Eye className="h-3.5 w-3.5" />
-                      )}
+                      {showNewPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <Label
-                    htmlFor="confirmPw"
-                    className="text-xs font-medium text-muted-foreground"
-                  >
-                    Confirm password
+                  <Label htmlFor="confirmPw" className="text-xs font-medium text-muted-foreground">
+                    {s.confirmPassword}
                   </Label>
                   <Input
                     id="confirmPw"
@@ -448,12 +447,9 @@ export default function SettingsPage() {
                   <div className="flex gap-1">
                     {[1, 2, 3, 4].map((lvl) => {
                       const strength =
-                        newPassword.length >= 12
-                          ? 4
-                          : newPassword.length >= 10
-                            ? 3
-                            : newPassword.length >= 8
-                              ? 2
+                        newPassword.length >= 12 ? 4
+                          : newPassword.length >= 10 ? 3
+                            : newPassword.length >= 8 ? 2
                               : 1;
                       return (
                         <div
@@ -461,12 +457,9 @@ export default function SettingsPage() {
                           className={cn(
                             "h-1 flex-1 rounded-full transition-colors duration-300",
                             lvl <= strength
-                              ? strength === 4
-                                ? "bg-emerald-500"
-                                : strength === 3
-                                  ? "bg-primary"
-                                  : strength === 2
-                                    ? "bg-amber-500"
+                              ? strength === 4 ? "bg-emerald-500"
+                                : strength === 3 ? "bg-primary"
+                                  : strength === 2 ? "bg-amber-500"
                                     : "bg-red-500"
                               : "bg-muted",
                           )}
@@ -475,13 +468,10 @@ export default function SettingsPage() {
                     })}
                   </div>
                   <p className="text-[10px] text-muted-foreground">
-                    {newPassword.length >= 12
-                      ? "Strong password"
-                      : newPassword.length >= 10
-                        ? "Good password"
-                        : newPassword.length >= 8
-                          ? "Acceptable password"
-                          : "Password too short"}
+                    {newPassword.length >= 12 ? s.passwordStrong
+                      : newPassword.length >= 10 ? s.passwordGood
+                        : newPassword.length >= 8 ? s.passwordAcceptable
+                          : s.passwordTooShortLabel}
                   </p>
                 </div>
               )}
@@ -490,12 +480,7 @@ export default function SettingsPage() {
             <div className="flex justify-end pt-1">
               <Button
                 onClick={handleSavePassword}
-                disabled={
-                  isSavingPassword ||
-                  !currentPassword ||
-                  !newPassword ||
-                  !confirmPassword
-                }
+                disabled={isSavingPassword || !currentPassword || !newPassword || !confirmPassword}
                 variant="outline"
                 className="rounded-xl h-9 px-5 text-sm font-semibold gap-2"
               >
@@ -504,7 +489,7 @@ export default function SettingsPage() {
                 ) : (
                   <Lock className="h-3.5 w-3.5" />
                 )}
-                Update password
+                {s.updatePassword}
               </Button>
             </div>
           </CardContent>
@@ -514,30 +499,16 @@ export default function SettingsPage() {
         <Card className="border-red-200/60 dark:border-red-800/40 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-red-200/60 dark:border-red-800/40 bg-red-50/50 dark:bg-red-950/10 flex items-center gap-2">
             <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
-            <h2 className="text-sm font-semibold text-red-700 dark:text-red-400">
-              Danger zone
-            </h2>
+            <h2 className="text-sm font-semibold text-red-700 dark:text-red-400">{s.dangerZone}</h2>
           </div>
           <CardContent className="p-6 space-y-4">
             <div>
-              <p className="text-sm font-medium text-foreground">
-                Delete account
-              </p>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Permanently deletes your account and all associated data. This
-                action cannot be undone.
-              </p>
+              <p className="text-sm font-medium text-foreground">{s.deleteAccount}</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">{s.deleteAccountDesc}</p>
             </div>
             <div className="space-y-2">
-              <Label
-                htmlFor="deleteConfirm"
-                className="text-xs font-medium text-muted-foreground"
-              >
-                Type{" "}
-                <span className="font-mono font-semibold text-foreground">
-                  DELETE
-                </span>{" "}
-                to confirm
+              <Label htmlFor="deleteConfirm" className="text-xs font-medium text-muted-foreground">
+                {s.typeDeleteToConfirm}
               </Label>
               <Input
                 id="deleteConfirm"
@@ -557,7 +528,7 @@ export default function SettingsPage() {
                   : "opacity-50 cursor-not-allowed",
               )}
             >
-              Delete my account
+              {s.deleteAccount}
             </Button>
           </CardContent>
         </Card>

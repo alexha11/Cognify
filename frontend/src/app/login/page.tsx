@@ -20,6 +20,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { CardLightFlare } from "@/components/ui/ambient-lights";
+import { useLanguage } from "@/lib/i18n";
 
 const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -31,6 +32,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const [error, setError] = useState("");
   const { login } = useAuth();
+  const { t } = useLanguage();
+  const a = t.auth;
 
   const {
     register,
@@ -102,7 +105,7 @@ export default function LoginPage() {
             className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to home
+            {a.backToHome}
           </Link>
 
           <Card className="border border-border/80 p-1 relative overflow-hidden">
@@ -112,10 +115,10 @@ export default function LoginPage() {
                 <CognifyLogo size={100} />
               </div>
               <CardTitle className="text-3xl font-semibold tracking-tight text-foreground">
-                Welcome back
+                {a.welcomeBack}
               </CardTitle>
               <CardDescription className="text-base text-muted-foreground mt-3">
-                Sign in to your account
+                {a.signInToAccount}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-10">
@@ -127,14 +130,14 @@ export default function LoginPage() {
                 onClick={handleGoogleSignIn}
               >
                 <GoogleIcon className="h-5 w-5" />
-                Continue with Google
+                {a.continueWithGoogle}
               </Button>
 
               {/* Divider */}
               <div className="relative mb-6">
                 <div className="relative flex justify-center text-xs">
                   <span className="bg-card px-3 text-muted-foreground font-medium">
-                    or sign in with email
+                    {a.orSignInWithEmail}
                   </span>
                 </div>
               </div>
@@ -151,11 +154,8 @@ export default function LoginPage() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label
-                      htmlFor="email"
-                      className="text-xs font-medium text-muted-foreground ml-1"
-                    >
-                      Email
+                    <Label htmlFor="email" className="text-xs font-medium text-muted-foreground ml-1">
+                      {a.email}
                     </Label>
                     <Input
                       id="email"
@@ -177,18 +177,15 @@ export default function LoginPage() {
 
                   <div className="space-y-2">
                     <div className="flex justify-between items-center ml-1">
-                      <Label
-                        htmlFor="password"
-                        className="text-xs font-medium text-muted-foreground"
-                      >
-                        Password
+                      <Label htmlFor="password" className="text-xs font-medium text-muted-foreground">
+                        {a.password}
                       </Label>
                       <Button
                         type="button"
                         variant="link"
                         className="h-auto p-0 text-xs font-medium text-primary/40 hover:text-primary transition-colors"
                       >
-                        Forgot password?
+                        {a.forgotPassword}
                       </Button>
                     </div>
                     <Input
@@ -218,19 +215,19 @@ export default function LoginPage() {
                   {isSubmitting ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    "Sign in"
+                    a.signIn
                   )}
                 </Button>
               </form>
             </CardContent>
             <CardFooter className="justify-center pt-8 pb-10 text-sm">
               <p className="text-muted-foreground">
-                Don&apos;t have an account?{" "}
+                {a.noAccount}{" "}
                 <Link
                   href="/register"
                   className="text-primary font-medium hover:text-primary/70 transition-colors"
                 >
-                  Sign up
+                  {a.signUp}
                 </Link>
               </p>
             </CardFooter>

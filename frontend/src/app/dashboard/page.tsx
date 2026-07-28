@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatCard, EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
+import { useLanguage } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
 import { Course, AttemptStats } from "@/types";
 import {
@@ -23,6 +24,8 @@ import {
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const { t } = useLanguage();
+  const d = t.dashboard;
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [stats, setStats] = useState<AttemptStats | null>(null);
@@ -86,7 +89,7 @@ export default function DashboardPage() {
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div className="space-y-4">
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              Dashboard
+              {d.title}
             </h1>
             <div className="flex items-center gap-3 text-muted-foreground font-serif text-base">
               <span className="text-foreground font-semibold font-sans">
@@ -107,7 +110,7 @@ export default function DashboardPage() {
               <Link href="/courses">
                 <Button variant="pill" size="lg">
                   <Plus className="h-5 w-5 mr-1" />
-                  New Course
+                  {d.newCourse}
                 </Button>
               </Link>
             </div>
@@ -118,14 +121,14 @@ export default function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-4">
           <StatCard
             icon={BookOpen}
-            label="Courses"
+            label={d.courses}
             value={courses?.length || 0}
           />
 
           {(isAdmin || isInstructor) && (
             <StatCard
               icon={FileQuestion}
-              label="Questions"
+              label={d.questions}
               value={courses.reduce(
                 (acc, c) => acc + (c._count?.questions || 0),
                 0,
@@ -141,16 +144,10 @@ export default function DashboardPage() {
                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/5 text-green-700">
                       <TrendingUp className="h-5 w-5" />
                     </div>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] font-bold tracking-widest uppercase"
-                    >
-                      Volume
-                    </Badge>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-                      Questions answered
+                      {d.questionsAnswered}
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
                       {stats ? stats.overall.total : "0"}
@@ -161,9 +158,8 @@ export default function DashboardPage() {
 
               <StatCard
                 icon={TrendingUp}
-                label="Accuracy"
+                label={d.accuracy}
                 value={stats ? `${stats.overall.percentage}%` : "0%"}
-                badge="Recall"
               />
             </>
           )}
@@ -173,7 +169,7 @@ export default function DashboardPage() {
         <section className="space-y-8">
           <div className="flex items-center justify-between">
             <h2 className="text-2xl font-semibold tracking-tight">
-              Your courses
+              {d.yourCourses}
             </h2>
             <Link href="/courses">
               <Button
@@ -198,11 +194,11 @@ export default function DashboardPage() {
           ) : courses.length === 0 ? (
             <EmptyState
               icon={BookOpen}
-              message="No courses yet."
+              message={d.noCourses}
               action={
                 isAdmin || isInstructor ? (
                   <Button asChild variant="pill">
-                    <Link href="/courses">Create a course</Link>
+                    <Link href="/courses">{d.createCourse}</Link>
                   </Button>
                 ) : undefined
               }

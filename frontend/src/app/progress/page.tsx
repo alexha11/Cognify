@@ -17,6 +17,7 @@ import { AttemptStats, Attempt, Course, CourseProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
 import { ProgressTeaser } from "@/components/ui";
+import { useLanguage } from "@/lib/i18n";
 import {
   BarChart3,
   TrendingUp,

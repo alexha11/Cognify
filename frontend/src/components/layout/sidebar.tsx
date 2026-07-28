@@ -8,61 +8,49 @@ import {
   FileQuestion,
   BarChart3,
   Settings,
-  Users,
-  Lock,
-  Shield,
-  Building2,
   HelpCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-
-const navItems = {
-  ADMIN: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-
-    { href: "/courses", label: "Courses", icon: BookOpen },
-    { href: "/questions", label: "Questions", icon: FileQuestion },
-
-    { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/settings", label: "Settings", icon: Settings },
-    { href: "/contact", label: "Contact Us", icon: HelpCircle },
-  ],
-  INSTRUCTOR: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-
-    { href: "/courses", label: "Courses", icon: BookOpen },
-    { href: "/questions", label: "Questions", icon: FileQuestion },
-    { href: "/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/contact", label: "Contact Us", icon: HelpCircle },
-  ],
-  STUDENT: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-
-    { href: "/courses", label: "Courses", icon: BookOpen },
-    { href: "/progress", label: "My Progress", icon: BarChart3 },
-    { href: "/contact", label: "Contact Us", icon: HelpCircle },
-  ],
-};
+import { useLanguage } from "@/lib/i18n";
 
 export function Sidebar() {
   const pathname = usePathname();
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const n = t.nav;
 
-  const items = user
-    ? navItems[user.role] || navItems.STUDENT
-    : [
-        { href: "/", label: "Home", icon: LayoutDashboard },
+  const navItems = {
+    ADMIN: [
+      { href: "/dashboard", label: n.dashboard, icon: LayoutDashboard },
+      { href: "/courses", label: n.courses, icon: BookOpen },
+      { href: "/questions", label: n.questions, icon: FileQuestion },
+      { href: "/analytics", label: n.analytics, icon: BarChart3 },
+      { href: "/settings", label: n.settings, icon: Settings },
+      { href: "/contact", label: n.contact, icon: HelpCircle },
+    ],
+    INSTRUCTOR: [
+      { href: "/dashboard", label: n.dashboard, icon: LayoutDashboard },
+      { href: "/courses", label: n.courses, icon: BookOpen },
+      { href: "/questions", label: n.questions, icon: FileQuestion },
+      { href: "/analytics", label: n.analytics, icon: BarChart3 },
+      { href: "/contact", label: n.contact, icon: HelpCircle },
+    ],
+    STUDENT: [
+      { href: "/dashboard", label: n.dashboard, icon: LayoutDashboard },
+      { href: "/courses", label: n.courses, icon: BookOpen },
+      { href: "/progress", label: n.progress, icon: BarChart3 },
+      { href: "/contact", label: n.contact, icon: HelpCircle },
+    ],
+  };
 
-        { href: "/courses", label: "Courses", icon: BookOpen },
-        {
-          href: "/progress",
-          label: "My Progress",
-          icon: BarChart3,
-          gated: true,
-        },
-        { href: "/contact", label: "Contact Us", icon: HelpCircle },
-      ];
+  const guestItems = [
+    { href: "/", label: n.home, icon: LayoutDashboard },
+    { href: "/courses", label: n.courses, icon: BookOpen },
+    { href: "/contact", label: n.contact, icon: HelpCircle },
+  ];
+
+  const items = user ? navItems[user.role] || navItems.STUDENT : guestItems;
 
   return (
     <aside className="group fixed left-0 top-14 flex h-[calc(100vh-3.5rem)] w-[52px] flex-col overflow-hidden border-r border-border/90 transition-all duration-300 hover:w-56 hover:shadow-2xl z-40 bg-[var(--background)]">
@@ -72,7 +60,6 @@ export function Sidebar() {
           {items.map((item) => {
             const Icon = item.icon;
             const isActive = pathname === item.href;
-            const isGated = !user && (item as any).gated;
 
             return (
               <Link
@@ -94,9 +81,6 @@ export function Sidebar() {
                 <span className="whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                   {item.label}
                 </span>
-                {isGated && (
-                  <Lock className="ml-auto h-3 w-3 shrink-0 opacity-0 group-hover:opacity-100" />
-                )}
               </Link>
             );
           })}

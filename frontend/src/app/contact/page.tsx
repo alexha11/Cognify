@@ -25,6 +25,7 @@ import {
 import { useAuth } from "@/lib/auth";
 import { toast } from "@/components/ui/toast";
 import { apiPost } from "@/lib/api";
+import { useLanguage } from "@/lib/i18n";
 
 const categories = [
   { id: "technical", label: "Technical Issue", icon: Bug },
@@ -36,6 +37,8 @@ const categories = [
 
 export default function ContactPage() {
   const { user } = useAuth();
+  const { t } = useLanguage();
+  const co = t.contact;
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -57,9 +60,7 @@ export default function ContactPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error(
-        "Please fill in your name, email, and message before submitting.",
-      );
+      toast.error(co.fillInFields);
       return;
     }
 
@@ -74,7 +75,7 @@ export default function ContactPage() {
       });
       setIsSubmitting(false);
       setSubmitted(true);
-      toast.success("Message sent! We have received your support request.");
+      toast.success(co.messageSent);
     } catch (err: any) {
       setIsSubmitting(false);
       toast.error(
@@ -113,16 +114,14 @@ export default function ContactPage() {
           <div className="max-w-3xl mx-auto text-center pt-8 pb-12 space-y-4">
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/8 px-3.5 py-1 text-xs font-semibold text-primary">
               <MessageSquare className="h-3.5 w-3.5" />
-              <span>Student Support & Feedback</span>
+              <span>{co.badge}</span>
             </div>
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-foreground">
-              We're here to{" "}
-              <span className="text-muted-foreground/60">help.</span>
+              {co.title}{" "}
+              <span className="text-muted-foreground/60">{co.titleHighlight}</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto font-normal">
-              Have a question about Cognify, encountering a technical issue, or
-              want to connect? Reach out using the form below or connect
-              directly via LinkedIn.
+              {co.subtitle}
             </p>
           </div>
 
@@ -136,22 +135,18 @@ export default function ContactPage() {
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-2xl font-semibold text-foreground">
-                      Message Received!
+                      {co.messageReceived}
                     </h3>
                     <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
-                      Thank you for contacting us,{" "}
-                      <span className="text-foreground font-medium">
-                        {name}
-                      </span>
-                      . Your inquiry regarding{" "}
+                      {co.thankYou}{" "}
+                      <span className="text-foreground font-medium">{name}</span>
+                      . {co.yourInquiry}{" "}
                       <span className="text-foreground font-medium">
                         {categories.find((c) => c.id === category)?.label}
                       </span>{" "}
-                      has been logged. We'll reply to{" "}
-                      <span className="text-foreground font-medium">
-                        {email}
-                      </span>{" "}
-                      as quickly as possible.
+                      {co.hasBeenLogged}{" "}
+                      <span className="text-foreground font-medium">{email}</span>{" "}
+                      {co.asQuicklyAsPossible}.
                     </p>
                   </div>
                   <div className="pt-4">
@@ -159,7 +154,7 @@ export default function ContactPage() {
                       onClick={handleReset}
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary hover:bg-secondary/80 text-foreground text-sm font-medium transition-colors"
                     >
-                      Send Another Message
+                      {co.sendAnother}
                     </button>
                   </div>
                 </div>
@@ -167,11 +162,10 @@ export default function ContactPage() {
                 <form onSubmit={handleSubmit} className="space-y-6">
                   <div>
                     <h2 className="text-xl font-semibold text-foreground tracking-tight">
-                      Send a Message
+                      {co.sendMessage}
                     </h2>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Fill in the details and we'll reply directly to your
-                      email.
+                      {co.sendMessageDesc}
                     </p>
                   </div>
 
@@ -179,28 +173,28 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-foreground/80">
-                        Your Name <span className="text-rose-500">*</span>
+                        {co.yourName} <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="text"
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Jane Doe"
+                        placeholder={co.namePlaceholder}
                         className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
                     </div>
 
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-foreground/80">
-                        Email Address <span className="text-rose-500">*</span>
+                        {co.emailAddress} <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="email"
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        placeholder="jane@student.edu"
+                        placeholder={co.emailPlaceholder}
                         className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                       />
                     </div>
@@ -209,7 +203,7 @@ export default function ContactPage() {
                   {/* Category Pills */}
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-foreground/80">
-                      What can we help you with?
+                      {co.whatCanWeHelp}
                     </label>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                       {categories.map((cat) => {
@@ -245,14 +239,14 @@ export default function ContactPage() {
                   {/* Message Field */}
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-foreground/80">
-                      Message Details <span className="text-rose-500">*</span>
+                      {co.messageDetails} <span className="text-rose-500">*</span>
                     </label>
                     <textarea
                       required
                       rows={5}
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Describe your question, bug details, or feedback here..."
+                      placeholder={co.messagePlaceholder}
                       className="w-full rounded-xl border border-border/80 bg-background/80 px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors resize-y min-h-[120px]"
                     />
                   </div>
@@ -264,11 +258,11 @@ export default function ContactPage() {
                     className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-md hover:bg-primary/90 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)] transition-all disabled:opacity-50 cursor-pointer"
                   >
                     {isSubmitting ? (
-                      <span>Sending message...</span>
+                      <span>{co.sendingMessage}</span>
                     ) : (
                       <>
                         <Send className="h-4 w-4" />
-                        <span>Send Message</span>
+                        <span>{co.sendMessageBtn}</span>
                       </>
                     )}
                   </button>
@@ -285,13 +279,11 @@ export default function ContactPage() {
                 </div>
                 <div className="relative z-10 space-y-4">
                   <h3 className="text-xl font-semibold text-foreground">
-                    Connect on LinkedIn
+                    {co.connectLinkedIn}
                   </h3>
 
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Prefer direct networking or messaging? Connect directly on
-                    LinkedIn for quick responses, course guidance, or career
-                    discussions.
+                    {co.linkedInDesc}
                   </p>
 
                   <a
@@ -302,7 +294,7 @@ export default function ContactPage() {
                   >
                     <span className="flex items-center gap-2">
                       <Linkedin className="h-4 w-4" />
-                      Reach out on LinkedIn
+                      {co.reachOutLinkedIn}
                     </span>
                     <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover/btn:translate-x-1" />
                   </a>
@@ -317,26 +309,26 @@ export default function ContactPage() {
       <footer className="border-t border-border/30 z-10 relative">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
           <p className="text-xs font-serif text-muted-foreground/50">
-            © 2026 Cognify. All rights reserved.
+            {t.common.copyright}
           </p>
           <div className="flex items-center gap-6">
             <Link
               href="/"
               className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
             >
-              Home
+              {co.home}
             </Link>
             <Link
               href="/courses"
               className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
             >
-              Courses
+              {t.home.footerCourses}
             </Link>
             <Link
               href="/contact"
               className="text-xs text-foreground font-medium transition-colors"
             >
-              Contact Us
+              {t.nav.contact}
             </Link>
           </div>
         </div>
