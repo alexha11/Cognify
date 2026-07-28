@@ -288,15 +288,58 @@ export const fi: TranslationKeys = {
     heroHighlight: "oppiminen.",
     heroSubtitle:
       "Cognify muuttaa oppimismateriaalisi älykkäiksi arvioinneiksi ja antaa opiskelijoille ja opettajille toimivia oivalluksia.",
+    heroSub1: "Cognify muuttaa oppimismateriaalisi",
+    heroSubHighlight1: "älykkäiksi arvioinneiksi",
+    heroSub2: ", tarjoten opiskelijoille ja opettajille",
+    heroSubHighlight2: "käytännön oivalluksia",
     getStarted: "Aloita",
     featuresTitle: "Nosta oppimistasi,",
     featuresHighlight: "älykkäällä tavalla.",
     featuresSubtitle:
       "Selkeä analytiikka, tekoälypohjainen generointi ja tehokkaat hallintatyökalut opettajille ja opiskelijoille.",
+    tabAll: "Kaikki",
+    tabAi: "Tekoälygenerointi",
+    tabEngine: "Arviointimoottori",
+    tabDocs: "Älykäs käsittely",
+    tabQuiz: "Testikokemus",
+    aiTitle: "Tekoälypohjainen kysymysten luonti",
+    aiDesc:
+      "Muunna kurssimateriaalisi välittömästi korkealaatuisiksi arvioinneiksi. Täysi hallinta kysymystyypeistä, vaikeustasoista ja automaattisesta pisteytyksestä yhdellä napsautuksella.",
+    aiLink: "Tutustu luontiin",
+    engineTitle: "Nykyaikainen arviointimoottori",
+    engineDesc:
+      "Intuitiivinen moottori, jonka avulla kuka tahansa voi helposti luoda ja hallinnoida kysymyksiä kaikilla vaikeustasoilla. Seuraa opiskelijoiden osallistumista reaalikohdassa.",
+    engineLink: "Näytä analytiikka",
+    docsTitle: "Älykäs asiakirjojen käsittely",
+    docsDesc:
+      "Lataa kurssimateriaalisi missä tahansa muodossa. Järjestelmämme käsittelee, pilkkoo ja luo automaattisesti semanttiset upotukset varmistaakseen, että tekoäly ymmärtää jokaisen yksityiskohdan.",
+    docsLink: "Lataa materiaaleja",
+    quizTitle: "Interaktiivinen testikokemus",
+    quizDesc:
+      "Tarjoa opiskelijoillesi tyylikäs ja nopea testikäyttöliittymä. Tarjoa välitöntä palautetta, kattavia vihjeitä ja seuraa yksilöllistä suorituskykyä helposti.",
+    quizLink: "Kokeile testiä",
     everythingTitle: "Kaikki",
     everythingHighlight: "hallinnassasi.",
     everythingSubtitle:
       "Kaikki tarvitsemasi ominaisuudet testien hallintaan, opiskelijan osaamisen arviointiin ja edistymisen seurantaan — ilman kitkaa.",
+    cap1Title: "Välitön tekoälygenerointi",
+    cap1Desc:
+      "Muunna muistiinpanot, PDF-tiedostot tai esitykset monivalinta- ja avoimiksi kysymyksiksi sekunneissa.",
+    cap2Title: "Reaaliaikainen hallinta-analytiikka",
+    cap2Desc:
+      "Seuraa opiskelijoiden suorituskykykäyriä, havaitse osaamisaukot ajoissa ja seuraa luokan tarkkuutta vaikeustasoittain.",
+    cap3Title: "Semanttinen Vector RAG",
+    cap3Desc:
+      "Automaattinen asiakirjojen pilkkominen ja vektorikäsittely takaavat, että luodut kysymykset pysyvät 100 % uskollisina kurssisisällölle.",
+    cap4Title: "Kurssitulostaulukot",
+    cap4Desc:
+      "Edistä terveellistä kilpailua reaaliaikaisilla kurssisijoituksilla, tarkkuustilastoilla ja yritysaikaleimoilla.",
+    cap5Title: "Mukautuvat kysymyssäädöt",
+    cap5Desc:
+      "Mukauta vaikeustasoja, vaihtoehtojen määrää, kysymyskategorioita ja vaiheittaisia vihjeitä opettajan ohituksella.",
+    cap6Title: "Sekoitettujen vastausten turvallisuus",
+    cap6Desc:
+      "Fisher-Yates -satunnaistetut vastaussijainnit jokaisella yrityksellä varmistavat opiskelijoiden todellisen käsitteen hallinnan.",
     ctaTitle: "Arviointi uudistettuna.",
     ctaHighlight: "Saatavilla tänään.",
     contactUs: "Ota yhteyttä",
@@ -304,3 +347,4 @@ export const fi: TranslationKeys = {
     footerContact: "Ota yhteyttä",
   },
 };
+

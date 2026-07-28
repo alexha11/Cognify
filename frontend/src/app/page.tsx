@@ -21,123 +21,112 @@ import {
   AmbientLights,
   SectionLightDivider,
 } from "@/components/ui/ambient-lights";
+import { useLanguage } from "@/lib/i18n";
 
-// ── Feature card data ──────────────────────────────────────────────────────────
-const features = [
-  {
-    id: "ai",
-    icon: Sparkles,
-    file: "ai-question-generator.ts",
-    badge: {
-      text: "AI Engine Ready",
-      cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
-    },
-    image: "/images/features/ai_generation.png",
-    alt: "AI Question Generation Interface",
-    title: "AI-Powered Question Generation",
-    description:
-      "Instantly convert your course materials into high-quality assessments. Full control over question types, difficulty levels, and automatic grading with just a click.",
-    linkLabel: "Explore generation",
-  },
-  {
-    id: "engine",
-    icon: BarChart3,
-    file: "analytics-dashboard.tsx",
-    badge: {
-      text: "Live Analytics",
-      cls: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
-    },
-    image: "/images/features/analytics.png",
-    alt: "Modern Assessment Engine Analytics",
-    title: "Modern Assessment Engine",
-    description:
-      "An intuitive engine that makes it easy for anyone to create and manage questions across all difficulty levels. Monitor student engagement with real-time analytics.",
-    linkLabel: "View analytics",
-  },
-  {
-    id: "docs",
-    icon: BookOpen,
-    file: "document-parser.py",
-    badge: {
-      text: "Vector RAG Embedded",
-      cls: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-    },
-    image: "/images/features/processing.png",
-    alt: "Smart Document Processing",
-    title: "Smart Document Processing",
-    description:
-      "Upload your course materials in any format. Our system automatically processes, chunks, and creates semantic embeddings to ensure the AI understands every detail.",
-    linkLabel: "Upload materials",
-  },
-  {
-    id: "quiz",
-    icon: Brain,
-    file: "quiz-session.tsx",
-    badge: {
-      text: "Instant Feedback",
-      cls: "text-violet-400 bg-violet-500/10 border-violet-500/20",
-    },
-    image: "/images/features/quiz.png",
-    alt: "Interactive Quiz Experience",
-    title: "Interactive Quiz Experience",
-    description:
-      "Deliver a sleek, fast quiz interface for your students. Provide immediate feedback, comprehensive hints, and track individual performance with ease.",
-    linkLabel: "Try a quiz",
-  },
-];
-
-// ── Capability tiles data ──────────────────────────────────────────────────────
-const capabilities = [
-  {
-    icon: Zap,
-    title: "Instant AI Generation",
-    description:
-      "Transform raw lecture notes, PDFs, or slide decks into fully formatted multiple choice and open questions within seconds.",
-  },
-  {
-    icon: BarChart3,
-    title: "Real-time Mastery Analytics",
-    description:
-      "Monitor student performance curves, spot knowledge gaps early, and track class accuracy across difficulty tiers.",
-  },
-  {
-    icon: Layers,
-    title: "Semantic Vector RAG",
-    description:
-      "Automatic document chunking and vector embeddings guarantee that generated questions stay 100% faithful to course content.",
-  },
-  {
-    icon: Trophy,
-    title: "Course Leaderboards",
-    description:
-      "Drive healthy competition with live course rankings, accuracy breakdown stats, and attempt timestamp tracking.",
-  },
-  {
-    icon: Sliders,
-    title: "Adaptive Question Controls",
-    description:
-      "Customize difficulty levels, answer option counts, question categories, and step-by-step hints with full educator override.",
-  },
-  {
-    icon: ShieldCheck,
-    title: "Scrambled Answer Security",
-    description:
-      "Fisher-Yates randomized answer positions on every attempt ensure students demonstrate true concept mastery.",
-  },
-];
-
-// ── Filter tab definitions ─────────────────────────────────────────────────────
-const featureTabs = [
-  { id: "all", label: "All" },
-  { id: "ai", label: "AI Generation" },
-  { id: "engine", label: "Assessment Engine" },
-  { id: "docs", label: "Smart Processing" },
-  { id: "quiz", label: "Quiz Experience" },
-];
-
-// ─────────────────────────────────────────────────────────────────────────────
 export default function HomePage() {
+  const { t } = useLanguage();
+  const h = t.home;
   const [activeTab, setActiveTab] = useState<string>("all");
+
+  const featureTabs = [
+    { id: "all", label: h.tabAll },
+    { id: "ai", label: h.tabAi },
+    { id: "engine", label: h.tabEngine },
+    { id: "docs", label: h.tabDocs },
+    { id: "quiz", label: h.tabQuiz },
+  ];
+
+  const features = [
+    {
+      id: "ai",
+      icon: Sparkles,
+      file: "ai-question-generator.ts",
+      badge: {
+        text: "AI Engine Ready",
+        cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+      },
+      image: "/images/features/ai_generation.png",
+      alt: h.aiTitle,
+      title: h.aiTitle,
+      description: h.aiDesc,
+      linkLabel: h.aiLink,
+    },
+    {
+      id: "engine",
+      icon: BarChart3,
+      file: "analytics-dashboard.tsx",
+      badge: {
+        text: "Live Analytics",
+        cls: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+      },
+      image: "/images/features/analytics.png",
+      alt: h.engineTitle,
+      title: h.engineTitle,
+      description: h.engineDesc,
+      linkLabel: h.engineLink,
+    },
+    {
+      id: "docs",
+      icon: BookOpen,
+      file: "document-parser.py",
+      badge: {
+        text: "Vector RAG Embedded",
+        cls: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+      },
+      image: "/images/features/processing.png",
+      alt: h.docsTitle,
+      title: h.docsTitle,
+      description: h.docsDesc,
+      linkLabel: h.docsLink,
+    },
+    {
+      id: "quiz",
+      icon: Brain,
+      file: "quiz-session.tsx",
+      badge: {
+        text: "Instant Feedback",
+        cls: "text-violet-400 bg-violet-500/10 border-violet-500/20",
+      },
+      image: "/images/features/quiz.png",
+      alt: h.quizTitle,
+      title: h.quizTitle,
+      description: h.quizDesc,
+      linkLabel: h.quizLink,
+    },
+  ];
+
+  const capabilities = [
+    {
+      icon: Zap,
+      title: h.cap1Title,
+      description: h.cap1Desc,
+    },
+    {
+      icon: BarChart3,
+      title: h.cap2Title,
+      description: h.cap2Desc,
+    },
+    {
+      icon: Layers,
+      title: h.cap3Title,
+      description: h.cap3Desc,
+    },
+    {
+      icon: Trophy,
+      title: h.cap4Title,
+      description: h.cap4Desc,
+    },
+    {
+      icon: Sliders,
+      title: h.cap5Title,
+      description: h.cap5Desc,
+    },
+    {
+      icon: ShieldCheck,
+      title: h.cap6Title,
+      description: h.cap6Desc,
+    },
+  ];
 
   const visibleFeatures = features.filter(
     (f) => activeTab === "all" || f.id === activeTab,
@@ -165,25 +154,23 @@ export default function HomePage() {
           {/* ── Hero ───────────────────────────────────────────────────────── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center">
             <div className="space-y-6 text-center md:text-left">
-              {/* Top Badge Tag */}
-
               {/* Main Hero Title */}
               <h1 className="text-5xl md:text-7xl lg:text-[5.25rem] font-semibold tracking-tight leading-[1.04] text-foreground">
-                Enable real{" "}
+                {h.heroTitle}{" "}
                 <span className="text-muted-foreground/60 dark:text-muted-foreground/50">
-                  learning.
+                  {h.heroHighlight}
                 </span>
               </h1>
 
               {/* Subtitle with highlighted key phrases */}
               <p className="max-w-xl text-lg md:text-xl leading-relaxed text-muted-foreground/90 font-normal mx-auto md:mx-0">
-                Cognify turns your learning materials into{" "}
+                {h.heroSub1}{" "}
                 <span className="text-foreground font-medium">
-                  smart assessments
+                  {h.heroSubHighlight1}
                 </span>
-                , giving students and instructors{" "}
+                {h.heroSub2}{" "}
                 <span className="text-foreground font-medium">
-                  actionable insights
+                  {h.heroSubHighlight2}
                 </span>
                 .
               </p>
@@ -201,7 +188,7 @@ export default function HomePage() {
                     />
                     <button className="relative cursor-pointer overflow-hidden rounded-[10px] bg-card px-8 py-4 text-base font-bold text-foreground shadow-sm transition-all duration-300">
                       <span className="relative z-20 flex items-center gap-2">
-                        Get Started
+                        {h.getStarted}
                         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                       </span>
                       <span className="absolute left-[-75%] top-0 z-10 h-full w-[50%] rotate-12 bg-foreground/10 blur-lg transition-all duration-1000 ease-in-out group-hover:left-[125%]" />
@@ -226,19 +213,18 @@ export default function HomePage() {
 
           {/* ── Features ───────────────────────────────────────────────────── */}
           <div id="features" className="mt-12">
-            {/* Section heading — left-aligned, two-tone like Resend */}
+            {/* Section heading — left-aligned */}
             <div className="max-w-2xl mb-10">
               <h2 className="text-4xl md:text-[3.25rem] font-semibold tracking-tight leading-[1.07] text-foreground">
-                Elevate your learning,{" "}
-                <span className="text-muted-foreground/55">the smart way.</span>
+                {h.featuresTitle}{" "}
+                <span className="text-muted-foreground/55">{h.featuresHighlight}</span>
               </h2>
               <p className="mt-5 text-base text-muted-foreground leading-relaxed max-w-md">
-                Straightforward analytics, AI generation, and powerful
-                management tools designed for educators and students.
+                {h.featuresSubtitle}
               </p>
             </div>
 
-            {/* Filter tabs — underline indicator, no icons */}
+            {/* Filter tabs */}
             <div className="flex items-center gap-0 mb-10 border-b border-border/40 overflow-x-auto">
               {featureTabs.map((tab) => {
                 const isActive = activeTab === tab.id;
@@ -261,7 +247,7 @@ export default function HomePage() {
               })}
             </div>
 
-            {/* Feature cards — 2-column grid */}
+            {/* Feature cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
               {visibleFeatures.map((feature) => {
                 const Icon = feature.icon;
@@ -270,7 +256,7 @@ export default function HomePage() {
                     key={feature.id}
                     className="group relative rounded-2xl border border-border/40 bg-card/10 overflow-hidden transition-colors duration-300 hover:border-border/70"
                   >
-                    {/* ── macOS window frame ── */}
+                    {/* macOS window frame */}
                     <div className="w-full h-[20rem] bg-[#0c0c0c] border-b border-border/30 flex flex-col">
                       {/* Title bar */}
                       <div className="h-9 px-4 flex items-center shrink-0 bg-[#161616] border-b border-white/[0.04]">
@@ -301,15 +287,13 @@ export default function HomePage() {
                       </div>
                     </div>
 
-                    {/* ── Card body ── */}
+                    {/* Card body */}
                     <div className="p-6 lg:p-7">
                       <div className="flex items-start gap-4">
-                        {/* Icon chip */}
                         <div className="shrink-0 mt-0.5 p-2 rounded-xl bg-foreground/5 border border-border/40">
                           <Icon className="h-4 w-4 text-primary/60" />
                         </div>
 
-                        {/* Text */}
                         <div className="space-y-2 min-w-0">
                           <h3 className="text-base font-semibold text-foreground tracking-tight">
                             {feature.title}
@@ -335,23 +319,20 @@ export default function HomePage() {
             {/* Section Divider with Light Flare */}
             <SectionLightDivider className="my-20 md:my-28" />
 
-            {/* ── "Everything in your control" — Resend capabilities grid ── */}
+            {/* ── Capabilities grid ── */}
             <div className="pt-6 md:pt-10">
-              {/* Left-aligned heading */}
               <div className="mb-16 max-w-lg">
                 <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-foreground leading-[1.08]">
-                  Everything in{" "}
+                  {h.everythingTitle}{" "}
                   <span className="text-muted-foreground/55">
-                    your control.
+                    {h.everythingHighlight}
                   </span>
                 </h3>
                 <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-                  All the features you need to manage your quizzes, evaluate
-                  student mastery, and track progress — without friction.
+                  {h.everythingSubtitle}
                 </p>
               </div>
 
-              {/* Borderless 3-column tile grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-12">
                 {capabilities.map((cap, idx) => {
                   const Icon = cap.icon;
@@ -373,26 +354,26 @@ export default function HomePage() {
             {/* Section Divider with Light Flare */}
             <SectionLightDivider className="my-20 md:my-28" />
 
-            {/* ── CTA — "Assessment reimagined. Available today." ── */}
+            {/* ── CTA ── */}
             <div className="text-center pt-6 md:pt-10">
               <h2 className="text-4xl md:text-[3.5rem] font-semibold tracking-tight text-foreground leading-[1.06]">
-                Assessment reimagined.
+                {h.ctaTitle}
                 <br />
                 <span className="text-muted-foreground/55">
-                  Available today.
+                  {h.ctaHighlight}
                 </span>
               </h2>
 
               <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
                 <Link href="/courses">
                   <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-85 transition-opacity">
-                    Get started
+                    {h.getStarted}
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </Link>
                 <Link href="/contact">
                   <button className="inline-flex items-center gap-1.5 px-6 py-3 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors cursor-pointer">
-                    Contact us
+                    {h.contactUs}
                     <ArrowRight className="h-4 w-4" />
                   </button>
                 </Link>
@@ -405,14 +386,14 @@ export default function HomePage() {
       <footer className="border-t border-border/30 z-10 relative">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
           <p className="text-xs font-serif text-muted-foreground/50">
-            © 2026 Cognify. All rights reserved.
+            {t.common.copyright}
           </p>
           <div className="flex items-center gap-6">
             <Link href="/courses" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
-              Courses
+              {h.footerCourses}
             </Link>
             <Link href="/contact" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
-              Contact Us
+              {h.footerContact}
             </Link>
           </div>
         </div>

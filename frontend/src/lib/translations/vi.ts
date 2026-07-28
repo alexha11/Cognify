@@ -288,19 +288,63 @@ export const vi: TranslationKeys = {
     heroHighlight: "thực sự.",
     heroSubtitle:
       "Cognify biến tài liệu học tập của bạn thành các bài đánh giá thông minh, cung cấp thông tin hữu ích cho học sinh và giáo viên.",
+    heroSub1: "Cognify biến tài liệu học tập của bạn thành",
+    heroSubHighlight1: "các bài đánh giá thông minh",
+    heroSub2: ", cung cấp cho học sinh và giáo viên",
+    heroSubHighlight2: "thông tin chi tiết có thể hành động",
     getStarted: "Bắt đầu",
     featuresTitle: "Nâng cao việc học của bạn,",
     featuresHighlight: "theo cách thông minh.",
     featuresSubtitle:
       "Phân tích trực quan, tạo câu hỏi bằng AI và công cụ quản lý mạnh mẽ dành cho giáo viên và học sinh.",
+    tabAll: "Tất cả",
+    tabAi: "Tạo bằng AI",
+    tabEngine: "Động cơ đánh giá",
+    tabDocs: "Xử lý thông minh",
+    tabQuiz: "Trải nghiệm Quiz",
+    aiTitle: "Tạo câu hỏi tự động bằng AI",
+    aiDesc:
+      "Chuyển đổi ngay lập tức tài liệu khóa học thành các bài đánh giá chất lượng cao. Toàn quyền kiểm soát dạng câu hỏi, mức độ khó và chấm điểm tự động chỉ với một cú nhấp chuột.",
+    aiLink: "Khám phá tạo câu hỏi",
+    engineTitle: "Động cơ đánh giá hiện đại",
+    engineDesc:
+      "Giao diện trực quan giúp dễ dàng tạo và quản lý câu hỏi ở mọi cấp độ khó. Theo dõi sự tham gia của học sinh với phân tích thời gian thực.",
+    engineLink: "Xem phân tích",
+    docsTitle: "Xử lý tài liệu thông minh",
+    docsDesc:
+      "Tải lên tài liệu khóa học ở bất kỳ định dạng nào. Hệ thống tự động xử lý, phân đoạn và tạo vector nhúng để đảm bảo AI hiểu rõ từng chi tiết.",
+    docsLink: "Tải lên tài liệu",
+    quizTitle: "Trải nghiệm Quiz tương tác",
+    quizDesc:
+      "Mang đến giao diện làm quiz mượt mà và nhanh chóng cho học sinh. Cung cấp phản hồi tức thì, gợi ý chi tiết và theo dõi hiệu suất cá nhân dễ dàng.",
+    quizLink: "Thử làm Quiz",
     everythingTitle: "Mọi thứ trong",
     everythingHighlight: "tầm tay bạn.",
     everythingSubtitle:
       "Tất cả các tính năng bạn cần để quản lý quiz, đánh giá mức độ thành thạo và theo dõi tiến độ — không có rào cản.",
-    ctaTitle: "Đánh giá được tái tạo.",
+    cap1Title: "Tạo tự động bằng AI tức thì",
+    cap1Desc:
+      "Chuyển đổi ghi chú bài giảng, PDF hoặc slide thành câu hỏi trắc nghiệm và tự luận đầy đủ định dạng trong vài giây.",
+    cap2Title: "Phân tích mức độ thành thạo thời gian thực",
+    cap2Desc:
+      "Theo dõi biểu đồ hiệu suất học sinh, phát hiện lỗ hổng kiến thức sớm và theo dõi độ chính xác của lớp theo cấp độ khó.",
+    cap3Title: "Vector RAG ngữ nghĩa",
+    cap3Desc:
+      "Tự động phân đoạn tài liệu và vector nhúng đảm bảo các câu hỏi được tạo luôn trung thực 100% với nội dung khóa học.",
+    cap4Title: "Bảng xếp hạng khóa học",
+    cap4Desc:
+      "Thúc đẩy thi đua lành mạnh với xếp hạng khóa học trực tiếp, thống kê độ chính xác và nhật ký thời gian làm bài.",
+    cap5Title: "Tùy chỉnh câu hỏi thích ứng",
+    cap5Desc:
+      "Tùy chỉnh mức độ khó, số lựa chọn đáp án, phân loại câu hỏi và gợi ý từng bước với quyền ghi đè đầy đủ của giáo viên.",
+    cap6Title: "Bảo mật đảo vị trí đáp án",
+    cap6Desc:
+      "Thuật toán Fisher-Yates ngẫu nhiên hóa vị trí đáp án ở mỗi lần thử giúp đảm bảo học sinh thể hiện đúng năng lực thực tế.",
+    ctaTitle: "Tái định nghĩa đánh giá.",
     ctaHighlight: "Có sẵn ngay hôm nay.",
     contactUs: "Liên hệ chúng tôi",
     footerCourses: "Khóa học",
     footerContact: "Liên hệ",
   },
 };
+

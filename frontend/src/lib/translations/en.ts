@@ -260,13 +260,46 @@ export interface TranslationKeys {
     heroTitle: string;
     heroHighlight: string;
     heroSubtitle: string;
+    heroSub1: string;
+    heroSubHighlight1: string;
+    heroSub2: string;
+    heroSubHighlight2: string;
     getStarted: string;
     featuresTitle: string;
     featuresHighlight: string;
     featuresSubtitle: string;
+    tabAll: string;
+    tabAi: string;
+    tabEngine: string;
+    tabDocs: string;
+    tabQuiz: string;
+    aiTitle: string;
+    aiDesc: string;
+    aiLink: string;
+    engineTitle: string;
+    engineDesc: string;
+    engineLink: string;
+    docsTitle: string;
+    docsDesc: string;
+    docsLink: string;
+    quizTitle: string;
+    quizDesc: string;
+    quizLink: string;
     everythingTitle: string;
     everythingHighlight: string;
     everythingSubtitle: string;
+    cap1Title: string;
+    cap1Desc: string;
+    cap2Title: string;
+    cap2Desc: string;
+    cap3Title: string;
+    cap3Desc: string;
+    cap4Title: string;
+    cap4Desc: string;
+    cap5Title: string;
+    cap5Desc: string;
+    cap6Title: string;
+    cap6Desc: string;
     ctaTitle: string;
     ctaHighlight: string;
     contactUs: string;
@@ -277,7 +310,6 @@ export interface TranslationKeys {
 
 // ── English values ────────────────────────────────────────────────────────────
 export const en: TranslationKeys = {
-
   // ── Common ──────────────────────────────────────────────────────────────────
   common: {
     loading: "Loading...",
@@ -564,15 +596,58 @@ export const en: TranslationKeys = {
     heroHighlight: "learning.",
     heroSubtitle:
       "Cognify turns your learning materials into smart assessments, giving students and instructors actionable insights.",
+    heroSub1: "Cognify turns your learning materials into",
+    heroSubHighlight1: "smart assessments",
+    heroSub2: ", giving students and instructors",
+    heroSubHighlight2: "actionable insights",
     getStarted: "Get Started",
     featuresTitle: "Elevate your learning,",
     featuresHighlight: "the smart way.",
     featuresSubtitle:
       "Straightforward analytics, AI generation, and powerful management tools designed for educators and students.",
+    tabAll: "All",
+    tabAi: "AI Generation",
+    tabEngine: "Assessment Engine",
+    tabDocs: "Smart Processing",
+    tabQuiz: "Quiz Experience",
+    aiTitle: "AI-Powered Question Generation",
+    aiDesc:
+      "Instantly convert your course materials into high-quality assessments. Full control over question types, difficulty levels, and automatic grading with just a click.",
+    aiLink: "Explore generation",
+    engineTitle: "Modern Assessment Engine",
+    engineDesc:
+      "An intuitive engine that makes it easy for anyone to create and manage questions across all difficulty levels. Monitor student engagement with real-time analytics.",
+    engineLink: "View analytics",
+    docsTitle: "Smart Document Processing",
+    docsDesc:
+      "Upload your course materials in any format. Our system automatically processes, chunks, and creates semantic embeddings to ensure the AI understands every detail.",
+    docsLink: "Upload materials",
+    quizTitle: "Interactive Quiz Experience",
+    quizDesc:
+      "Deliver a sleek, fast quiz interface for your students. Provide immediate feedback, comprehensive hints, and track individual performance with ease.",
+    quizLink: "Try a quiz",
     everythingTitle: "Everything in",
     everythingHighlight: "your control.",
     everythingSubtitle:
       "All the features you need to manage your quizzes, evaluate student mastery, and track progress — without friction.",
+    cap1Title: "Instant AI Generation",
+    cap1Desc:
+      "Transform raw lecture notes, PDFs, or slide decks into fully formatted multiple choice and open questions within seconds.",
+    cap2Title: "Real-time Mastery Analytics",
+    cap2Desc:
+      "Monitor student performance curves, spot knowledge gaps early, and track class accuracy across difficulty tiers.",
+    cap3Title: "Semantic Vector RAG",
+    cap3Desc:
+      "Automatic document chunking and vector embeddings guarantee that generated questions stay 100% faithful to course content.",
+    cap4Title: "Course Leaderboards",
+    cap4Desc:
+      "Drive healthy competition with live course rankings, accuracy breakdown stats, and attempt timestamp tracking.",
+    cap5Title: "Adaptive Question Controls",
+    cap5Desc:
+      "Customize difficulty levels, answer option counts, question categories, and step-by-step hints with full educator override.",
+    cap6Title: "Scrambled Answer Security",
+    cap6Desc:
+      "Fisher-Yates randomized answer positions on every attempt ensure students demonstrate true concept mastery.",
     ctaTitle: "Assessment reimagined.",
     ctaHighlight: "Available today.",
     contactUs: "Contact us",
