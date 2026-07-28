@@ -120,7 +120,6 @@ export default function DashboardPage() {
             icon={BookOpen}
             label="Courses"
             value={courses?.length || 0}
-            badge="Library"
           />
 
           {(isAdmin || isInstructor) && (
@@ -131,7 +130,6 @@ export default function DashboardPage() {
                 (acc, c) => acc + (c._count?.questions || 0),
                 0,
               )}
-              badge="Bank"
             />
           )}
 
