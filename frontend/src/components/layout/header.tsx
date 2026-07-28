@@ -60,7 +60,7 @@ export function Header({ variant = "public" }: HeaderProps) {
       <div className="flex w-full items-center justify-between">
         {/* Left: Page breadcrumb / logo */}
         <div className="flex items-center gap-8">
-          <Link href={"/dashboard"} className="flex items-center">
+          <Link href={user ? "/dashboard" : "/"} className="flex items-center">
             <CognifyLogo size={100} />
           </Link>
         </div>

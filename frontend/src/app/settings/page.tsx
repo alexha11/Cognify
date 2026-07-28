@@ -62,7 +62,7 @@ export default function SettingsPage() {
   const [deleteConfirm, setDeleteConfirm] = useState("");
 
   useEffect(() => {
-    if (!authLoading && !user) router.push("/dashboard");
+    if (!authLoading && !user) router.push("/");
     else if (user) {
       setFirstName(user.firstName);
       setLastName(user.lastName);

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,37 +11,39 @@ import { StatCard, EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { Course, AttemptStats } from "@/types";
-import { FeatureGate } from "@/components/ui";
 import {
   BookOpen,
   FileQuestion,
-  Users,
   TrendingUp,
   ArrowRight,
-  Lock,
   Plus,
-  Building2,
+  Loader2,
 } from "lucide-react";
 
 export default function DashboardPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const router = useRouter();
 
   const [courses, setCourses] = useState<Course[]>([]);
   const [stats, setStats] = useState<AttemptStats | null>(null);
-
-
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    if (!authLoading && !user) {
+      router.push("/");
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
     const fetchData = async () => {
-      if (authLoading) return;
+      if (authLoading || !user) return;
 
       try {
         const promises: Promise<any>[] = [apiGet<Course[]>("/courses")];
 
-          if (user?.role === "STUDENT") {
-            promises.push(apiGet<AttemptStats>("/attempts/stats"));
-          }
+        if (user.role === "STUDENT") {
+          promises.push(apiGet<AttemptStats>("/attempts/stats"));
+        }
 
         const results = await Promise.all(promises);
 
@@ -49,9 +52,9 @@ export default function DashboardPage() {
           Array.isArray(coursesData) ? coursesData : coursesData?.data || [],
         );
 
-          if (user?.role === "STUDENT" && results[1]) {
-            setStats(results[1]);
-          }
+        if (user.role === "STUDENT" && results[1]) {
+          setStats(results[1]);
+        }
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);
       } finally {
@@ -62,77 +65,54 @@ export default function DashboardPage() {
     fetchData();
   }, [user, authLoading]);
 
-  const isAdmin = user?.role === "ADMIN";
-  const isInstructor = user?.role === "INSTRUCTOR";
-  const isStudent = user?.role === "STUDENT" || !user;
+  if (authLoading || !user) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center min-h-[60vh]">
+          <Loader2 className="h-7 w-7 animate-spin text-primary" />
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  const isAdmin = user.role === "ADMIN";
+  const isInstructor = user.role === "INSTRUCTOR";
+  const isStudent = user.role === "STUDENT";
 
   return (
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Navigation & Welcome */}
-        {!user ? (
-          <Card className="p-10 md:p-16 border-border/60 overflow-hidden relative">
-            <div className="relative z-10 max-w-3xl space-y-8">
-              <h1 className="text-5xl md:text-7xl font-semibold tracking-tight text-foreground leading-[1.05]">
-                Master any subject with{" "}
-                <span className="font-serif italic font-normal text-muted-foreground/80">
-                  precision.
-                </span>
-              </h1>
-              <p className="text-xl text-muted-foreground max-w-xl leading-relaxed font-serif">
-                Cognify synthesizes personalized assessments, providing
-                data-driven trajectory for students and educators.
-              </p>
-              <div className="flex flex-wrap gap-6 pt-4">
-                <Button asChild size="xl" variant="pill">
-                  <Link href="/register">
-                    Get started free
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  </Link>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  size="xl"
-                  className="rounded-full"
-                >
-                  <Link href="/courses">Browse courses</Link>
-                </Button>
-              </div>
-            </div>
-          </Card>
-        ) : (
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
-            <div className="space-y-4">
-              <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-                Dashboard
-              </h1>
-              <div className="flex items-center gap-3 text-muted-foreground font-serif text-base">
-                <span className="text-foreground font-semibold font-sans">
-                  {user.firstName} {user.lastName}
-                </span>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-4">
+            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+              Dashboard
+            </h1>
+            <div className="flex items-center gap-3 text-muted-foreground font-serif text-base">
+              <span className="text-foreground font-semibold font-sans">
+                {user.firstName} {user.lastName}
+              </span>
 
-                <span className="opacity-40">•</span>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-                >
-                  {user.role}
-                </Badge>
-              </div>
+              <span className="opacity-40">•</span>
+              <Badge
+                variant="outline"
+                className="text-[10px] font-bold uppercase tracking-widest bg-primary/5"
+              >
+                {user.role}
+              </Badge>
             </div>
-            {(isAdmin || isInstructor) && (
-              <div className="flex gap-4">
-                <Link href="/courses">
-                  <Button variant="pill" size="lg">
-                    <Plus className="h-5 w-5 mr-1" />
-                    New Course
-                  </Button>
-                </Link>
-              </div>
-            )}
           </div>
-        )}
+          {(isAdmin || isInstructor) && (
+            <div className="flex gap-4">
+              <Link href="/courses">
+                <Button variant="pill" size="lg">
+                  <Plus className="h-5 w-5 mr-1" />
+                  New Course
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
 
         {/* Audit Metrics */}
         <div className="grid gap-6 md:grid-cols-4">
@@ -144,25 +124,20 @@ export default function DashboardPage() {
           />
 
           {(isAdmin || isInstructor) && (
-              <StatCard
-                icon={FileQuestion}
-                label="Questions"
-                value={courses.reduce(
-                  (acc, c) => acc + (c._count?.questions || 0),
-                  0,
-                )}
-                badge="Bank"
-              />
+            <StatCard
+              icon={FileQuestion}
+              label="Questions"
+              value={courses.reduce(
+                (acc, c) => acc + (c._count?.questions || 0),
+                0,
+              )}
+              badge="Bank"
+            />
           )}
 
-          {(isStudent || !user) && (
+          {isStudent && (
             <>
               <Card className="relative group hover:bg-secondary/20 transition-all duration-300">
-                {!user && (
-                  <div className="absolute top-4 right-4 z-10">
-                    <Lock className="h-4 w-4 text-muted-foreground/40" />
-                  </div>
-                )}
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
                     <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/5 text-green-700">
@@ -180,7 +155,7 @@ export default function DashboardPage() {
                       Questions answered
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                      {user && stats ? stats.overall.total : "128"}
+                      {stats ? stats.overall.total : "0"}
                     </p>
                   </div>
                 </CardContent>
@@ -189,9 +164,8 @@ export default function DashboardPage() {
               <StatCard
                 icon={TrendingUp}
                 label="Accuracy"
-                value={user && stats ? `${stats.overall.percentage}%` : "92%"}
+                value={stats ? `${stats.overall.percentage}%` : "0%"}
                 badge="Recall"
-                className={!user ? "relative" : ""}
               />
             </>
           )}
@@ -268,46 +242,6 @@ export default function DashboardPage() {
             </div>
           )}
         </section>
-
-
-
-        {/* Enhanced Guest CTA */}
-        {!user && (
-          <Card className="p-12 md:p-16 text-center bg-primary text-primary-foreground relative overflow-hidden group border-none">
-            {/* Background Texture/Pattern */}
-            <div className="absolute inset-0 opacity-10 pointer-events-none overflow-hidden">
-              <div className="absolute -top-24 -right-24 w-96 h-96 rounded-full border-[40px] border-primary-foreground" />
-              <div className="absolute -bottom-12 -left-12 w-64 h-64 rounded-full border-[20px] border-primary-foreground" />
-            </div>
-
-            <div className="relative z-10 max-w-2xl mx-auto space-y-10">
-              <h2 className="text-4xl md:text-6xl font-semibold tracking-tight leading-[1.1]">
-                Revolutionize your{" "}
-                <span className="font-serif italic font-normal text-primary-foreground/70">
-                  learning.
-                </span>
-              </h2>
-              <p className="text-primary-foreground/80 text-xl font-serif leading-relaxed">
-                Join thousands of students and instructors leveraging Cognify to
-                automate assessments and archive progression.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-6 justify-center pt-4">
-                <FeatureGate
-                  variant="prompt"
-                  title="Create account"
-                  description="Sign up to save your progress and unlock analytics."
-                >
-                  <Button
-                    size="xl"
-                    className="bg-primary-foreground text-primary hover:bg-primary-foreground/90 w-full sm:w-auto px-12 rounded-full border-none shadow-xl shadow-black/10"
-                  >
-                    Get started free
-                  </Button>
-                </FeatureGate>
-              </div>
-            </div>
-          </Card>
-        )}
       </div>
     </DashboardLayout>
   );

@@ -43,8 +43,10 @@ export default function AnalyticsPage() {
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
   useEffect(() => {
-    if (!authLoading && (!user || !["ADMIN", "INSTRUCTOR"].includes(user.role)))
-      router.push("/dashboard");
+    if (!authLoading) {
+      if (!user) router.push("/");
+      else if (!["ADMIN", "INSTRUCTOR"].includes(user.role)) router.push("/dashboard");
+    }
   }, [user, authLoading, router]);
 
   useEffect(() => {
