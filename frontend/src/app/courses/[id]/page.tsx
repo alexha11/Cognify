@@ -308,7 +308,7 @@ export default function CourseDetailPage() {
 
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-3 pt-2">
-                  {(!user || isStudent) && approvedQuestions.length > 0 && (
+                  {approvedQuestions.length > 0 && (
                     <Button
                       size="default"
                       className="rounded-xl gap-2 px-5 font-semibold"
