@@ -665,7 +665,7 @@ export default function QuizPage() {
           </div>
           <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden shadow-inner ring-1 ring-inset ring-black/5 dark:ring-white/5">
             <div
-              className="h-full bg-[#FAF9F5] dark:bg-[#141413] rounded-full transition-all duration-500 ease-out shadow-sm"
+              className="h-full bg-[#FAF9F5] dark:bg-[#141413] rounded-full transition-all duration-500 ease-out shadow-sm" //dont change
               style={{
                 width: `${
                   ((currentIndex + (result ? 1 : 0)) / questions.length) * 100
