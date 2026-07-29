@@ -9,7 +9,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, ArrowLeft, GraduationCap, BookOpen } from "lucide-react";
+import { Loader2, ArrowLeft, GraduationCap, BookOpen, Check } from "lucide-react";
 import {
   Card,
   CardHeader,
@@ -67,6 +67,7 @@ function GoogleIcon({ className }: { className?: string }) {
 
 export default function RegisterPage() {
   const [error, setError] = useState("");
+  const [selectedRole, setSelectedRole] = useState<"STUDENT" | "INSTRUCTOR">("STUDENT");
   const router = useRouter();
   const { register: authRegister } = useAuth();
   const { t } = useLanguage();
@@ -75,7 +76,6 @@ export default function RegisterPage() {
   const {
     register,
     handleSubmit,
-    watch,
     setValue,
     formState: { errors, isSubmitting },
   } = useForm<RegisterFormValues>({
@@ -85,12 +85,19 @@ export default function RegisterPage() {
     },
   });
 
-  const role = watch("role");
+  const handleRoleSelect = (role: "STUDENT" | "INSTRUCTOR") => {
+    setSelectedRole(role);
+    setValue("role", role, {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    });
+  };
 
   const onSubmit = async (values: RegisterFormValues) => {
     setError("");
     try {
-      await authRegister(values);
+      await authRegister({ ...values, role: selectedRole });
       router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
     } catch (err: any) {
       setError(
@@ -122,7 +129,7 @@ export default function RegisterPage() {
             className="mb-6 inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to home
+            {a.backToHome || "Back to home"}
           </Link>
 
           <Card className="border border-border/80 p-1 relative overflow-hidden">
@@ -132,10 +139,10 @@ export default function RegisterPage() {
                 <CognifyLogo size={100} />
               </div>
               <CardTitle className="text-2xl font-semibold tracking-tight text-foreground">
-                Create your account
+                {a.createYourAccount || "Create your account"}
               </CardTitle>
               <CardDescription className="text-sm text-muted-foreground mt-2">
-                Get started with Cognify for free
+                {a.getStartedFree || "Get started with Cognify for free"}
               </CardDescription>
             </CardHeader>
             <CardContent className="px-8 pb-8">
@@ -147,14 +154,14 @@ export default function RegisterPage() {
                 onClick={handleGoogleSignIn}
               >
                 <GoogleIcon className="h-5 w-5" />
-                Continue with Google
+                {a.continueWithGoogle || "Continue with Google"}
               </Button>
 
               {/* Divider */}
               <div className="relative mb-6">
                 <div className="relative flex justify-center text-xs">
                   <span className="bg-card px-3 text-muted-foreground font-medium">
-                    or sign up with email
+                    {a.orSignUpWithEmail || "or sign up with email"}
                   </span>
                 </div>
               </div>
@@ -171,34 +178,45 @@ export default function RegisterPage() {
 
                 <div className="flex flex-col gap-4">
                   {/* Role selector */}
+                  <input type="hidden" {...register("role")} value={selectedRole} />
                   <div className="space-y-2">
                     <Label className="text-xs font-medium text-muted-foreground ml-1">
-                      I am a
+                      {a.iAm || "I am a"}
                     </Label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
-                        onClick={() => setValue("role", "STUDENT")}
-                        className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
-                          role === "STUDENT"
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border text-muted-foreground hover:border-foreground/30"
+                        onClick={() => handleRoleSelect("STUDENT")}
+                        className={`relative flex items-center justify-center gap-2.5 rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-200 cursor-pointer select-none ${
+                          selectedRole === "STUDENT"
+                            ? "border-primary bg-primary/15 text-primary ring-2 ring-primary/30 font-semibold shadow-md shadow-primary/10"
+                            : "border-border/80 text-muted-foreground hover:border-foreground/30 hover:bg-muted/40"
                         }`}
                       >
-                        <GraduationCap className="h-4 w-4" />
-                        Student
+                        <GraduationCap className={`h-4 w-4 ${selectedRole === "STUDENT" ? "text-primary" : ""}`} />
+                        <span>{a.student || "Student"}</span>
+                        {selectedRole === "STUDENT" && (
+                          <span className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                            <Check className="h-2.5 w-2.5 stroke-[3]" />
+                          </span>
+                        )}
                       </button>
                       <button
                         type="button"
-                        onClick={() => setValue("role", "INSTRUCTOR")}
-                        className={`flex items-center gap-2 rounded-xl border px-4 py-3 text-sm font-medium transition-all ${
-                          role === "INSTRUCTOR"
-                            ? "border-primary bg-primary text-primary-foreground"
-                            : "border-border text-muted-foreground hover:border-foreground/30"
+                        onClick={() => handleRoleSelect("INSTRUCTOR")}
+                        className={`relative flex items-center justify-center gap-2.5 rounded-xl border px-4 py-3.5 text-sm font-medium transition-all duration-200 cursor-pointer select-none ${
+                          selectedRole === "INSTRUCTOR"
+                            ? "border-primary bg-primary/15 text-primary ring-2 ring-primary/30 font-semibold shadow-md shadow-primary/10"
+                            : "border-border/80 text-muted-foreground hover:border-foreground/30 hover:bg-muted/40"
                         }`}
                       >
-                        <BookOpen className="h-4 w-4" />
-                        Instructor
+                        <BookOpen className={`h-4 w-4 ${selectedRole === "INSTRUCTOR" ? "text-primary" : ""}`} />
+                        <span>{a.instructor || "Instructor"}</span>
+                        {selectedRole === "INSTRUCTOR" && (
+                          <span className="absolute top-2 right-2 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm">
+                            <Check className="h-2.5 w-2.5 stroke-[3]" />
+                          </span>
+                        )}
                       </button>
                     </div>
                   </div>
