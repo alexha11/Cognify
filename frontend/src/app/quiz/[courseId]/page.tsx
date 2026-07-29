@@ -50,6 +50,7 @@ export default function QuizPage() {
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showGuestNameModal, setShowGuestNameModal] = useState(false);
+  const [showGuestBanner, setShowGuestBanner] = useState(true);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
@@ -58,6 +59,16 @@ export default function QuizPage() {
   }, []);
 
   const isGuest = !authLoading && !user;
+
+  // Auto-dismiss guest notification banner after 60 seconds (1 minute)
+  useEffect(() => {
+    if (isGuest && showGuestBanner) {
+      const timer = setTimeout(() => {
+        setShowGuestBanner(false);
+      }, 60000);
+      return () => clearTimeout(timer);
+    }
+  }, [isGuest, showGuestBanner]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -588,8 +599,8 @@ export default function QuizPage() {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto space-y-6 py-4">
         {/* Guest notification banner */}
-        {isGuest && (
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs font-medium">
+        {isGuest && showGuestBanner && (
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs font-medium transition-all duration-300">
             <div className="flex items-center gap-2">
               <Info className="h-4 w-4 text-amber-500 flex-shrink-0" />
               <span>
@@ -597,14 +608,23 @@ export default function QuizPage() {
                 progress.
               </span>
             </div>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 text-xs font-semibold rounded-lg"
-              onClick={() => setShowAuthModal(true)}
-            >
-              Log in
-            </Button>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs font-semibold rounded-lg"
+                onClick={() => setShowAuthModal(true)}
+              >
+                Log in
+              </Button>
+              <button
+                onClick={() => setShowGuestBanner(false)}
+                className="p-1 rounded-md text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                aria-label="Close notification"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
 
