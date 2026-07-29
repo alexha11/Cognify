@@ -43,8 +43,10 @@ export default function QuizPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isExplicitlyFinished, setIsExplicitlyFinished] = useState(false);
 
-  // Map of questionId -> isCorrect to track accurate score across all questions
+  // Map of questionId -> isCorrect for historical & current runs
   const [attemptsMap, setAttemptsMap] = useState<Record<string, boolean>>({});
+  // Map of questionId -> isCorrect for the ACTIVE session run
+  const [sessionAttemptsMap, setSessionAttemptsMap] = useState<Record<string, boolean>>({});
 
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showGuestNameModal, setShowGuestNameModal] = useState(false);
@@ -157,6 +159,10 @@ export default function QuizPage() {
       } as AttemptResult;
 
       setResult(guestResult);
+      setSessionAttemptsMap((prev) => ({
+        ...prev,
+        [currentQuestion.id]: isCorrect,
+      }));
       setAttemptsMap((prev) => ({
         ...prev,
         [currentQuestion.id]: isCorrect,
@@ -169,6 +175,10 @@ export default function QuizPage() {
           selectedAnswerIds: selectedAnswers,
         });
         setResult(data);
+        setSessionAttemptsMap((prev) => ({
+          ...prev,
+          [currentQuestion.id]: data.isCorrect,
+        }));
         setAttemptsMap((prev) => ({
           ...prev,
           [currentQuestion.id]: data.isCorrect,
@@ -620,7 +630,7 @@ export default function QuizPage() {
             </span>
             <div className="flex items-center gap-4">
               <span className="text-xs text-muted-foreground">
-                {Object.values(attemptsMap).filter(Boolean).length} /{" "}
+                {Object.values(sessionAttemptsMap).filter(Boolean).length} /{" "}
                 {questions.length} correct
               </span>
               <span className="text-sm font-bold text-primary">
@@ -633,7 +643,7 @@ export default function QuizPage() {
           </div>
           <div className="h-4 w-full bg-black/10 dark:bg-white/10 rounded-full overflow-hidden shadow-inner ring-1 ring-inset ring-black/5 dark:ring-white/5">
             <div
-              className="h-full bg-[#FAF9F5] dark:bg-[#141413] rounded-full transition-all duration-500 ease-out shadow-sm"
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out shadow-sm"
               style={{
                 width: `${
                   ((currentIndex + (result ? 1 : 0)) / questions.length) * 100

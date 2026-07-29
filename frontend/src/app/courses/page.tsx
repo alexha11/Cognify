@@ -12,9 +12,9 @@ import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
-import { Course } from "@/types";
+import { Course, QuizProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
-import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock } from "lucide-react";
+import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock, RefreshCw } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
 
 export default function CoursesPage() {
@@ -23,6 +23,8 @@ export default function CoursesPage() {
   const { t } = useLanguage();
   const c = t.courses;
   const [courses, setCourses] = useState<Course[]>([]);
+  const [progressMap, setProgressMap] = useState<Record<string, QuizProgress>>({});
+  const [attemptCountsMap, setAttemptCountsMap] = useState<Record<string, number>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
@@ -35,6 +37,28 @@ export default function CoursesPage() {
     try {
       const data = await apiGet<Course[]>("/courses");
       setCourses(data || []);
+
+      if (user) {
+        const [progressList, myAttempts] = await Promise.all([
+          apiGet<QuizProgress[]>("/attempts/user-progress").catch(() => []),
+          apiGet<{ question?: { courseId?: string } }[]>("/attempts/me").catch(() => []),
+        ]);
+
+        const pMap: Record<string, QuizProgress> = {};
+        (progressList || []).forEach((p) => {
+          if (p.courseId) pMap[p.courseId] = p;
+        });
+        setProgressMap(pMap);
+
+        const aCounts: Record<string, number> = {};
+        (myAttempts || []).forEach((a) => {
+          const cId = a.question?.courseId;
+          if (cId) {
+            aCounts[cId] = (aCounts[cId] || 0) + 1;
+          }
+        });
+        setAttemptCountsMap(aCounts);
+      }
     } catch (error) {
       console.error("Failed to fetch courses", error);
       setCourses([]);
@@ -236,11 +260,27 @@ export default function CoursesPage() {
                     </span>
                   </div>
 
-                  {/* Start Quiz Button */}
+                  {/* Quiz Action Button */}
                   <Link href={`/quiz/${course.id}`} className="block">
-                    <Button variant="pill" size="lg" className="w-full">
-                      <Play className="h-4 w-4 text-xs" />
-                      {c.startQuiz}
+                    <Button variant="pill" size="lg" className="w-full gap-2">
+                      {user && progressMap[course.id]?.isCompleted ? (
+                        <>
+                          <RefreshCw className="h-4 w-4 text-xs" />
+                          Retake Quiz
+                        </>
+                      ) : user &&
+                        ((progressMap[course.id]?.currentIndex || 0) > 0 ||
+                          (attemptCountsMap[course.id] || 0) > 0) ? (
+                        <>
+                          <Play className="h-4 w-4 text-xs fill-current" />
+                          Continue Quiz
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-4 w-4 text-xs fill-current" />
+                          {c.startQuiz}
+                        </>
+                      )}
                     </Button>
                   </Link>
 

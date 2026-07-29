@@ -26,6 +26,17 @@ export class AttemptsController {
   }
 
   /**
+   * Get all active quiz progress records for the user
+   * GET /attempts/user-progress
+   */
+  @Get('user-progress')
+  async getUserQuizProgresses(
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any[]> {
+    return this.attemptsService.getUserQuizProgresses(user.userId);
+  }
+
+  /**
    * Get active quiz session progress for a course
    * GET /attempts/progress/:courseId
    */

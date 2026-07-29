@@ -11,6 +11,15 @@ export class AttemptsService {
   constructor(private readonly prisma: PrismaService) {}
 
   /**
+   * Get all active quiz progress records for a user
+   */
+  async getUserQuizProgresses(userId: string) {
+    return this.prisma.quizProgress.findMany({
+      where: { userId },
+    });
+  }
+
+  /**
    * Get active quiz progress for a user and course
    */
   async getQuizProgress(userId: string, courseId: string) {
