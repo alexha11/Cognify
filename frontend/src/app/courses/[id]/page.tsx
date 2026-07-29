@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiUpload } from "@/lib/api";
-import { Course, Question, Material } from "@/types";
+import { Course, Question, Material, QuizProgress, CourseProgress } from "@/types";
 import { cn, formatDate, formatFileSize } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -34,6 +34,7 @@ import {
   Globe,
   BrainCircuit,
   Trophy,
+  RefreshCw,
 } from "lucide-react";
 import {
   FeatureGate,
@@ -58,6 +59,8 @@ export default function CourseDetailPage() {
   const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
   const [isGeneratingAi, setIsGeneratingAi] = useState(false);
 
+  const [quizProgress, setQuizProgress] = useState<QuizProgress | null>(null);
+  const [courseProgress, setCourseProgress] = useState<CourseProgress | null>(null);
   const [draftQuestions, setDraftQuestions] = useState<DraftQuestion[]>([]);
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [isSavingDrafts, setIsSavingDrafts] = useState(false);
@@ -84,6 +87,15 @@ export default function CourseDetailPage() {
       setCourse(courseData);
       setQuestions(questionsData || []);
       setMaterials(materialsData || []);
+
+      if (user) {
+        const [progressData, cProgressData] = await Promise.all([
+          apiGet<QuizProgress>(`/attempts/progress/${params.id}`).catch(() => null),
+          apiGet<CourseProgress>(`/attempts/course/${params.id}`).catch(() => null),
+        ]);
+        setQuizProgress(progressData);
+        setCourseProgress(cProgressData);
+      }
     } catch (error) {
       console.error("Failed to fetch course", error);
       router.push("/courses");
@@ -95,6 +107,25 @@ export default function CourseDetailPage() {
   useEffect(() => {
     fetchCourse();
   }, [params.id, authLoading, user]);
+
+  const handleQuizAction = async () => {
+    if (!course) return;
+    if (!user) {
+      router.push(`/quiz/${course.id}?guest=true`);
+      return;
+    }
+
+    if (quizProgress?.isCompleted || courseProgress?.isCompleted) {
+      try {
+        await apiPost(`/attempts/reset/${course.id}`, {});
+      } catch (e) {
+        console.error("Failed to reset quiz progress", e);
+      }
+      router.push(`/quiz/${course.id}`);
+    } else {
+      router.push(`/quiz/${course.id}`);
+    }
+  };
 
   const handleApprove = async (questionId: string) => {
     try {
@@ -278,12 +309,32 @@ export default function CourseDetailPage() {
                 {/* Action buttons */}
                 <div className="flex flex-wrap gap-3 pt-2">
                   {(!user || isStudent) && approvedQuestions.length > 0 && (
-                    <Link href={`/quiz/${course.id}`}>
-                      <Button size="default" className="rounded-xl gap-2 px-5">
-                        <Play className="h-3.5 w-3.5 fill-current" />
-                        Start quiz
-                      </Button>
-                    </Link>
+                    <Button
+                      size="default"
+                      className="rounded-xl gap-2 px-5 font-semibold"
+                      onClick={handleQuizAction}
+                    >
+                      {!user ||
+                      (!quizProgress?.isCompleted &&
+                        !courseProgress?.isCompleted &&
+                        !quizProgress?.currentIndex &&
+                        !courseProgress?.answered) ? (
+                        <>
+                          <Play className="h-3.5 w-3.5 fill-current" />
+                          Start quiz
+                        </>
+                      ) : quizProgress?.isCompleted || courseProgress?.isCompleted ? (
+                        <>
+                          <RefreshCw className="h-3.5 w-3.5" />
+                          Retake quiz
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3.5 w-3.5 fill-current" />
+                          Continue quiz
+                        </>
+                      )}
+                    </Button>
                   )}
                   {approvedQuestions.length > 0 && (
                     <Button

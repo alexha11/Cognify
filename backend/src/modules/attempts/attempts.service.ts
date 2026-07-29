@@ -4,11 +4,90 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
-import { CreateAttemptDto } from './dto';
+import { CreateAttemptDto, UpdateProgressDto } from './dto';
 
 @Injectable()
 export class AttemptsService {
   constructor(private readonly prisma: PrismaService) {}
+
+  /**
+   * Get active quiz progress for a user and course
+   */
+  async getQuizProgress(userId: string, courseId: string) {
+    let progress = await this.prisma.quizProgress.findUnique({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+    });
+
+    if (!progress) {
+      progress = await this.prisma.quizProgress.create({
+        data: {
+          userId,
+          courseId,
+          currentIndex: 0,
+          isCompleted: false,
+        },
+      });
+    }
+
+    return progress;
+  }
+
+  /**
+   * Update active quiz progress (current index and/or completion state)
+   */
+  async updateQuizProgress(
+    userId: string,
+    courseId: string,
+    dto: UpdateProgressDto,
+  ) {
+    return this.prisma.quizProgress.upsert({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+      update: {
+        ...(dto.currentIndex !== undefined ? { currentIndex: dto.currentIndex } : {}),
+        ...(dto.isCompleted !== undefined ? { isCompleted: dto.isCompleted } : {}),
+      },
+      create: {
+        userId,
+        courseId,
+        currentIndex: dto.currentIndex ?? 0,
+        isCompleted: dto.isCompleted ?? false,
+      },
+    });
+  }
+
+  /**
+   * Reset quiz progress for retaking a course
+   */
+  async resetQuizProgress(userId: string, courseId: string) {
+    return this.prisma.quizProgress.upsert({
+      where: {
+        userId_courseId: {
+          userId,
+          courseId,
+        },
+      },
+      update: {
+        currentIndex: 0,
+        isCompleted: false,
+      },
+      create: {
+        userId,
+        courseId,
+        currentIndex: 0,
+        isCompleted: false,
+      },
+    });
+  }
 
   /**
    * Submit an answer attempt

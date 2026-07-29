@@ -31,6 +31,7 @@ model User {
   emailVerification EmailVerification?
   subscriptions     Subscription[]
   leaderboardEntries LeaderboardEntry[]
+  quizProgresses    QuizProgress[]
 
   @@index([email])
 }
@@ -47,6 +48,7 @@ model Course {
   materials      Material[]
   questions      Question[]
   leaderboardEntries LeaderboardEntry[]
+  quizProgresses QuizProgress[]
 
   @@index([createdById])
 }
@@ -175,4 +177,21 @@ enum SubscriptionStatus {
   CANCELED
   PAST_DUE
   TRIALING
+}
+
+model QuizProgress {
+  id             String   @id @default(uuid())
+  userId         String
+  courseId       String
+  currentIndex   Int      @default(0)
+  isCompleted    Boolean  @default(false)
+  lastAnsweredAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@index([userId])
+  @@index([courseId])
 }

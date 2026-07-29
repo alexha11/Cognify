@@ -147,6 +147,17 @@ export interface CourseProgress {
   correct: number;
   remaining: number;
   percentage: number;
+  isCompleted?: boolean;
+}
+
+export interface QuizProgress {
+  id: string;
+  userId: string;
+  courseId: string;
+  currentIndex: number;
+  isCompleted: boolean;
+  lastAnsweredAt: string;
+  createdAt: string;
 }
 
 // Leaderboard types

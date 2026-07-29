@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
-import { CreateAttemptDto } from './dto';
+import { CreateAttemptDto, UpdateProgressDto } from './dto';
 import { JwtAuthGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -23,6 +23,43 @@ export class AttemptsController {
       dto,
       user.userId,
     );
+  }
+
+  /**
+   * Get active quiz session progress for a course
+   * GET /attempts/progress/:courseId
+   */
+  @Get('progress/:courseId')
+  async getQuizProgress(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.attemptsService.getQuizProgress(user.userId, courseId);
+  }
+
+  /**
+   * Update active quiz session progress
+   * POST /attempts/progress/:courseId
+   */
+  @Post('progress/:courseId')
+  async updateQuizProgress(
+    @Param('courseId') courseId: string,
+    @Body() dto: UpdateProgressDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.attemptsService.updateQuizProgress(user.userId, courseId, dto);
+  }
+
+  /**
+   * Reset active quiz session progress for retaking
+   * POST /attempts/reset/:courseId
+   */
+  @Post('reset/:courseId')
+  async resetQuizProgress(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ): Promise<any> {
+    return this.attemptsService.resetQuizProgress(user.userId, courseId);
   }
 
   /**
