@@ -357,13 +357,25 @@ export class QuestionsService {
   /**
    * Approve AI question
    */
-  async approve(id: string) {
+  async approve(id: string, userId?: string, userRole?: Role) {
     const question = await this.prisma.question.findFirst({
       where: { id },
+      include: {
+        course: { select: { createdById: true } },
+      },
     });
 
     if (!question) {
       throw new NotFoundException('Question not found');
+    }
+
+    if (
+      userRole &&
+      userRole !== Role.ADMIN &&
+      question.createdById !== userId &&
+      question.course?.createdById !== userId
+    ) {
+      throw new ForbiddenException('Not authorized to approve this question');
     }
 
     return this.prisma.question.update({

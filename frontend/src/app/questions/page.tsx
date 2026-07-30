@@ -50,6 +50,7 @@ interface Question {
   contentType?: 'text' | 'image';
   imageUrl?: string;
   courseId: string;
+  createdById?: string;
   answers: Answer[];
   approved: boolean;
   aiGenerated: boolean;
@@ -58,6 +59,7 @@ interface Question {
 interface Course {
   id: string;
   name: string;
+  createdById?: string;
 }
 
 export default function QuestionsPage() {
@@ -87,7 +89,19 @@ export default function QuestionsPage() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const canManage = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
+  const canManageSelectedCourse = () => {
+    if (user?.role === "ADMIN") return true;
+    if (!user?.id || !selectedCourse) return false;
+    const currentCourse = courses.find((c) => c.id === selectedCourse);
+    return currentCourse?.createdById === user.id;
+  };
+
+  const canManageQuestion = (q: Question) => {
+    if (user?.role === "ADMIN") return true;
+    if (!user?.id) return false;
+    const currentCourse = courses.find((c) => c.id === selectedCourse);
+    return q.createdById === user.id || currentCourse?.createdById === user.id;
+  };
 
   useEffect(() => {
     const fetchCourses = async () => {
@@ -345,7 +359,7 @@ export default function QuestionsPage() {
               Manage and review questions for your courses.
             </p>
           </div>
-          {canManage && (
+          {canManageSelectedCourse() && (
             <div className="flex gap-2.5">
               <Button
                 onClick={() => setShowCreate(true)}
@@ -420,7 +434,7 @@ export default function QuestionsPage() {
                   ? "Add your first question to get started."
                   : "Choose a course above to see its questions."}
               </p>
-              {canManage && selectedCourse && (
+              {canManageSelectedCourse() && selectedCourse && (
                 <Button
                   onClick={() => setShowCreate(true)}
                   variant="outline"
@@ -529,7 +543,7 @@ export default function QuestionsPage() {
                     </div>
 
                     {/* Actions */}
-                    {canManage && (
+                    {canManageQuestion(question) && (
                       <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
                         <Button
                           variant="ghost"

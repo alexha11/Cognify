@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
-import { apiGet, apiPost, apiUpload } from "@/lib/api";
+import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from "@/lib/api";
 import { Course, Question, Material, QuizProgress, CourseProgress } from "@/types";
 import { cn, formatDate, formatFileSize } from "@/lib/utils";
 import {
@@ -35,12 +35,17 @@ import {
   BrainCircuit,
   Trophy,
   RefreshCw,
+  Pencil,
+  Trash2,
 } from "lucide-react";
 import {
   FeatureGate,
   AuthPromptModal,
   GenerateQuestionsModal,
   DraftQuestionsModal,
+  EditCourseModal,
+  Input,
+  Label,
 } from "@/components/ui";
 import type { DraftQuestion } from "@/components/ui";
 import { toast } from "@/components/ui/toast";
@@ -65,12 +70,123 @@ export default function CourseDetailPage() {
   const [isDraftModalOpen, setIsDraftModalOpen] = useState(false);
   const [isSavingDrafts, setIsSavingDrafts] = useState(false);
 
+  const [isCourseEditOpen, setIsCourseEditOpen] = useState(false);
+  const [isSavingCourseEdit, setIsSavingCourseEdit] = useState(false);
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [questionEditForm, setQuestionEditForm] = useState<{
+    content: string;
+    hint: string;
+    answers: { id?: string; content: string; isCorrect: boolean }[];
+  }>({ content: "", hint: "", answers: [] });
+  const [isSavingQuestionEdit, setIsSavingQuestionEdit] = useState(false);
+
+  const canEditCourse = user?.role === "ADMIN" || (!!user?.id && course?.createdById === user.id);
+
+  const canManageQuestion = (q: Question) => {
+    return (
+      user?.role === "ADMIN" ||
+      (!!user?.id &&
+        (q.createdById === user.id ||
+          q.createdBy?.id === user.id ||
+          course?.createdById === user.id))
+    );
+  };
+
   const handleShareLink = () => {
     const url = `${window.location.origin}/quiz/share/${params.id}`;
     navigator.clipboard.writeText(url).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
     });
+  };
+
+  const handleSaveCourseEdit = async (data: { name: string; description: string; isPublic: boolean }) => {
+    if (!course) return;
+    setIsSavingCourseEdit(true);
+    try {
+      const updated = await apiPut<Course>(`/courses/${course.id}`, data);
+      setCourse(updated);
+      toast.success("Course updated successfully");
+      setIsCourseEditOpen(false);
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to update course");
+    } finally {
+      setIsSavingCourseEdit(false);
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!course) return;
+    if (!confirm(`Are you sure you want to delete "${course.name}"? All materials and quizzes will be deleted permanently.`)) {
+      return;
+    }
+    try {
+      await apiDelete(`/courses/${course.id}`);
+      toast.success("Course deleted successfully");
+      router.push("/courses");
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to delete course");
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!confirm("Are you sure you want to delete this question?")) return;
+    try {
+      await apiDelete(`/questions/${questionId}`);
+      toast.success("Question deleted");
+      fetchCourse();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to delete question");
+    }
+  };
+
+  const openQuestionEdit = (q: Question) => {
+    setEditingQuestion(q);
+    setQuestionEditForm({
+      content: q.content,
+      hint: q.hint || "",
+      answers: q.answers.map((a) => ({
+        id: a.id,
+        content: a.content,
+        isCorrect: a.isCorrect,
+      })),
+    });
+  };
+
+  const handleSaveQuestionEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingQuestion) return;
+    if (questionEditForm.content.length < 5) {
+      toast.error("Question content is too short");
+      return;
+    }
+    if (!questionEditForm.answers.some((a) => a.isCorrect)) {
+      toast.error("Please mark at least one answer as correct");
+      return;
+    }
+    if (questionEditForm.answers.some((a) => !a.content.trim())) {
+      toast.error("All options must have text content");
+      return;
+    }
+    setIsSavingQuestionEdit(true);
+    try {
+      await apiPut(`/questions/${editingQuestion.id}`, {
+        content: questionEditForm.content,
+        hint: questionEditForm.hint || undefined,
+        answers: questionEditForm.answers,
+      });
+      toast.success("Question updated successfully");
+      setEditingQuestion(null);
+      fetchCourse();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to update question");
+    } finally {
+      setIsSavingQuestionEdit(false);
+    }
   };
 
   const canEdit = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
@@ -368,6 +484,28 @@ export default function CourseDetailPage() {
                       </Button>
                     </Link>
                   )}
+                  {canEditCourse && (
+                    <>
+                      <Button
+                        variant="outline"
+                        size="default"
+                        className="rounded-xl gap-2 px-5 text-primary border-primary/20 hover:bg-primary/5"
+                        onClick={() => setIsCourseEditOpen(true)}
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                        Edit course
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="default"
+                        className="rounded-xl gap-2 px-5 text-red-600 border-red-200 dark:border-red-800/40 hover:bg-red-50 dark:hover:bg-red-950/25"
+                        onClick={handleDeleteCourse}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        Delete course
+                      </Button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -577,6 +715,29 @@ export default function CourseDetailPage() {
                           ))}
                         </div>
                       </div>
+
+                      {canManageQuestion(question) && (
+                        <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => openQuestionEdit(question)}
+                            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5"
+                            title="Edit question"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteQuestion(question.id)}
+                            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
+                            title="Delete question"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -721,6 +882,131 @@ export default function CourseDetailPage() {
         onSave={handleSaveDrafts}
         isSaving={isSavingDrafts}
       />
+
+      {editingQuestion && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <Card className="max-w-2xl w-full shadow-xl border-border/50 animate-in fade-in zoom-in-95 duration-200">
+            <CardHeader className="p-6 border-b border-border/40">
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-base font-semibold">Edit question</CardTitle>
+                  <CardDescription className="text-xs">Update question content, hint, and answer options.</CardDescription>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingQuestion(null)}
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            <form onSubmit={handleSaveQuestionEdit}>
+              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+                <div className="space-y-2">
+                  <Label htmlFor="questionText" className="text-xs font-medium text-muted-foreground">
+                    Question text
+                  </Label>
+                  <textarea
+                    id="questionText"
+                    value={questionEditForm.content}
+                    onChange={(e) => setQuestionEditForm({ ...questionEditForm, content: e.target.value })}
+                    rows={3}
+                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors resize-none"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="questionHint" className="text-xs font-medium text-muted-foreground">
+                    Hint (optional)
+                  </Label>
+                  <Input
+                    id="questionHint"
+                    value={questionEditForm.hint}
+                    onChange={(e) => setQuestionEditForm({ ...questionEditForm, hint: e.target.value })}
+                    className="rounded-xl text-sm h-10"
+                    placeholder="Add a hint..."
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="text-xs font-medium text-muted-foreground">Answer options</Label>
+                  <div className="space-y-2">
+                    {questionEditForm.answers.map((answer, index) => (
+                      <div key={index} className="flex items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = questionEditForm.answers.map((a, i) => ({
+                              ...a,
+                              isCorrect: i === index,
+                            }));
+                            setQuestionEditForm({ ...questionEditForm, answers: updated });
+                          }}
+                          className={cn(
+                            "h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg border transition-all duration-150",
+                            answer.isCorrect
+                              ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
+                              : "bg-background border-border text-muted-foreground/30 hover:border-emerald-400 hover:text-emerald-600"
+                          )}
+                          title="Mark as correct"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                        </button>
+                        <Input
+                          value={answer.content}
+                          onChange={(e) => {
+                            const updated = [...questionEditForm.answers];
+                            updated[index].content = e.target.value;
+                            setQuestionEditForm({ ...questionEditForm, answers: updated });
+                          }}
+                          className="rounded-xl text-sm h-9 flex-1"
+                          placeholder={`Option ${String.fromCharCode(65 + index)}`}
+                          required
+                        />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <div className="p-6 border-t border-border/40 flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditingQuestion(null)}
+                  className="rounded-xl"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={isSavingQuestionEdit} className="rounded-xl font-semibold">
+                  {isSavingQuestionEdit ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      Saving…
+                    </>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Card>
+        </div>
+      )}
+
+      {course && isCourseEditOpen && (
+        <EditCourseModal
+          isOpen={isCourseEditOpen}
+          onClose={() => setIsCourseEditOpen(false)}
+          onSave={handleSaveCourseEdit}
+          initialData={{
+            name: course.name,
+            description: course.description,
+            isPublic: course.isPublic,
+          }}
+          isSaving={isSavingCourseEdit}
+        />
+      )}
     </DashboardLayout>
   );
 }

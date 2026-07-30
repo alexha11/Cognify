@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
-import { apiGet, apiPost } from "@/lib/api";
+import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
 import { Course, QuizProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
-import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock, RefreshCw } from "lucide-react";
+import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock, RefreshCw, Pencil, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
+import { EditCourseModal } from "@/components/ui";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -29,8 +30,14 @@ export default function CoursesPage() {
   const [showCreate, setShowCreate] = useState(false);
   const [creating, setCreating] = useState(false);
   const [newCourse, setNewCourse] = useState({ name: "", description: "", isPublic: false });
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
 
   const canCreate = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
+
+  const canEditCourse = (course: Course) => {
+    return user?.role === "ADMIN" || (!!user?.id && user.id === course.createdById);
+  };
 
   const fetchCourses = async () => {
     if (authLoading) return;
@@ -87,6 +94,36 @@ export default function CoursesPage() {
       showToast(errorMessage, "error");
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleSaveCourseEdit = async (data: { name: string; description: string; isPublic: boolean }) => {
+    if (!editingCourse) return;
+    setIsSavingEdit(true);
+    try {
+      await apiPut(`/courses/${editingCourse.id}`, data);
+      showToast("Course updated successfully", "success");
+      setEditingCourse(null);
+      await fetchCourses();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      showToast(error.response?.data?.message || "Failed to update course", "error");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string, courseName: string) => {
+    if (!confirm(`Are you sure you want to delete "${courseName}"? All materials and quizzes will be deleted permanently.`)) {
+      return;
+    }
+    try {
+      await apiDelete(`/courses/${courseId}`);
+      showToast("Course deleted successfully", "success");
+      await fetchCourses();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      showToast(error.response?.data?.message || "Failed to delete course", "error");
     }
   };
 
@@ -227,7 +264,7 @@ export default function CoursesPage() {
             {courses.map((course) => (
               <Card
                 key={course.id}
-                className="group h-full hover:bg-secondary/50 transition-all"
+                className="group h-full hover:bg-secondary/50 transition-all flex flex-col justify-between"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
@@ -236,11 +273,41 @@ export default function CoursesPage() {
                         {course.name}
                       </CardTitle>
                     </Link>
-                    <Badge
-                      variant={course.isPublic ? "success" : "secondary"}
-                    >
-                      {course.isPublic ? c.public : c.private}
-                    </Badge>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={course.isPublic ? "success" : "secondary"}
+                      >
+                        {course.isPublic ? c.public : c.private}
+                      </Badge>
+                      {canEditCourse(course) && (
+                        <div className="flex items-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingCourse(course);
+                            }}
+                            className="h-7 w-7 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10"
+                            title="Edit Course"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteCourse(course.id, course.name);
+                            }}
+                            className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
+                            title="Delete Course"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-6">
@@ -295,6 +362,20 @@ export default function CoursesPage() {
           </div>
         )}
       </div>
+
+      {editingCourse && (
+        <EditCourseModal
+          isOpen={!!editingCourse}
+          onClose={() => setEditingCourse(null)}
+          onSave={handleSaveCourseEdit}
+          initialData={{
+            name: editingCourse.name,
+            description: editingCourse.description,
+            isPublic: editingCourse.isPublic,
+          }}
+          isSaving={isSavingEdit}
+        />
+      )}
     </DashboardLayout>
   );
 }

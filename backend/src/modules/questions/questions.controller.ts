@@ -171,8 +171,9 @@ export class QuestionsController {
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async approve(
     @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.questionsService.approve(id);
+    return this.questionsService.approve(id, user.userId, user.role);
   }
 
   /**

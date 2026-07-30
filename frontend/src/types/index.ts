@@ -86,9 +86,10 @@ export interface Question {
   aiGenerated: boolean;
   approved: boolean;
   courseId: string;
+  createdById?: string;
   createdAt: string;
   answers: Answer[];
-  createdBy: {
+  createdBy?: {
     id: string;
     firstName: string;
     lastName: string;
