@@ -86,11 +86,11 @@ export class MaterialsController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR, Role.STUDENT)
   async remove(
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<{ message: string }> {
-    return this.materialsService.remove(id);
+    return this.materialsService.remove(id, user.userId, user.role);
   }
 }

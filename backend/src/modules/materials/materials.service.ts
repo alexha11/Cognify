@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateMaterialDto } from './dto';
 import { SupabaseStorageService } from './supabase-storage.service';
@@ -156,17 +156,43 @@ export class MaterialsService {
    */
   async remove(
     id: string,
+    userId?: string,
+    userRole?: string,
   ): Promise<{ message: string }> {
     const material = await this.prisma.material.findFirst({
       where: { id },
+      include: { course: true },
     });
 
     if (!material) {
       throw new NotFoundException('Material not found');
     }
 
+    if (
+      userRole !== 'ADMIN' &&
+      userId &&
+      material.uploadedById !== userId &&
+      material.course.createdById !== userId
+    ) {
+      throw new ForbiddenException('You do not have permission to delete this material');
+    }
+
     // Delete file from storage
-    await this.supabaseStorage.deleteFile(material.fileUrl);
+    try {
+      await this.supabaseStorage.deleteFile(material.fileUrl);
+    } catch (e) {
+      this.logger.warn(`Failed to delete file from storage: ${e}`);
+    }
+
+    // Delete MaterialChunk vector records if any
+    try {
+      await this.prisma.$executeRawUnsafe(
+        `DELETE FROM "MaterialChunk" WHERE "materialId" = $1`,
+        id,
+      );
+    } catch (err: any) {
+      this.logger.warn(`MaterialChunk cleanup warning: ${err.message}`);
+    }
 
     await this.prisma.material.delete({
       where: { id },

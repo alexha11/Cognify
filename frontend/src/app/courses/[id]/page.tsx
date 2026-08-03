@@ -92,6 +92,18 @@ export default function CourseDetailPage() {
     );
   };
 
+  const handleDeleteMaterial = async (materialId: string, fileName: string) => {
+    if (!confirm(`Are you sure you want to delete "${fileName}"?`)) return;
+    try {
+      await apiDelete(`/materials/${materialId}`);
+      toast.success("Material deleted successfully");
+      fetchCourse();
+    } catch (err: unknown) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error.response?.data?.message || "Failed to delete material");
+    }
+  };
+
   const handleShareLink = () => {
     const url = `${window.location.origin}/quiz/share/${params.id}`;
     navigator.clipboard.writeText(url).then(() => {
@@ -785,19 +797,32 @@ export default function CourseDetailPage() {
                             ` · ${material.chunkCount} chunks`}
                         </p>
                       </div>
-                      <FeatureGate
-                        variant="prompt"
-                        title="Download resource"
-                        description="Sign in to download course materials."
-                      >
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-7 w-7 rounded-lg border border-border/40 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex-shrink-0"
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <FeatureGate
+                          variant="prompt"
+                          title="Download resource"
+                          description="Sign in to download course materials."
                         >
-                          <Play className="h-3 w-3 translate-x-px fill-current" />
-                        </Button>
-                      </FeatureGate>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-lg border border-border/40 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors flex-shrink-0"
+                          >
+                            <Play className="h-3 w-3 translate-x-px fill-current" />
+                          </Button>
+                        </FeatureGate>
+                        {(canEdit || canEditCourse || (user?.id && (material.uploadedBy?.id === user.id || material.uploadedById === user.id))) && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleDeleteMaterial(material.id, material.fileName)}
+                            className="h-7 w-7 rounded-lg border border-border/40 text-muted-foreground hover:border-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25 transition-colors flex-shrink-0"
+                            title="Delete material"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>

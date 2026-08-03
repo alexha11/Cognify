@@ -62,7 +62,8 @@ export interface Material {
   chunkCount: number;
   courseId: string;
   createdAt: string;
-  uploadedBy: {
+  uploadedById?: string;
+  uploadedBy?: {
     id: string;
     firstName: string;
     lastName: string;
