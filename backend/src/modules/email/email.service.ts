@@ -83,7 +83,9 @@ export class EmailService {
       });
 
       if (error) {
-        this.logger.error(`Failed to send verification email to ${to}: ${error.message}`);
+        this.logger.error(
+          `Failed to send verification email to ${to}: ${error.message}`,
+        );
         throw new Error(`Email delivery failed: ${error.message}`);
       }
 
@@ -101,7 +103,7 @@ export class EmailService {
     message: string;
   }): Promise<void> {
     this.logger.log(
-      `📩 [CONTACT SUPPORT REQUEST] From: ${dto.name} <${dto.email}> | Category: ${dto.category} | Message: ${dto.message}`
+      `📩 [CONTACT SUPPORT REQUEST] From: ${dto.name} <${dto.email}> | Category: ${dto.category} | Message: ${dto.message}`,
     );
 
     const html = `
@@ -158,7 +160,9 @@ export class EmailService {
       if (error) {
         this.logger.warn(`Resend API response: ${error.message}`);
       } else {
-        this.logger.log(`Support notification email successfully sent to ${recipient}`);
+        this.logger.log(
+          `Support notification email successfully sent to ${recipient}`,
+        );
       }
     } catch (err: any) {
       this.logger.warn(`Contact email fallback: ${err?.message || err}`);

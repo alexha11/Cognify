@@ -35,7 +35,11 @@ async function bootstrap() {
   const nodeEnv = configService.get('app.nodeEnv', { infer: true });
 
   app.enableCors({
-    origin: nodeEnv === 'production' ? '*' : '*',
+    origin:
+      nodeEnv === 'production'
+        ? configService.get('app.frontendUrl', { infer: true }) ||
+          'http://localhost:3000'
+        : '*',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -50,4 +54,4 @@ async function bootstrap() {
   logger.log(`🚀 Cognify Backend running on http://localhost:${port}/api`);
 }
 
-bootstrap();
+void bootstrap();

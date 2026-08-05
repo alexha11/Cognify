@@ -34,7 +34,8 @@ export const appConfig = registerAs(
     jwtSecret: process.env.JWT_SECRET || '',
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
     openRouterApiKey: process.env.OPENROUTER_API_KEY || '',
-    openRouterModel: process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001',
+    openRouterModel:
+      process.env.OPENROUTER_MODEL || 'google/gemini-2.0-flash-001',
     stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
     stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
     stripePriceIdPro: process.env.STRIPE_PRICE_ID_PRO || '',

@@ -123,7 +123,12 @@ export class AiService {
   /**
    * Build prompt for question generation, optionally with RAG context
    */
-  private buildPrompt(topic: string, count: number, context?: string, difficulty?: string): string {
+  private buildPrompt(
+    topic: string,
+    count: number,
+    context?: string,
+    difficulty?: string,
+  ): string {
     let contextBlock = '';
     if (context) {
       contextBlock = `--- COURSE MATERIAL ---
@@ -170,7 +175,8 @@ Important:
    */
   private parseAiResponse(content: string): GeneratedQuestion[] {
     const questions: GeneratedQuestion[] = [];
-    const questionRegex = /(?:\*{0,2}#*\s*)?---QUESTION---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---OPTIONS---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---CORRECT---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---HINT---(?:\*{0,2}\s*)([\s\S]*?)(?:(?:\*{0,2}#*\s*)?---END---|$)/gi;
+    const questionRegex =
+      /(?:\*{0,2}#*\s*)?---QUESTION---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---OPTIONS---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---CORRECT---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---HINT---(?:\*{0,2}\s*)([\s\S]*?)(?:(?:\*{0,2}#*\s*)?---END---|$)/gi;
 
     let match;
     while ((match = questionRegex.exec(content)) !== null) {
@@ -180,7 +186,7 @@ Important:
         const correctText = match[3].trim();
         const hintText = match[4].trim();
 
-        const optionRegex = /([A-D])[\.\)]\s*(.+?)(?=\n[A-D][\.\)]|$)/gs;
+        const optionRegex = /([A-D])[.)]\s*(.+?)(?=\n[A-D][.)]|$)/gs;
         const options: { letter: string; content: string }[] = [];
         let optMatch;
         const optionsTextNormalized = optionsText + '\n';

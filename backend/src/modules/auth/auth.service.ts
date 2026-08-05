@@ -9,10 +9,32 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma';
-import { RegisterDto, LoginDto, AuthResponseDto, UpdateProfileDto } from './dto';
+import {
+  RegisterDto,
+  LoginDto,
+  AuthResponseDto,
+  UpdateProfileDto,
+} from './dto';
 import { JwtPayload } from './interfaces';
-import { Role } from '@prisma/client';
+import { Role, User } from '@prisma/client';
 import { EmailService } from '../email/email.service';
+import { BCRYPT_SALT_ROUNDS, OTP_EXPIRY_MINUTES } from '../../common/constants';
+
+/** Fields needed to generate a JWT token. */
+export interface TokenUser {
+  id: string;
+  email: string;
+  role: Role;
+}
+
+/** Shape returned from user-facing endpoints. */
+export interface UserResponse {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  role: Role;
+}
 
 @Injectable()
 export class AuthService {
@@ -27,7 +49,9 @@ export class AuthService {
    * Register a new user and send OTP verification email.
    * Returns a message instead of a JWT — user must verify email first.
    */
-  async register(dto: RegisterDto): Promise<{ message: string; email: string }> {
+  async register(
+    dto: RegisterDto,
+  ): Promise<{ message: string; email: string }> {
     // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -38,33 +62,40 @@ export class AuthService {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(dto.password, 12);
+    const passwordHash = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
 
-    let user;
+    let user: User;
 
     if (existingUser && !existingUser.isEmailVerified) {
       // Re-registration attempt for unverified user — update their info and resend code
       user = await this.prisma.user.update({
         where: { email: dto.email },
-        data: { passwordHash, firstName: dto.firstName, lastName: dto.lastName },
+        data: {
+          passwordHash,
+          firstName: dto.firstName,
+          lastName: dto.lastName,
+        },
       });
     } else {
-      // Flow 2: Create User Only
+      // Create User Only
       user = await this.prisma.user.create({
         data: {
           email: dto.email,
           passwordHash,
           firstName: dto.firstName,
           lastName: dto.lastName,
-          role: (dto as any).role || Role.STUDENT,
-        } as any,
+          role: dto.role || Role.STUDENT,
+        },
       });
     }
 
     // Generate and store a 6-digit OTP
     await this.sendOtpToUser(user.id, dto.email);
 
-    return { message: 'Verification code sent to your email', email: dto.email };
+    return {
+      message: 'Verification code sent to your email',
+      email: dto.email,
+    };
   }
 
   /**
@@ -88,11 +119,15 @@ export class AuthService {
     const verification = user.emailVerification;
 
     if (!verification) {
-      throw new BadRequestException('No verification code found. Please register again.');
+      throw new BadRequestException(
+        'No verification code found. Please register again.',
+      );
     }
 
     if (new Date() > verification.expiresAt) {
-      throw new BadRequestException('Verification code has expired. Please request a new one.');
+      throw new BadRequestException(
+        'Verification code has expired. Please request a new one.',
+      );
     }
 
     if (verification.code !== code) {
@@ -112,13 +147,7 @@ export class AuthService {
 
     return {
       accessToken: token,
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        role: updatedUser.role,
-      },
+      user: this.toUserResponse(updatedUser),
     };
   }
 
@@ -146,7 +175,7 @@ export class AuthService {
    */
   private async sendOtpToUser(userId: string, email: string): Promise<void> {
     const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
 
     await this.prisma.emailVerification.upsert({
       where: { userId },
@@ -174,7 +203,9 @@ export class AuthService {
     }
 
     if (!user.isEmailVerified) {
-      throw new ForbiddenException('Please verify your email before signing in. Check your inbox for the verification code.');
+      throw new ForbiddenException(
+        'Please verify your email before signing in. Check your inbox for the verification code.',
+      );
     }
 
     if (!user.passwordHash) {
@@ -190,31 +221,18 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.generateToken(user as any);
+    const token = this.generateToken(user);
 
     return {
       accessToken: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
+      user: this.toUserResponse(user),
     };
   }
-
 
   /**
    * Get current user profile
    */
-  async getProfile(userId: string): Promise<{
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: Role;
-  }> {
+  async getProfile(userId: string): Promise<UserResponse> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
     });
@@ -223,27 +241,18 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    return {
-      id: user.id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-      role: user.role,
-    };
+    return this.toUserResponse(user);
   }
 
   /**
    * Update current user profile
    */
-  async updateProfile(userId: string, dto: UpdateProfileDto): Promise<{
+  async updateProfile(
+    userId: string,
+    dto: UpdateProfileDto,
+  ): Promise<{
     accessToken: string;
-    user: {
-      id: string;
-      email: string;
-      firstName: string;
-      lastName: string;
-      role: Role;
-    };
+    user: UserResponse;
   }> {
     const updatedUser = await this.prisma.user.update({
       where: { id: userId },
@@ -254,24 +263,18 @@ export class AuthService {
       },
     });
 
-    const token = this.generateToken(updatedUser as any);
+    const token = this.generateToken(updatedUser);
 
     return {
       accessToken: token,
-      user: {
-        id: updatedUser.id,
-        email: updatedUser.email,
-        firstName: updatedUser.firstName,
-        lastName: updatedUser.lastName,
-        role: updatedUser.role,
-      },
+      user: this.toUserResponse(updatedUser),
     };
   }
 
   /**
-   * Generate JWT token with organization context
+   * Generate JWT token with user context
    */
-  private generateToken(user: any): string {
+  private generateToken(user: TokenUser): string {
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
@@ -279,6 +282,21 @@ export class AuthService {
     };
 
     return this.jwtService.sign(payload);
+  }
+
+  /**
+   * Map a User entity to the public-facing user response shape.
+   */
+  private toUserResponse(
+    user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'role'>,
+  ): UserResponse {
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+    };
   }
 
   /**
@@ -324,17 +342,11 @@ export class AuthService {
       }
     }
 
-    const token = this.generateToken(user as any);
+    const token = this.generateToken(user);
 
     return {
       accessToken: token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-      },
+      user: this.toUserResponse(user),
     };
   }
 }

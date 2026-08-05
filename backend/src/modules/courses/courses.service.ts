@@ -6,42 +6,31 @@ import {
 import { PrismaService } from '../../prisma';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
 import { Role } from '@prisma/client';
+import { USER_SUMMARY_SELECT } from '../../common/constants';
+
+/** Reusable Prisma include for course responses with creator and counts. */
+const COURSE_WITH_CREATOR_AND_COUNTS = {
+  createdBy: { select: USER_SUMMARY_SELECT },
+  _count: { select: { materials: true, questions: true } },
+} as const;
 
 @Injectable()
 export class CoursesService {
-  constructor(
-    private readonly prisma: PrismaService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Create a new course
    */
   async create(dto: CreateCourseDto, userId: string) {
-    const course = await this.prisma.course.create({
+    return this.prisma.course.create({
       data: {
         name: dto.name,
         description: dto.description,
         isPublic: dto.isPublic ?? false,
         createdById: userId,
       },
-      include: {
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        _count: {
-          select: {
-            materials: true,
-            questions: true,
-          },
-        },
-      },
+      include: COURSE_WITH_CREATOR_AND_COUNTS,
     });
-
-    return course;
   }
 
   /**
@@ -54,22 +43,12 @@ export class CoursesService {
 
     const whereClause = {
       ...publishedFilter,
-      OR: [
-        { isPublic: true },
-        ...(userId ? [{ createdById: userId }] : []),
-      ],
+      OR: [{ isPublic: true }, ...(userId ? [{ createdById: userId }] : [])],
     };
 
     return this.prisma.course.findMany({
       where: whereClause,
-      include: {
-        createdBy: {
-          select: { id: true, firstName: true, lastName: true },
-        },
-        _count: {
-          select: { materials: true, questions: true },
-        },
-      },
+      include: COURSE_WITH_CREATOR_AND_COUNTS,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -77,26 +56,14 @@ export class CoursesService {
   /**
    * Get single course by ID
    */
-  async findOne(
-    id: string,
-    userRole?: Role,
-    userId?: string,
-  ) {
+  async findOne(id: string, userRole?: Role) {
     const course = await this.prisma.course.findFirst({
       where: {
         id,
-        ...(userRole === Role.STUDENT || !userRole
-          ? { isPublic: true }
-          : {}),
+        ...(userRole === Role.STUDENT || !userRole ? { isPublic: true } : {}),
       },
       include: {
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
+        createdBy: { select: USER_SUMMARY_SELECT },
         materials: {
           orderBy: { createdAt: 'desc' },
         },
@@ -131,30 +98,13 @@ export class CoursesService {
     userId: string,
     userRole: Role,
   ) {
-    const course = await this.prisma.course.findFirst({
-      where: { id },
-    });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
-    // Only admin or creator can update
-    if (userRole !== Role.ADMIN && course.createdById !== userId) {
-      throw new ForbiddenException('Not authorized to update this course');
-    }
+    await this.verifyCourseAccess(id, userId, userRole);
 
     return this.prisma.course.update({
       where: { id },
       data: dto,
       include: {
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
+        createdBy: { select: USER_SUMMARY_SELECT },
       },
     });
   }
@@ -168,21 +118,8 @@ export class CoursesService {
     isPublic: boolean,
     userId: string,
     role: Role,
-  ): Promise<any> {
-    const course = await this.prisma.course.findFirst({
-      where: { id },
-    });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
-    // Instructors can only update their own courses
-    if (role === Role.INSTRUCTOR && course.createdById !== userId) {
-      throw new ForbiddenException(
-        'You can only change visibility of courses you created',
-      );
-    }
+  ): Promise<{ id: string; name: string; isPublic: boolean }> {
+    await this.verifyCourseAccess(id, userId, role);
 
     const updated = await this.prisma.course.update({
       where: { id },
@@ -199,8 +136,8 @@ export class CoursesService {
   /**
    * Check if user has completed all prerequisites for a course.
    */
-  async checkPrerequisites(_courseId: string, _userId: string): Promise<boolean> {
-    return true;
+  checkPrerequisites(): Promise<boolean> {
+    return Promise.resolve(true);
   }
 
   /**
@@ -269,7 +206,10 @@ export class CoursesService {
   }
 
   /**
-   * Helper to verify if user can manage a course
+   * Verify if user can manage a course.
+   * @returns The course if access is granted.
+   * @throws NotFoundException if course doesn't exist.
+   * @throws ForbiddenException if user lacks permission.
    */
   private async verifyCourseAccess(
     courseId: string,
@@ -287,12 +227,18 @@ export class CoursesService {
     if (role !== Role.ADMIN && course.createdById !== userId) {
       throw new ForbiddenException('Not authorized to manage this course');
     }
+
+    return course;
   }
 
   /**
    * Delete course
    */
-  async remove(id: string, userId?: string, role?: Role): Promise<{ message: string }> {
+  async remove(
+    id: string,
+    userId?: string,
+    role?: Role,
+  ): Promise<{ message: string }> {
     const course = await this.prisma.course.findFirst({
       where: { id },
     });

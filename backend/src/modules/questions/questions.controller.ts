@@ -16,7 +16,11 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { QuestionsService } from './questions.service';
-import { CreateQuestionDto, UpdateQuestionDto, BulkCreateQuestionDto } from './dto';
+import {
+  CreateQuestionDto,
+  UpdateQuestionDto,
+  BulkCreateQuestionDto,
+} from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
@@ -37,10 +41,7 @@ export class QuestionsController {
     @Body() dto: CreateQuestionDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.questionsService.create(
-      dto,
-      user.userId,
-    );
+    return this.questionsService.create(dto, user.userId);
   }
 
   /**
@@ -54,10 +55,7 @@ export class QuestionsController {
     @Body() dto: BulkCreateQuestionDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.questionsService.createBulk(
-      dto,
-      user.userId,
-    );
+    return this.questionsService.createBulk(dto, user.userId);
   }
 
   /**
@@ -78,14 +76,25 @@ export class QuestionsController {
       }),
     )
     file: Express.Multer.File,
-    @Body() body: { courseId: string; hint?: string; answers: string; content?: string },
+    @Body()
+    body: {
+      courseId: string;
+      hint?: string;
+      answers: string;
+      content?: string;
+    },
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
     let answers: { content: string; isCorrect: boolean }[];
     try {
-      answers = JSON.parse(body.answers);
+      answers = JSON.parse(body.answers) as {
+        content: string;
+        isCorrect: boolean;
+      }[];
     } catch {
-      throw new BadRequestException('Invalid answers format — must be a JSON array');
+      throw new BadRequestException(
+        'Invalid answers format — must be a JSON array',
+      );
     }
 
     return this.questionsService.createWithImage(
@@ -107,10 +116,7 @@ export class QuestionsController {
     @Param('courseId') courseId: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any[]> {
-    return this.questionsService.findByCourse(
-      courseId,
-      user?.role,
-    );
+    return this.questionsService.findByCourse(courseId, user?.role);
   }
 
   /**
@@ -119,9 +125,7 @@ export class QuestionsController {
    * GET /questions/course/:courseId/public
    */
   @Get('course/:courseId/public')
-  async findByCoursePublic(
-    @Param('courseId') courseId: string,
-  ): Promise<any> {
+  async findByCoursePublic(@Param('courseId') courseId: string): Promise<any> {
     return this.questionsService.findByCoursePublic(courseId);
   }
 
@@ -141,9 +145,7 @@ export class QuestionsController {
    * GET /questions/:id
    */
   @Get(':id')
-  async findOne(
-    @Param('id') id: string,
-  ) {
+  async findOne(@Param('id') id: string) {
     return this.questionsService.findOne(id);
   }
 

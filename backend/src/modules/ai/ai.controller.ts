@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
 import { AiService } from './ai.service';
 import { GenerateQuestionsDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
@@ -30,10 +30,5 @@ export class AiController {
       dto.materialId,
       dto.difficulty,
     );
-  }
-
-  @Get('test-gen')
-  async testGen() {
-    return this.aiService.generateQuestions('test_course', 'Machine Learning', 1, 'user1');
   }
 }

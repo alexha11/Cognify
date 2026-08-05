@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Languages } from "lucide-react";
 import { useLanguage, type Language } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 

@@ -1,4 +1,9 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { Pool } from 'pg';
@@ -8,6 +13,7 @@ export class PrismaService
   extends PrismaClient
   implements OnModuleInit, OnModuleDestroy
 {
+  private readonly logger = new Logger(PrismaService.name);
   private pool: Pool;
 
   constructor() {
@@ -19,10 +25,6 @@ export class PrismaService
       connectionString?.includes('localhost') ||
       connectionString?.includes('127.0.0.1') ||
       connectionString?.includes('postgres:5432'); // Docker internal
-
-    console.log(
-      `[Database] Connecting to: ${connectionString?.split('@')[1] || 'Unknown'} (SSL: ${isLocal ? 'OFF' : 'ON'})`,
-    );
 
     const pool = new Pool({
       connectionString,
@@ -39,16 +41,25 @@ export class PrismaService
     });
 
     pool.on('error', (err) => {
-      console.error('[Database] Unexpected error on idle client', err);
+      // Use a static logger since `this` is not available in constructor before super()
+      Logger.error(
+        'Unexpected error on idle client',
+        err.stack,
+        PrismaService.name,
+      );
     });
 
     pool.on('connect', () => {
-      console.log('[Database] New client connected to pool');
+      Logger.log('New client connected to pool', PrismaService.name);
     });
 
     const adapter = new PrismaPg(pool);
     super({ adapter });
     this.pool = pool;
+
+    this.logger.log(
+      `Connecting to: ${connectionString?.split('@')[1] || 'Unknown'} (SSL: ${isLocal ? 'OFF' : 'ON'})`,
+    );
   }
 
   async onModuleInit(): Promise<void> {

@@ -2,11 +2,19 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateQuestionDto, UpdateQuestionDto } from './dto';
 import { Role } from '@prisma/client';
 import { SupabaseStorageService } from '../materials/supabase-storage.service';
+import { USER_SUMMARY_SELECT } from '../../common/constants';
+
+/** Reusable Prisma include for questions with answers and creator. */
+const QUESTION_WITH_ANSWERS_AND_CREATOR = {
+  answers: true,
+  createdBy: { select: USER_SUMMARY_SELECT },
+} as const;
 
 @Injectable()
 export class QuestionsService {
@@ -16,12 +24,59 @@ export class QuestionsService {
   ) {}
 
   /**
+   * Validate that exactly one answer is marked as correct.
+   * @throws BadRequestException if the constraint is violated.
+   */
+  private validateSingleCorrectAnswer(
+    answers: { isCorrect: boolean }[],
+    contextMessage = 'Exactly one answer must be marked as correct',
+  ): void {
+    const correctCount = answers.filter((a) => a.isCorrect).length;
+    if (correctCount !== 1) {
+      throw new BadRequestException(contextMessage);
+    }
+  }
+
+  /**
+   * Verify that the user is authorized to manage a question.
+   * Admins, the question creator, and the course creator are allowed.
+   * @returns The question with course info.
+   * @throws NotFoundException if the question doesn't exist.
+   * @throws ForbiddenException if the user lacks permission.
+   */
+  private async verifyQuestionAccess(
+    questionId: string,
+    userId: string | undefined,
+    userRole: Role | undefined,
+    action: string,
+  ) {
+    const question = await this.prisma.question.findFirst({
+      where: { id: questionId },
+      include: {
+        course: { select: { createdById: true } },
+      },
+    });
+
+    if (!question) {
+      throw new NotFoundException('Question not found');
+    }
+
+    if (
+      userRole &&
+      userRole !== Role.ADMIN &&
+      question.createdById !== userId &&
+      question.course?.createdById !== userId
+    ) {
+      throw new ForbiddenException(`Not authorized to ${action} this question`);
+    }
+
+    return question;
+  }
+
+  /**
    * Create a new question with answers
    */
-  async create(
-    dto: CreateQuestionDto,
-    userId: string,
-  ): Promise<any> {
+  async create(dto: CreateQuestionDto, userId: string) {
     const course = await this.prisma.course.findFirst({
       where: { id: dto.courseId },
     });
@@ -30,13 +85,7 @@ export class QuestionsService {
       throw new NotFoundException('Course not found');
     }
 
-    // Ensure exactly one correct answer
-    const correctAnswers = dto.answers.filter((a) => a.isCorrect);
-    if (correctAnswers.length !== 1) {
-      throw new ForbiddenException(
-        'Exactly one answer must be marked as correct',
-      );
-    }
+    this.validateSingleCorrectAnswer(dto.answers);
 
     return this.prisma.question.create({
       data: {
@@ -52,18 +101,8 @@ export class QuestionsService {
           create: dto.answers,
         },
       },
-      include: {
-        answers: true,
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
+      include: QUESTION_WITH_ANSWERS_AND_CREATOR,
     });
-
   }
 
   /**
@@ -76,7 +115,7 @@ export class QuestionsService {
     answers: { content: string; isCorrect: boolean }[],
     userId: string,
     caption?: string,
-  ): Promise<any> {
+  ) {
     const course = await this.prisma.course.findFirst({
       where: { id: courseId },
     });
@@ -85,13 +124,7 @@ export class QuestionsService {
       throw new NotFoundException('Course not found');
     }
 
-    // Validate exactly one correct answer
-    const correctAnswers = answers.filter((a) => a.isCorrect);
-    if (correctAnswers.length !== 1) {
-      throw new ForbiddenException(
-        'Exactly one answer must be marked as correct',
-      );
-    }
+    this.validateSingleCorrectAnswer(answers);
 
     // Upload image to Supabase storage
     const imageUrl = await this.supabaseStorage.uploadFile(
@@ -115,28 +148,16 @@ export class QuestionsService {
           create: answers,
         },
       },
-      include: {
-        answers: true,
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
+      include: QUESTION_WITH_ANSWERS_AND_CREATOR,
     });
   }
 
   /**
    * Create multiple questions in bulk
    */
-  async createBulk(
-    dto: { questions: CreateQuestionDto[] },
-    userId: string,
-  ): Promise<any> {
+  async createBulk(dto: { questions: CreateQuestionDto[] }, userId: string) {
     if (dto.questions.length === 0) return [];
-    
+
     const courseId = dto.questions[0].courseId;
     const course = await this.prisma.course.findFirst({
       where: { id: courseId },
@@ -148,16 +169,14 @@ export class QuestionsService {
 
     // Validate all questions have exactly one correct answer
     for (const q of dto.questions) {
-      const correctAnswers = q.answers.filter((a) => a.isCorrect);
-      if (correctAnswers.length !== 1) {
-        throw new ForbiddenException(
-          'Each question must have exactly one answer marked as correct',
-        );
-      }
+      this.validateSingleCorrectAnswer(
+        q.answers,
+        'Each question must have exactly one answer marked as correct',
+      );
     }
 
     const createdQuestions = await this.prisma.$transaction(
-      dto.questions.map((q) => 
+      dto.questions.map((q) =>
         this.prisma.question.create({
           data: {
             content: q.content,
@@ -173,8 +192,8 @@ export class QuestionsService {
           include: {
             answers: true,
           },
-        })
-      )
+        }),
+      ),
     );
 
     return createdQuestions;
@@ -212,25 +231,13 @@ export class QuestionsService {
    * Get questions for a course
    * Students only see approved questions
    */
-  async findByCourse(
-    courseId: string,
-    userRole?: Role,
-  ) {
+  async findByCourse(courseId: string, userRole?: Role) {
     return this.prisma.question.findMany({
       where: {
         courseId,
         ...(userRole === Role.STUDENT || !userRole ? { approved: true } : {}),
       },
-      include: {
-        answers: true,
-        createdBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
+      include: QUESTION_WITH_ANSWERS_AND_CREATOR,
       orderBy: { createdAt: 'desc' },
     });
   }
@@ -294,34 +301,11 @@ export class QuestionsService {
     dto: UpdateQuestionDto,
     userId?: string,
     userRole?: Role,
-  ): Promise<any> {
-    const question = await this.prisma.question.findFirst({
-      where: { id },
-      include: {
-        course: { select: { createdById: true } },
-      },
-    });
-
-    if (!question) {
-      throw new NotFoundException('Question not found');
-    }
-
-    if (
-      userRole &&
-      userRole !== Role.ADMIN &&
-      question.createdById !== userId &&
-      question.course?.createdById !== userId
-    ) {
-      throw new ForbiddenException('Not authorized to update this question');
-    }
+  ) {
+    await this.verifyQuestionAccess(id, userId, userRole, 'update');
 
     if (dto.answers && dto.answers.length > 0) {
-      const correctAnswers = dto.answers.filter((a) => a.isCorrect);
-      if (correctAnswers.length !== 1) {
-        throw new ForbiddenException(
-          'Exactly one answer must be marked as correct',
-        );
-      }
+      this.validateSingleCorrectAnswer(dto.answers);
     }
 
     return this.prisma.$transaction(async (tx) => {
@@ -343,7 +327,9 @@ export class QuestionsService {
         data: {
           ...(dto.content !== undefined && { content: dto.content }),
           ...(dto.hint !== undefined && { hint: dto.hint }),
-          ...(dto.contentType !== undefined && { contentType: dto.contentType }),
+          ...(dto.contentType !== undefined && {
+            contentType: dto.contentType,
+          }),
           ...(dto.imageUrl !== undefined && { imageUrl: dto.imageUrl }),
           ...(dto.approved !== undefined && { approved: dto.approved }),
         },
@@ -358,25 +344,7 @@ export class QuestionsService {
    * Approve AI question
    */
   async approve(id: string, userId?: string, userRole?: Role) {
-    const question = await this.prisma.question.findFirst({
-      where: { id },
-      include: {
-        course: { select: { createdById: true } },
-      },
-    });
-
-    if (!question) {
-      throw new NotFoundException('Question not found');
-    }
-
-    if (
-      userRole &&
-      userRole !== Role.ADMIN &&
-      question.createdById !== userId &&
-      question.course?.createdById !== userId
-    ) {
-      throw new ForbiddenException('Not authorized to approve this question');
-    }
+    await this.verifyQuestionAccess(id, userId, userRole, 'approve');
 
     return this.prisma.question.update({
       where: { id },
@@ -393,25 +361,7 @@ export class QuestionsService {
     userId?: string,
     userRole?: Role,
   ): Promise<{ message: string }> {
-    const question = await this.prisma.question.findFirst({
-      where: { id },
-      include: {
-        course: { select: { createdById: true } },
-      },
-    });
-
-    if (!question) {
-      throw new NotFoundException('Question not found');
-    }
-
-    if (
-      userRole &&
-      userRole !== Role.ADMIN &&
-      question.createdById !== userId &&
-      question.course?.createdById !== userId
-    ) {
-      throw new ForbiddenException('Not authorized to delete this question');
-    }
+    await this.verifyQuestionAccess(id, userId, userRole, 'delete');
 
     await this.prisma.question.delete({
       where: { id },

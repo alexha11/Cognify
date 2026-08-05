@@ -26,7 +26,6 @@ export class RegisterDto {
   @IsNotEmpty()
   lastName: string;
 
-
   @IsEnum(Role)
   @IsOptional()
   role?: Role;
@@ -42,8 +41,6 @@ export class LoginDto {
   password: string;
 }
 
-
-
 export class AuthResponseDto {
   accessToken: string;
   user: {
@@ -52,7 +49,6 @@ export class AuthResponseDto {
     firstName: string;
     lastName: string;
     role: Role;
-
   };
 }
 

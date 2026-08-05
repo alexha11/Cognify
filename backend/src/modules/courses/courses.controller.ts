@@ -35,10 +35,7 @@ export class CoursesController {
     @Body() dto: CreateCourseDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.coursesService.create(
-      dto,
-      user.userId,
-    );
+    return this.coursesService.create(dto, user.userId);
   }
 
   /**
@@ -61,11 +58,7 @@ export class CoursesController {
     @Param('id') id: string,
     @CurrentUser() user?: AuthenticatedUser,
   ): Promise<any> {
-    return this.coursesService.findOne(
-      id,
-      user?.role,
-      user?.userId,
-    );
+    return this.coursesService.findOne(id, user?.role);
   }
 
   /**
@@ -80,12 +73,7 @@ export class CoursesController {
     @Body() dto: UpdateCourseDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.coursesService.update(
-      id,
-      dto,
-      user.userId,
-      user.role,
-    );
+    return this.coursesService.update(id, dto, user.userId, user.role);
   }
 
   /**

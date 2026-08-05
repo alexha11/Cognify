@@ -1,9 +1,17 @@
-import { Injectable, Logger, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateMaterialDto } from './dto';
 import { SupabaseStorageService } from './supabase-storage.service';
 import { EmbeddingService } from '../embedding';
 import { chunkText } from '../embedding';
+import { Role } from '@prisma/client';
+import { MIN_PDF_TEXT_LENGTH } from '../../common/constants';
 
 @Injectable()
 export class MaterialsService {
@@ -18,10 +26,7 @@ export class MaterialsService {
   /**
    * Create new study material
    */
-  async create(
-    dto: CreateMaterialDto,
-    userId: string,
-  ): Promise<any> {
+  async create(dto: CreateMaterialDto, userId: string): Promise<any> {
     const course = await this.prisma.course.findFirst({
       where: { id: dto.courseId },
     });
@@ -79,8 +84,10 @@ export class MaterialsService {
 
     // 3. Check if we actually extracted meaningful text
     const cleanText = text.replace(/-- \d+ of \d+ --/g, '').trim();
-    if (cleanText.length < 50) {
-      throw new BadRequestException('The uploaded PDF appears to be empty or a scanned image. Please upload a PDF with selectable text.');
+    if (cleanText.length < MIN_PDF_TEXT_LENGTH) {
+      throw new BadRequestException(
+        'The uploaded PDF appears to be empty or a scanned image. Please upload a PDF with selectable text.',
+      );
     }
 
     // 4. Chunk the text
@@ -131,9 +138,7 @@ export class MaterialsService {
   /**
    * Get materials for a course
    */
-  async findByCourse(
-    courseId: string,
-  ): Promise<any[]> {
+  async findByCourse(courseId: string): Promise<any[]> {
     return this.prisma.material.findMany({
       where: {
         courseId,
@@ -157,7 +162,7 @@ export class MaterialsService {
   async remove(
     id: string,
     userId?: string,
-    userRole?: string,
+    userRole?: Role,
   ): Promise<{ message: string }> {
     const material = await this.prisma.material.findFirst({
       where: { id },
@@ -169,12 +174,14 @@ export class MaterialsService {
     }
 
     if (
-      userRole !== 'ADMIN' &&
+      userRole !== Role.ADMIN &&
       userId &&
       material.uploadedById !== userId &&
       material.course.createdById !== userId
     ) {
-      throw new ForbiddenException('You do not have permission to delete this material');
+      throw new ForbiddenException(
+        'You do not have permission to delete this material',
+      );
     }
 
     // Delete file from storage

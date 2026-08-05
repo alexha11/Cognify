@@ -12,7 +12,6 @@ export class CreateCourseDto {
   @IsBoolean()
   @IsOptional()
   isPublic?: boolean;
-
 }
 
 export class UpdateCourseDto {

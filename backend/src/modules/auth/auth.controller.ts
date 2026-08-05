@@ -11,11 +11,17 @@ import {
   Res,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, VerifyEmailDto, ResendCodeDto, UpdateProfileDto } from './dto';
-import { JwtAuthGuard, RolesGuard } from '../../common/guards';
-import { Roles, CurrentUser } from '../../common/decorators';
+import {
+  RegisterDto,
+  LoginDto,
+  VerifyEmailDto,
+  ResendCodeDto,
+  UpdateProfileDto,
+  AuthResponseDto,
+} from './dto';
+import { JwtAuthGuard } from '../../common/guards';
+import { CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
-import { Role } from '@prisma/client';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
 import { Config } from '../../config';
@@ -33,7 +39,9 @@ export class AuthController {
    * POST /auth/register
    */
   @Post('register')
-  async register(@Body() dto: RegisterDto): Promise<any> {
+  async register(
+    @Body() dto: RegisterDto,
+  ): Promise<{ message: string; email: string }> {
     return this.authService.register(dto);
   }
 
@@ -43,7 +51,7 @@ export class AuthController {
    */
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<any> {
+  async verifyEmail(@Body() dto: VerifyEmailDto): Promise<AuthResponseDto> {
     return this.authService.verifyEmail(dto.email, dto.code);
   }
 
@@ -53,7 +61,7 @@ export class AuthController {
    */
   @Post('resend-code')
   @HttpCode(HttpStatus.OK)
-  async resendCode(@Body() dto: ResendCodeDto): Promise<any> {
+  async resendCode(@Body() dto: ResendCodeDto): Promise<{ message: string }> {
     return this.authService.resendVerificationCode(dto.email);
   }
 
@@ -63,7 +71,7 @@ export class AuthController {
    */
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  async login(@Body() dto: LoginDto): Promise<any> {
+  async login(@Body() dto: LoginDto): Promise<AuthResponseDto> {
     return this.authService.login(dto);
   }
 
@@ -90,7 +98,6 @@ export class AuthController {
     return this.authService.updateProfile(user.userId, dto);
   }
 
-
   /**
    * Initiate Google OAuth flow
    * GET /auth/google
@@ -107,7 +114,10 @@ export class AuthController {
    */
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  async googleCallback(@Req() req: Request, @Res() res: Response): Promise<void> {
+  async googleCallback(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
     const googleUser = req.user as {
       googleId: string;
       email: string;
@@ -116,7 +126,9 @@ export class AuthController {
     };
 
     const result = await this.authService.validateGoogleUser(googleUser);
-    const frontendUrl = this.configService.get('app.frontendUrl', { infer: true }) || 'http://localhost:3000';
+    const frontendUrl =
+      this.configService.get('app.frontendUrl', { infer: true }) ||
+      'http://localhost:3000';
 
     // Redirect to frontend callback page with the token
     res.redirect(`${frontendUrl}/auth/callback?token=${result.accessToken}`);
