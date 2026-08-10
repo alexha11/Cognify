@@ -1,4 +1,11 @@
-import { IsString, IsNotEmpty, IsInt, IsOptional, Min, Max, MaxLength } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsInt,
+  IsOptional,
+  Min,
+  MaxLength,
+} from 'class-validator';
 
 export class CreateLeaderboardEntryDto {
   @IsString()

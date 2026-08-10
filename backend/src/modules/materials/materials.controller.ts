@@ -34,10 +34,7 @@ export class MaterialsController {
     @Body() dto: CreateMaterialDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.materialsService.create(
-      dto,
-      user.userId,
-    );
+    return this.materialsService.create(dto, user.userId);
   }
 
   /**
@@ -74,10 +71,7 @@ export class MaterialsController {
    * Get materials for a course
    */
   @Get('course/:courseId')
-  async findByCourse(
-    @Param('courseId') courseId: string,
-    @CurrentUser() user?: AuthenticatedUser,
-  ): Promise<any[]> {
+  async findByCourse(@Param('courseId') courseId: string): Promise<any[]> {
     return this.materialsService.findByCourse(courseId);
   }
 
@@ -86,7 +80,7 @@ export class MaterialsController {
    */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN, Role.INSTRUCTOR, Role.STUDENT)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
   async remove(
     @Param('id') id: string,
     @CurrentUser() user: AuthenticatedUser,

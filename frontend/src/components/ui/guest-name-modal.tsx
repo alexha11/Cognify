@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Button } from "./button";
 import { Input } from "./input";
-import { cn } from "@/lib/utils";
 import { Trophy, X, User } from "lucide-react";
 
 interface GuestNameModalProps {

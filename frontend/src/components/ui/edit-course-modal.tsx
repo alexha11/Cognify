@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "./card";
+import { useState } from "react";
+import { Card, CardHeader, CardTitle, CardDescription } from "./card";
 import { Button } from "./button";
 import { Input } from "./input";
 import { Label } from "./label";
@@ -35,12 +35,15 @@ export function EditCourseModal({
   const [isPublic, setIsPublic] = useState(initialData.isPublic);
   const [error, setError] = useState("");
 
-  useEffect(() => {
+  const [prevInitialData, setPrevInitialData] = useState(initialData);
+
+  if (initialData !== prevInitialData) {
+    setPrevInitialData(initialData);
     setName(initialData.name);
     setDescription(initialData.description || "");
     setIsPublic(initialData.isPublic);
     setError("");
-  }, [initialData, isOpen]);
+  }
 
   if (!isOpen) return null;
 

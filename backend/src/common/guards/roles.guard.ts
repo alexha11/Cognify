@@ -3,6 +3,7 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Role } from '@prisma/client';
@@ -15,6 +16,8 @@ import { AuthenticatedUser } from '../../modules/auth/interfaces';
  */
 @Injectable()
 export class RolesGuard implements CanActivate {
+  private readonly logger = new Logger(RolesGuard.name);
+
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
@@ -33,13 +36,6 @@ export class RolesGuard implements CanActivate {
       .getRequest<{ user: AuthenticatedUser }>();
     const user = request.user;
 
-    console.log('[RolesGuard] Checking access:', {
-      requiredRoles,
-      userRole: user?.role,
-      userId: user?.userId,
-      hasUser: !!user,
-    });
-
     if (!user) {
       throw new ForbiddenException('User not authenticated');
     }
@@ -47,10 +43,9 @@ export class RolesGuard implements CanActivate {
     const hasRole = requiredRoles.includes(user.role);
 
     if (!hasRole) {
-      console.log('[RolesGuard] Access denied:', {
-        userRole: user.role,
-        requiredRoles,
-      });
+      this.logger.warn(
+        `Access denied for user ${user.userId} (role: ${user.role}). Required: ${requiredRoles.join(', ')}`,
+      );
       throw new ForbiddenException(
         `Access denied. Required roles: ${requiredRoles.join(', ')}`,
       );

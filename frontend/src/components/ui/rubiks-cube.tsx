@@ -127,7 +127,7 @@ function CubeCluster({ isDark }: { isDark: boolean }) {
     for (let x = -1; x <= 1; x++) {
       for (let y = -1; y <= 1; y++) {
         for (let z = -1; z <= 1; z++) {
-          const idx = Math.floor(Math.random() * 4);
+          const idx = (Math.abs(x * 7 + y * 13 + z * 17) % 4);
           indices.push(idx);
           data.push({
             position: new THREE.Vector3(x, y, z),

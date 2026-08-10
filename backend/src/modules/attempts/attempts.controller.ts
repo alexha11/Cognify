@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { AttemptsService } from './attempts.service';
 import { CreateAttemptDto, UpdateProgressDto } from './dto';
 import { JwtAuthGuard } from '../../common/guards';
-import { Roles, CurrentUser } from '../../common/decorators';
+import { CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 
 @Controller('attempts')
@@ -19,10 +19,7 @@ export class AttemptsController {
     @Body() dto: CreateAttemptDto,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.attemptsService.create(
-      dto,
-      user.userId,
-    );
+    return this.attemptsService.create(dto, user.userId);
   }
 
   /**
@@ -88,9 +85,7 @@ export class AttemptsController {
    */
   @Get('stats')
   async getStats(@CurrentUser() user: AuthenticatedUser): Promise<any> {
-    return this.attemptsService.getOverallStats(
-      user.userId,
-    );
+    return this.attemptsService.getOverallStats(user.userId);
   }
 
   /**
@@ -102,9 +97,6 @@ export class AttemptsController {
     @Param('courseId') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
   ): Promise<any> {
-    return this.attemptsService.getCourseProgress(
-      courseId,
-      user.userId,
-    );
+    return this.attemptsService.getCourseProgress(courseId, user.userId);
   }
 }

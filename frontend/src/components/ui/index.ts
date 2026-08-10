@@ -21,3 +21,4 @@ export { ThemeProvider, useTheme } from './theme-provider';
 export { ThemeToggle } from './theme-toggle';
 export { GuestNameModal } from './guest-name-modal';
 export { EditCourseModal } from './edit-course-modal';
+export { EditQuestionModal } from './edit-question-modal';

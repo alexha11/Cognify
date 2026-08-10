@@ -4,7 +4,6 @@ import {
   BarChart3,
   TrendingUp,
   Check,
-  Lock,
   Sparkles,
   ArrowRight,
 } from "lucide-react";

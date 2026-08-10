@@ -7,8 +7,10 @@ import { Config } from '../../../config';
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(private readonly configService: ConfigService<Config>) {
-    const clientID = configService.get('app.googleClientId', { infer: true }) || '';
-    const clientSecret = configService.get('app.googleClientSecret', { infer: true }) || '';
+    const clientID =
+      configService.get('app.googleClientId', { infer: true }) || '';
+    const clientSecret =
+      configService.get('app.googleClientSecret', { infer: true }) || '';
 
     super({
       clientID,

@@ -1,23 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
 import {
   Card,
-  CardHeader,
-  CardTitle,
   CardContent,
-  CardDescription,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from "@/lib/api";
 import { Course, Question, Material, QuizProgress, CourseProgress } from "@/types";
-import { cn, formatDate, formatFileSize } from "@/lib/utils";
+import { cn, formatFileSize } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/error-utils";
 import {
   ArrowLeft,
   FileQuestion,
@@ -32,7 +29,6 @@ import {
   ArrowRight,
   Share2,
   Globe,
-  BrainCircuit,
   Trophy,
   RefreshCw,
   Pencil,
@@ -40,12 +36,10 @@ import {
 } from "lucide-react";
 import {
   FeatureGate,
-  AuthPromptModal,
   GenerateQuestionsModal,
   DraftQuestionsModal,
   EditCourseModal,
-  Input,
-  Label,
+  EditQuestionModal,
 } from "@/components/ui";
 import type { DraftQuestion } from "@/components/ui";
 import { toast } from "@/components/ui/toast";
@@ -73,16 +67,12 @@ export default function CourseDetailPage() {
   const [isCourseEditOpen, setIsCourseEditOpen] = useState(false);
   const [isSavingCourseEdit, setIsSavingCourseEdit] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [questionEditForm, setQuestionEditForm] = useState<{
-    content: string;
-    hint: string;
-    answers: { id?: string; content: string; isCorrect: boolean }[];
-  }>({ content: "", hint: "", answers: [] });
   const [isSavingQuestionEdit, setIsSavingQuestionEdit] = useState(false);
 
   const canEditCourse = user?.role === "ADMIN" || (!!user?.id && course?.createdById === user.id);
+  const canEdit = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
 
-  const canManageQuestion = (q: Question) => {
+  const canManageQuestion = useCallback((q: Question) => {
     return (
       user?.role === "ADMIN" ||
       (!!user?.id &&
@@ -90,122 +80,10 @@ export default function CourseDetailPage() {
           q.createdBy?.id === user.id ||
           course?.createdById === user.id))
     );
-  };
+  }, [user, course]);
 
-  const handleDeleteMaterial = async (materialId: string, fileName: string) => {
-    if (!confirm(`Are you sure you want to delete "${fileName}"?`)) return;
-    try {
-      await apiDelete(`/materials/${materialId}`);
-      toast.success("Material deleted successfully");
-      fetchCourse();
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Failed to delete material");
-    }
-  };
-
-  const handleShareLink = () => {
-    const url = `${window.location.origin}/quiz/share/${params.id}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    });
-  };
-
-  const handleSaveCourseEdit = async (data: { name: string; description: string; isPublic: boolean }) => {
-    if (!course) return;
-    setIsSavingCourseEdit(true);
-    try {
-      const updated = await apiPut<Course>(`/courses/${course.id}`, data);
-      setCourse(updated);
-      toast.success("Course updated successfully");
-      setIsCourseEditOpen(false);
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Failed to update course");
-    } finally {
-      setIsSavingCourseEdit(false);
-    }
-  };
-
-  const handleDeleteCourse = async () => {
-    if (!course) return;
-    if (!confirm(`Are you sure you want to delete "${course.name}"? All materials and quizzes will be deleted permanently.`)) {
-      return;
-    }
-    try {
-      await apiDelete(`/courses/${course.id}`);
-      toast.success("Course deleted successfully");
-      router.push("/courses");
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Failed to delete course");
-    }
-  };
-
-  const handleDeleteQuestion = async (questionId: string) => {
-    if (!confirm("Are you sure you want to delete this question?")) return;
-    try {
-      await apiDelete(`/questions/${questionId}`);
-      toast.success("Question deleted");
-      fetchCourse();
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Failed to delete question");
-    }
-  };
-
-  const openQuestionEdit = (q: Question) => {
-    setEditingQuestion(q);
-    setQuestionEditForm({
-      content: q.content,
-      hint: q.hint || "",
-      answers: q.answers.map((a) => ({
-        id: a.id,
-        content: a.content,
-        isCorrect: a.isCorrect,
-      })),
-    });
-  };
-
-  const handleSaveQuestionEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingQuestion) return;
-    if (questionEditForm.content.length < 5) {
-      toast.error("Question content is too short");
-      return;
-    }
-    if (!questionEditForm.answers.some((a) => a.isCorrect)) {
-      toast.error("Please mark at least one answer as correct");
-      return;
-    }
-    if (questionEditForm.answers.some((a) => !a.content.trim())) {
-      toast.error("All options must have text content");
-      return;
-    }
-    setIsSavingQuestionEdit(true);
-    try {
-      await apiPut(`/questions/${editingQuestion.id}`, {
-        content: questionEditForm.content,
-        hint: questionEditForm.hint || undefined,
-        answers: questionEditForm.answers,
-      });
-      toast.success("Question updated successfully");
-      setEditingQuestion(null);
-      fetchCourse();
-    } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      toast.error(error.response?.data?.message || "Failed to update question");
-    } finally {
-      setIsSavingQuestionEdit(false);
-    }
-  };
-
-  const canEdit = user?.role === "ADMIN" || user?.role === "INSTRUCTOR";
-  const isStudent = user?.role === "STUDENT";
-
-  const fetchCourse = async () => {
-    if (authLoading) return;
+  const fetchCourse = useCallback(async () => {
+    if (authLoading || !params.id) return;
     try {
       const [courseData, questionsData, materialsData] = await Promise.all([
         apiGet<Course>(`/courses/${params.id}`),
@@ -230,11 +108,89 @@ export default function CourseDetailPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [params.id, authLoading, user, router]);
 
   useEffect(() => {
     fetchCourse();
-  }, [params.id, authLoading, user]);
+  }, [fetchCourse]);
+
+  const handleDeleteMaterial = async (materialId: string, fileName: string) => {
+    if (!confirm(`Are you sure you want to delete "${fileName}"?`)) return;
+    try {
+      await apiDelete(`/materials/${materialId}`);
+      toast.success("Material deleted successfully");
+      fetchCourse();
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to delete material"));
+    }
+  };
+
+  const handleShareLink = () => {
+    const url = `${window.location.origin}/quiz/share/${params.id}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
+
+  const handleSaveCourseEdit = async (data: { name: string; description: string; isPublic: boolean }) => {
+    if (!course) return;
+    setIsSavingCourseEdit(true);
+    try {
+      const updated = await apiPut<Course>(`/courses/${course.id}`, data);
+      setCourse(updated);
+      toast.success("Course updated successfully");
+      setIsCourseEditOpen(false);
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to update course"));
+    } finally {
+      setIsSavingCourseEdit(false);
+    }
+  };
+
+  const handleDeleteCourse = async () => {
+    if (!course) return;
+    if (!confirm(`Are you sure you want to delete "${course.name}"? All materials and quizzes will be deleted permanently.`)) {
+      return;
+    }
+    try {
+      await apiDelete(`/courses/${course.id}`);
+      toast.success("Course deleted successfully");
+      router.push("/courses");
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to delete course"));
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!confirm("Are you sure you want to delete this question?")) return;
+    try {
+      await apiDelete(`/questions/${questionId}`);
+      toast.success("Question deleted");
+      fetchCourse();
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to delete question"));
+    }
+  };
+
+  const handleSaveQuestionEdit = async (data: {
+    content: string;
+    hint?: string;
+    answers: { id?: string; content: string; isCorrect: boolean }[];
+  }) => {
+    if (!editingQuestion) return;
+    setIsSavingQuestionEdit(true);
+    try {
+      await apiPut(`/questions/${editingQuestion.id}`, data);
+      toast.success("Question updated successfully");
+      setEditingQuestion(null);
+      fetchCourse();
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, "Failed to update question"));
+    } finally {
+      setIsSavingQuestionEdit(false);
+    }
+  };
 
   const handleQuizAction = async () => {
     if (!course) return;
@@ -276,8 +232,7 @@ export default function CourseDetailPage() {
       await apiUpload<Material>("/materials/upload", formData);
       fetchCourse();
     } catch (err: unknown) {
-      const error = err as { response?: { data?: { message?: string } } };
-      setUploadError(error.response?.data?.message || "Failed to upload file");
+      setUploadError(getApiErrorMessage(err, "Failed to upload file"));
     } finally {
       setIsUploading(false);
       e.target.value = "";
@@ -349,6 +304,15 @@ export default function CourseDetailPage() {
     }
   };
 
+  const pendingQuestions = useMemo(
+    () => questions.filter((q) => !q.approved),
+    [questions]
+  );
+  const approvedQuestions = useMemo(
+    () => questions.filter((q) => q.approved),
+    [questions]
+  );
+
   if (isLoading) {
     return (
       <DashboardLayout>
@@ -360,9 +324,6 @@ export default function CourseDetailPage() {
   }
 
   if (!course) return null;
-
-  const pendingQuestions = questions.filter((q) => !q.approved);
-  const approvedQuestions = questions.filter((q) => q.approved);
 
   return (
     <DashboardLayout>
@@ -733,7 +694,7 @@ export default function CourseDetailPage() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => openQuestionEdit(question)}
+                            onClick={() => setEditingQuestion(question)}
                             className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5"
                             title="Edit question"
                           >
@@ -873,7 +834,7 @@ export default function CourseDetailPage() {
                     className="w-full rounded-xl h-11 gap-2.5 font-semibold text-sm"
                     onClick={() => setIsGenerateModalOpen(true)}
                   >
-                    <BrainCircuit className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" />
                     Generate with AI
                   </Button>
                   <p className="text-center text-[10px] text-muted-foreground/60">
@@ -908,116 +869,13 @@ export default function CourseDetailPage() {
         isSaving={isSavingDrafts}
       />
 
-      {editingQuestion && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full shadow-xl border-border/50 animate-in fade-in zoom-in-95 duration-200">
-            <CardHeader className="p-6 border-b border-border/40">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base font-semibold">Edit question</CardTitle>
-                  <CardDescription className="text-xs">Update question content, hint, and answer options.</CardDescription>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setEditingQuestion(null)}
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <form onSubmit={handleSaveQuestionEdit}>
-              <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-                <div className="space-y-2">
-                  <Label htmlFor="questionText" className="text-xs font-medium text-muted-foreground">
-                    Question text
-                  </Label>
-                  <textarea
-                    id="questionText"
-                    value={questionEditForm.content}
-                    onChange={(e) => setQuestionEditForm({ ...questionEditForm, content: e.target.value })}
-                    rows={3}
-                    className="w-full px-4 py-3 rounded-xl border border-border bg-background text-sm text-foreground leading-relaxed placeholder:text-muted-foreground/50 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors resize-none"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="questionHint" className="text-xs font-medium text-muted-foreground">
-                    Hint (optional)
-                  </Label>
-                  <Input
-                    id="questionHint"
-                    value={questionEditForm.hint}
-                    onChange={(e) => setQuestionEditForm({ ...questionEditForm, hint: e.target.value })}
-                    className="rounded-xl text-sm h-10"
-                    placeholder="Add a hint..."
-                  />
-                </div>
-                <div className="space-y-3">
-                  <Label className="text-xs font-medium text-muted-foreground">Answer options</Label>
-                  <div className="space-y-2">
-                    {questionEditForm.answers.map((answer, index) => (
-                      <div key={index} className="flex items-center gap-2.5">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            const updated = questionEditForm.answers.map((a, i) => ({
-                              ...a,
-                              isCorrect: i === index,
-                            }));
-                            setQuestionEditForm({ ...questionEditForm, answers: updated });
-                          }}
-                          className={cn(
-                            "h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg border transition-all duration-150",
-                            answer.isCorrect
-                              ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
-                              : "bg-background border-border text-muted-foreground/30 hover:border-emerald-400 hover:text-emerald-600"
-                          )}
-                          title="Mark as correct"
-                        >
-                          <Check className="w-3.5 h-3.5" />
-                        </button>
-                        <Input
-                          value={answer.content}
-                          onChange={(e) => {
-                            const updated = [...questionEditForm.answers];
-                            updated[index].content = e.target.value;
-                            setQuestionEditForm({ ...questionEditForm, answers: updated });
-                          }}
-                          className="rounded-xl text-sm h-9 flex-1"
-                          placeholder={`Option ${String.fromCharCode(65 + index)}`}
-                          required
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="p-6 border-t border-border/40 flex justify-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setEditingQuestion(null)}
-                  className="rounded-xl"
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" disabled={isSavingQuestionEdit} className="rounded-xl font-semibold">
-                  {isSavingQuestionEdit ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      Saving…
-                    </>
-                  ) : (
-                    "Save Changes"
-                  )}
-                </Button>
-              </div>
-            </form>
-          </Card>
-        </div>
-      )}
+      <EditQuestionModal
+        question={editingQuestion}
+        isOpen={!!editingQuestion}
+        onClose={() => setEditingQuestion(null)}
+        onSave={handleSaveQuestionEdit}
+        isSaving={isSavingQuestionEdit}
+      />
 
       {course && isCourseEditOpen && (
         <EditCourseModal

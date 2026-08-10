@@ -2,12 +2,15 @@ import {
   Injectable,
   NotFoundException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateAttemptDto, UpdateProgressDto } from './dto';
 
 @Injectable()
 export class AttemptsService {
+  private readonly logger = new Logger(AttemptsService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
@@ -62,8 +65,12 @@ export class AttemptsService {
         },
       },
       update: {
-        ...(dto.currentIndex !== undefined ? { currentIndex: dto.currentIndex } : {}),
-        ...(dto.isCompleted !== undefined ? { isCompleted: dto.isCompleted } : {}),
+        ...(dto.currentIndex !== undefined
+          ? { currentIndex: dto.currentIndex }
+          : {}),
+        ...(dto.isCompleted !== undefined
+          ? { isCompleted: dto.isCompleted }
+          : {}),
       },
       create: {
         userId,
@@ -117,15 +124,20 @@ export class AttemptsService {
     }
 
     // Verify all submitted answers belong to question
-    const validAnswerIds = question.answers.map((a: any) => a.id);
-    const isValid = dto.selectedAnswerIds.every(id => validAnswerIds.includes(id));
+    const validAnswerIds = question.answers.map((a) => a.id);
+    const isValid = dto.selectedAnswerIds.every((id) =>
+      validAnswerIds.includes(id),
+    );
     if (!isValid || dto.selectedAnswerIds.length === 0) {
-      throw new ForbiddenException('Invalid answers selected for this question');
+      throw new ForbiddenException(
+        'Invalid answers selected for this question',
+      );
     }
 
-    const correctAnswers = question.answers.filter((a: any) => a.isCorrect);
-    const isCorrect = correctAnswers.length === dto.selectedAnswerIds.length && 
-                      correctAnswers.every((a: any) => dto.selectedAnswerIds.includes(a.id));
+    const correctAnswers = question.answers.filter((a) => a.isCorrect);
+    const isCorrect =
+      correctAnswers.length === dto.selectedAnswerIds.length &&
+      correctAnswers.every((a) => dto.selectedAnswerIds.includes(a.id));
 
     // Check if already answered - if so, update the attempt instead of throwing
     const existingAttempt = await this.prisma.attempt.findFirst({
@@ -142,7 +154,7 @@ export class AttemptsService {
         where: { id: existingAttempt.id },
         data: {
           selectedAnswerIds: dto.selectedAnswerIds,
-          isCorrect: isCorrect,
+          isCorrect,
         },
         include: {
           question: {
@@ -159,7 +171,7 @@ export class AttemptsService {
           userId,
           questionId: dto.questionId,
           selectedAnswerIds: dto.selectedAnswerIds,
-          isCorrect: isCorrect,
+          isCorrect,
         },
         include: {
           question: {
@@ -180,7 +192,7 @@ export class AttemptsService {
       id: attempt.id,
       isCorrect: attempt.isCorrect,
       selectedAnswerIds: attempt.selectedAnswerIds,
-      correctAnswerIds: correctAnswers.map((a: any) => a.id),
+      correctAnswerIds: correctAnswers.map((a) => a.id),
       hint: question.hint,
       question: {
         id: question.id,
@@ -192,7 +204,7 @@ export class AttemptsService {
   /**
    * Get user's attempt history
    */
-  async findByUser(userId: string): Promise<any[]> {
+  async findByUser(userId: string) {
     return this.prisma.attempt.findMany({
       where: { userId },
       include: {
@@ -205,7 +217,7 @@ export class AttemptsService {
   /**
    * Get attempt statistics for user
    */
-  async getOverallStats(userId: string): Promise<any> {
+  async getOverallStats(userId: string) {
     const attempts = await this.prisma.attempt.findMany({
       where: {
         userId,
@@ -225,7 +237,7 @@ export class AttemptsService {
 
     // Group by course
     const byCourse = attempts.reduce(
-      (acc: any, attempt: any) => {
+      (acc, attempt) => {
         const courseId = attempt.question.courseId;
         if (!acc[courseId]) {
           acc[courseId] = { total: 0, correct: 0 };
@@ -252,13 +264,10 @@ export class AttemptsService {
   /**
    * Get course progress for user
    */
-  async getCourseProgress(
-    courseId: string,
-    userId: string,
-  ) {
+  async getCourseProgress(courseId: string, userId: string) {
     const course = await this.prisma.course.findFirst({
-      where: { 
-        id: courseId, 
+      where: {
+        id: courseId,
       },
       include: {
         questions: {
@@ -276,7 +285,7 @@ export class AttemptsService {
     const attempts = await this.prisma.attempt.findMany({
       where: {
         userId,
-        questionId: { in: course.questions.map((q: any) => q.id) },
+        questionId: { in: course.questions.map((q) => q.id) },
       },
     });
 
@@ -302,7 +311,8 @@ export class AttemptsService {
   }
 
   /**
-   * Check if all approved questions in a course are correctly answered and mark course as complete
+   * Check if all approved questions in a course are correctly answered.
+   * Updates QuizProgress to mark the course as completed if all questions are correct.
    */
   async checkAndMarkCompletion(userId: string, courseId: string) {
     const course = await this.prisma.course.findUnique({
@@ -320,18 +330,32 @@ export class AttemptsService {
     const correctAttempts = await this.prisma.attempt.findMany({
       where: {
         userId,
-        questionId: { in: course.questions.map((q: any) => q.id) },
+        questionId: { in: course.questions.map((q) => q.id) },
         isCorrect: true,
       },
       select: { questionId: true },
     });
 
     const uniqueCorrectQuestions = new Set(
-      correctAttempts.map((a: any) => a.questionId),
+      correctAttempts.map((a) => a.questionId),
     );
 
     if (uniqueCorrectQuestions.size === course.questions.length) {
-      // Mark as complete
+      // Mark quiz progress as completed
+      await this.prisma.quizProgress.upsert({
+        where: {
+          userId_courseId: { userId, courseId },
+        },
+        update: { isCompleted: true },
+        create: {
+          userId,
+          courseId,
+          currentIndex: course.questions.length,
+          isCompleted: true,
+        },
+      });
+
+      this.logger.log(`User ${userId} completed course ${courseId}`);
     }
   }
 }
