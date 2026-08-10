@@ -43,7 +43,7 @@ export function FeatureGate({
           {children}
         </div>
         <div className="absolute inset-0 flex items-center justify-center p-6 bg-background/50 backdrop-blur-[2px]">
-          <div className="text-center space-y-6 max-w-sm p-10 rounded-[32px] bg-card shadow-2xl border border-border">
+          <div className="text-center space-y-6 max-w-sm p-10 rounded-xl bg-card shadow-2xl border border-border">
             <div className="mx-auto w-12 h-12 flex items-center justify-center rounded-full bg-primary/5 text-primary">
               <Lock className="h-6 w-6" />
             </div>
@@ -51,12 +51,12 @@ export function FeatureGate({
               <h3 className="text-xl font-semibold tracking-tight">
                 {title || "Premium Access"}
               </h3>
-              <p className="text-sm text-muted-foreground font-serif leading-relaxed">
+              <p className="text-sm text-muted-foreground leading-relaxed">
                 {description || "Please sign in to view this content."}
               </p>
             </div>
             <Button
-              variant="pill"
+              pill
               size="lg"
               onClick={() => setShowModal(true)}
               className="w-full"

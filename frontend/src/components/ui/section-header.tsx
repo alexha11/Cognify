@@ -3,34 +3,45 @@ import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
   title: string;
+  description?: string;
   variant?: "default" | "destructive";
   action?: React.ReactNode;
   className?: string;
 }
 
+/**
+ * One level below PageHeader. The old decorative rule between title and action
+ * is gone — spacing separates the two well enough without a line that broke
+ * whenever the title wrapped.
+ */
 export function SectionHeader({
   title,
+  description,
   variant = "default",
   action,
   className,
 }: SectionHeaderProps) {
   return (
-    <div className={cn("flex items-center justify-between", className)}>
-      <h2
-        className={cn(
-          "text-2xl font-semibold tracking-tight",
-          variant === "destructive" && "text-destructive",
+    <div
+      className={cn(
+        "flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between sm:gap-4",
+        className,
+      )}
+    >
+      <div className="min-w-0 space-y-1">
+        <h2
+          className={cn(
+            "text-lg font-semibold tracking-tight",
+            variant === "destructive" ? "text-error" : "text-foreground",
+          )}
+        >
+          {title}
+        </h2>
+        {description && (
+          <p className="text-sm text-muted-foreground">{description}</p>
         )}
-      >
-        {title}
-      </h2>
-      <div
-        className={cn(
-          "h-[1px] flex-1 mx-8",
-          variant === "destructive" ? "bg-destructive/20" : "bg-border/40",
-        )}
-      />
-      {action}
+      </div>
+      {action && <div className="flex shrink-0 items-center gap-2">{action}</div>}
     </div>
   );
 }

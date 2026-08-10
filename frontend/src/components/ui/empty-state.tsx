@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Card, CardContent } from "./card";
+import { Card } from "./card";
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
 
@@ -18,15 +18,15 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <Card
-      className={cn("border-dashed py-16 bg-card/50", className)}
+      variant="dashed"
+      className={cn(
+        "flex flex-col items-center gap-4 px-6 py-12 text-center",
+        className,
+      )}
     >
-      <CardContent className="text-center space-y-6 pt-0">
-        <Icon className="mx-auto h-12 w-12 text-muted-foreground/20" />
-        <p className="text-muted-foreground font-serif text-lg italic">
-          {message}
-        </p>
-        {action}
-      </CardContent>
+      <Icon className="h-8 w-8 text-subtle-foreground" aria-hidden="true" />
+      <p className="max-w-sm text-sm text-muted-foreground">{message}</p>
+      {action}
     </Card>
   );
 }

@@ -65,7 +65,7 @@ export function QuizCard({
             {/* Question text / image */}
             {question.contentType === 'image' && question.imageUrl ? (
               <div className="space-y-3">
-                <div className="rounded-2xl overflow-hidden border border-border/60 bg-muted/20 p-2">
+                <div className="rounded-lg overflow-hidden border border-border/60 bg-muted/20 p-2">
                   <img
                     src={question.imageUrl}
                     alt={question.content || "Question image"}
@@ -140,21 +140,21 @@ export function QuizCard({
                   // SELECTED — unmissable violet fill
                   isSelected &&
                     !showResult && [
-                      "bg-violet-500/[0.09] border-violet-500",
-                      "ring-2 ring-violet-500/20",
+                      "bg-primary/[0.09] border-primary",
+                      "ring-2 ring-primary/20",
                       "shadow-sm",
                     ],
 
                   // correct
                   showResult &&
                     isCorrect &&
-                    "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-400 dark:border-emerald-600",
+                    "bg-success-subtle border-success-border",
 
                   // wrong + selected
                   showResult &&
                     wasSelected &&
                     !isCorrect &&
-                    "bg-red-50 dark:bg-red-950/25 border-red-400 dark:border-red-600",
+                    "bg-error-subtle border-error-border",
 
                   // wrong + unselected: dimmed
                   showResult && !isCorrect && !wasSelected && "opacity-35 border-border/30",
@@ -166,9 +166,9 @@ export function QuizCard({
                   className={cn(
                     "absolute left-0 top-3 bottom-3 rounded-r-full transition-all duration-150",
                     !isSelected && !showResult && "w-0",
-                    isSelected && !showResult && "w-1 bg-violet-500",
-                    showResult && isCorrect && "w-1 bg-emerald-500",
-                    showResult && wasSelected && !isCorrect && "w-1 bg-red-500",
+                    isSelected && !showResult && "w-1 bg-primary",
+                    showResult && isCorrect && "w-1 bg-success",
+                    showResult && wasSelected && !isCorrect && "w-1 bg-error",
                     showResult && !isCorrect && !wasSelected && "w-0",
                   )}
                 />
@@ -183,9 +183,9 @@ export function QuizCard({
                         "bg-background border-border text-muted-foreground group-hover:border-primary/60 group-hover:text-primary group-hover:bg-primary/5",
                       isSelected &&
                         !showResult &&
-                        "bg-violet-500 border-violet-500 text-white shadow-sm",
-                      showResult && isCorrect && "bg-emerald-500 border-emerald-500 text-white",
-                      showResult && wasSelected && !isCorrect && "bg-red-500 border-red-500 text-white",
+                        "bg-primary border-primary text-primary-foreground shadow-sm",
+                      showResult && isCorrect && "bg-success border-success text-success-foreground",
+                      showResult && wasSelected && !isCorrect && "bg-error border-error text-error-foreground",
                       showResult && !isCorrect && !wasSelected && "bg-muted border-border/40 text-muted-foreground/50",
                     )}
                   >
@@ -206,8 +206,8 @@ export function QuizCard({
                       "text-sm leading-relaxed flex-1 whitespace-normal break-words transition-colors duration-150 [&>p]:mb-2 [&>p:last-child]:mb-0",
                       !isSelected && !showResult && "text-muted-foreground group-hover:text-foreground",
                       isSelected && !showResult && "text-foreground font-medium",
-                      showResult && isCorrect && "text-emerald-800 dark:text-emerald-300 font-medium",
-                      showResult && wasSelected && !isCorrect && "text-red-700 dark:text-red-300",
+                      showResult && isCorrect && "text-success font-medium",
+                      showResult && wasSelected && !isCorrect && "text-error",
                       showResult && !isCorrect && !wasSelected && "text-muted-foreground/50",
                     )}
                   >
@@ -221,10 +221,10 @@ export function QuizCard({
 
                   {/* Trailing result icon */}
                   {showResult && isCorrect && (
-                    <Check className="h-4 w-4 text-emerald-500 flex-shrink-0 animate-in zoom-in duration-200" />
+                    <Check className="h-4 w-4 text-success flex-shrink-0 animate-in zoom-in duration-200" />
                   )}
                   {showResult && wasSelected && !isCorrect && (
-                    <X className="h-4 w-4 text-red-500 flex-shrink-0 animate-in zoom-in duration-200" />
+                    <X className="h-4 w-4 text-error flex-shrink-0 animate-in zoom-in duration-200" />
                   )}
                 </div>
               </button>
@@ -237,7 +237,7 @@ export function QuizCard({
           <div className="flex items-center justify-between pt-1">
             <div className="min-h-[2rem] flex items-center">
               {selectedAnswers.length > 0 && (
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-3 py-1 rounded-full animate-in fade-in duration-150">
+                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary bg-primary-subtle border border-primary-border px-3 py-1 rounded-full animate-in fade-in duration-150">
                   <Check className="h-3 w-3" />
                   {selectedAnswers.length} selected
                 </span>
@@ -265,14 +265,14 @@ export function QuizCard({
               className={cn(
                 "flex items-start gap-4 p-5 rounded-xl border",
                 result.isCorrect
-                  ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/70 dark:border-emerald-700/50"
-                  : "bg-red-50 dark:bg-red-950/25 border-red-300/70 dark:border-red-700/50",
+                  ? "bg-success-subtle border-success-border"
+                  : "bg-error-subtle border-error-border",
               )}
             >
               <div
                 className={cn(
                   "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0",
-                  result.isCorrect ? "bg-emerald-500 text-white" : "bg-red-500 text-white",
+                  result.isCorrect ? "bg-success text-success-foreground" : "bg-error text-error-foreground",
                 )}
               >
                 {result.isCorrect ? (
@@ -287,15 +287,15 @@ export function QuizCard({
                   className={cn(
                     "text-sm font-semibold",
                     result.isCorrect
-                      ? "text-emerald-700 dark:text-emerald-300"
-                      : "text-red-600 dark:text-red-400",
+                      ? "text-success"
+                      : "text-error",
                   )}
                 >
                   {result.isCorrect ? "Correct!" : "Not quite right."}
                 </p>
                 {result.hint && (
                   <div className="flex items-start gap-2">
-                    <Lightbulb className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                    <Lightbulb className="h-3.5 w-3.5 text-warning flex-shrink-0 mt-0.5" />
                     <p className="text-xs text-muted-foreground leading-relaxed">
                       {result.hint}
                     </p>

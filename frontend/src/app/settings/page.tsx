@@ -172,7 +172,7 @@ export default function SettingsPage() {
                 <p className="text-xs text-muted-foreground">{user.email}</p>
                 <span
                   className={cn(
-                    "inline-flex items-center mt-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full border",
+                    "inline-flex items-center mt-1.5 text-xs font-semibold px-2 py-0.5 rounded-full border",
                     user.role === "ADMIN"
                       ? "bg-primary/10 border-primary/20 text-primary"
                       : user.role === "INSTRUCTOR"
@@ -221,7 +221,7 @@ export default function SettingsPage() {
                 disabled
                 className="h-9 rounded-xl text-sm bg-muted/40"
               />
-              <p className="text-[10px] text-muted-foreground/60">{s.emailCannotBeChanged}</p>
+              <p className="text-xs text-muted-foreground/60">{s.emailCannotBeChanged}</p>
             </div>
 
             <div className="space-y-1.5">
@@ -244,7 +244,7 @@ export default function SettingsPage() {
                       : t.auth.student}
                 </span>
               </div>
-              <p className="text-[10px] text-muted-foreground/60">
+              <p className="text-xs text-muted-foreground/60">
                 {s.roleDescriptions[user.role]}
               </p>
             </div>
@@ -297,7 +297,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold">{label}</p>
-                    <p className="text-[10px] text-muted-foreground">{desc}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
                   </div>
                 </button>
               ))}
@@ -335,7 +335,7 @@ export default function SettingsPage() {
                   </div>
                   <div className="text-center">
                     <p className="text-sm font-semibold">{label}</p>
-                    <p className="text-[10px] text-muted-foreground">{desc}</p>
+                    <p className="text-xs text-muted-foreground">{desc}</p>
                   </div>
                 </button>
               ))}
@@ -354,7 +354,7 @@ export default function SettingsPage() {
             </p>
 
             {pwError && (
-              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/25 border border-red-300/60 dark:border-red-700/50 text-xs font-medium text-red-600 dark:text-red-400">
+              <div className="p-3 rounded-xl bg-error-subtle border border-error-border text-xs font-medium text-error">
                 {pwError}
               </div>
             )}
@@ -418,9 +418,9 @@ export default function SettingsPage() {
                     className={cn(
                       "h-9 rounded-xl text-sm",
                       confirmPassword && confirmPassword !== newPassword
-                        ? "border-red-400 focus:border-red-400"
+                        ? "border-error-border focus:border-error-border"
                         : confirmPassword && confirmPassword === newPassword
-                          ? "border-emerald-400 focus:border-emerald-400"
+                          ? "border-success-border focus:border-success-border"
                           : "",
                     )}
                     placeholder="••••••••"
@@ -444,17 +444,17 @@ export default function SettingsPage() {
                           className={cn(
                             "h-1 flex-1 rounded-full transition-colors duration-300",
                             lvl <= strength
-                              ? strength === 4 ? "bg-emerald-500"
+                              ? strength === 4 ? "bg-success"
                                 : strength === 3 ? "bg-primary"
-                                  : strength === 2 ? "bg-amber-500"
-                                    : "bg-red-500"
+                                  : strength === 2 ? "bg-warning"
+                                    : "bg-error"
                               : "bg-muted",
                           )}
                         />
                       );
                     })}
                   </div>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {newPassword.length >= 12 ? s.passwordStrong
                       : newPassword.length >= 10 ? s.passwordGood
                         : newPassword.length >= 8 ? s.passwordAcceptable
@@ -483,10 +483,10 @@ export default function SettingsPage() {
         </Card>
 
         {/* ── Danger zone ── */}
-        <Card className="border-red-200/60 dark:border-red-800/40 shadow-sm overflow-hidden">
-          <div className="px-6 py-4 border-b border-red-200/60 dark:border-red-800/40 bg-red-50/50 dark:bg-red-950/10 flex items-center gap-2">
-            <AlertTriangle className="h-3.5 w-3.5 text-red-500" />
-            <h2 className="text-sm font-semibold text-red-700 dark:text-red-400">{s.dangerZone}</h2>
+        <Card className="border-error-border shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-error-border bg-error-subtle flex items-center gap-2">
+            <AlertTriangle className="h-3.5 w-3.5 text-error" />
+            <h2 className="text-sm font-semibold text-error">{s.dangerZone}</h2>
           </div>
           <CardContent className="p-6 space-y-4">
             <div>
@@ -509,9 +509,9 @@ export default function SettingsPage() {
               variant="outline"
               disabled={deleteConfirm !== "DELETE"}
               className={cn(
-                "rounded-xl h-9 px-5 text-sm font-semibold border-red-300/60 dark:border-red-700/50 text-red-600 dark:text-red-400",
+                "rounded-xl h-9 px-5 text-sm font-semibold border-error-border text-error",
                 deleteConfirm === "DELETE"
-                  ? "hover:bg-red-500 hover:text-white hover:border-red-500 transition-colors"
+                  ? "hover:bg-error hover:text-error-foreground hover:border-error transition-colors"
                   : "opacity-50 cursor-not-allowed",
               )}
             >

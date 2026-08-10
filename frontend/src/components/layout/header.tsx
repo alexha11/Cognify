@@ -27,9 +27,9 @@ const roleConfig: Record<
   string,
   { label: string; icon: typeof Shield; color: string }
 > = {
-  ADMIN: { label: "Admin", icon: Shield, color: "text-rose-500" },
-  INSTRUCTOR: { label: "Instructor", icon: BookOpen, color: "text-indigo-500" },
-  STUDENT: { label: "Student", icon: GraduationCap, color: "text-emerald-500" },
+  ADMIN: { label: "Admin", icon: Shield, color: "text-error" },
+  INSTRUCTOR: { label: "Instructor", icon: BookOpen, color: "text-primary" },
+  STUDENT: { label: "Student", icon: GraduationCap, color: "text-success" },
 };
 
 interface HeaderProps {
@@ -107,7 +107,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                 )}
               >
                 <Avatar className="h-7 w-7 shrink-0 border border-border/60">
-                  <AvatarFallback className="bg-background text-[9px] font-bold text-primary/70">
+                  <AvatarFallback className="bg-background text-xs font-bold text-primary/70">
                     {getInitials(user.firstName, user.lastName)}
                   </AvatarFallback>
                 </Avatar>
@@ -140,7 +140,7 @@ export function Header({ variant = "public" }: HeaderProps) {
                         return (
                           <span
                             className={cn(
-                              "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider",
+                              "inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium uppercase tracking-wide",
                               role.color,
                               "bg-current/[0.06]",
                             )}

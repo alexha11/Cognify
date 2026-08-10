@@ -106,9 +106,9 @@ export default function RankingPage() {
                 <div
                   key={entry.id}
                   className={cn(
-                    "relative flex flex-col items-center p-5 rounded-2xl border transition-all",
+                    "relative flex flex-col items-center p-5 rounded-lg border transition-all",
                     rank === 1
-                      ? "bg-amber-50/50 dark:bg-amber-950/15 border-amber-300/50 dark:border-amber-700/40 -mt-4 pb-7"
+                      ? "bg-warning-subtle border-warning-border -mt-4 pb-7"
                       : "bg-card border-border/50",
                     isCurrentUser && "ring-2 ring-primary/30",
                   )}
@@ -128,7 +128,7 @@ export default function RankingPage() {
                     className={cn(
                       "h-11 w-11 rounded-full flex items-center justify-center text-sm font-bold mb-2 border",
                       rank === 1
-                        ? "bg-amber-100 dark:bg-amber-900/30 border-amber-300/60 dark:border-amber-700/50 text-amber-700 dark:text-amber-400"
+                        ? "bg-warning-subtle border-warning-border text-warning"
                         : "bg-secondary border-border/60 text-muted-foreground",
                     )}
                   >
@@ -143,7 +143,7 @@ export default function RankingPage() {
                   >
                     {entry.displayName}
                     {isCurrentUser && (
-                      <span className="text-[10px] text-primary ml-1">
+                      <span className="text-xs text-primary ml-1">
                         (you)
                       </span>
                     )}
@@ -152,7 +152,7 @@ export default function RankingPage() {
                   <p className="text-2xl font-bold text-foreground mt-1">
                     {entry.percentage}%
                   </p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-xs text-muted-foreground">
                     {entry.score}/{entry.totalQuestions} correct
                   </p>
                 </div>
@@ -257,7 +257,7 @@ export default function RankingPage() {
                         {isCurrentUser && (
                           <Badge
                             variant="outline"
-                            className="ml-2 text-[9px] font-bold uppercase tracking-widest bg-primary/10 border-primary/20 text-primary"
+                            className="ml-2 text-xs font-medium uppercase tracking-wide bg-primary/10 border-primary/20 text-primary"
                           >
                             You
                           </Badge>
@@ -278,10 +278,10 @@ export default function RankingPage() {
                         className={cn(
                           "text-sm font-bold",
                           entry.percentage >= 80
-                            ? "text-emerald-600 dark:text-emerald-400"
+                            ? "text-success"
                             : entry.percentage >= 50
                               ? "text-foreground"
-                              : "text-red-500 dark:text-red-400",
+                              : "text-error",
                         )}
                       >
                         {entry.percentage}%
@@ -307,7 +307,7 @@ export default function RankingPage() {
 
             {/* Footer */}
             <div className="px-5 py-3 border-t border-border/40 bg-muted/10">
-              <p className="text-[10px] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 Showing top {entries.length} players · Best score per player
               </p>
             </div>

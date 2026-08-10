@@ -12,6 +12,7 @@ interface PageHeaderProps {
   className?: string;
 }
 
+/** The single source of page-title typography. Every route uses this. */
 export function PageHeader({
   icon: Icon,
   title,
@@ -23,40 +24,34 @@ export function PageHeader({
   return (
     <div
       className={cn(
-        "flex flex-col md:flex-row md:items-end justify-between gap-6",
+        "flex flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6",
         className,
       )}
     >
-      <div className="space-y-4">
-        <div className="flex items-center gap-3">
-          {Icon && (
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/5 text-primary">
-              <Icon className="h-6 w-6" />
-            </div>
-          )}
-          <div className="space-y-1">
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
+      <div className="flex min-w-0 items-start gap-3">
+        {Icon && (
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-primary-subtle text-primary">
+            <Icon className="h-5 w-5" />
+          </div>
+        )}
+        <div className="min-w-0 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               {title}
             </h1>
-            {description && (
-              <p className="text-muted-foreground font-serif text-base leading-relaxed">
-                {description}
-              </p>
-            )}
+            {badge && <Badge variant="secondary">{badge}</Badge>}
           </div>
+          {description && (
+            <p className="text-sm leading-relaxed text-muted-foreground sm:text-base">
+              {description}
+            </p>
+          )}
         </div>
       </div>
-      <div className="flex items-center gap-4">
-        {badge && (
-          <Badge
-            variant="outline"
-            className="px-4 py-1.5 h-fit text-[10px] font-bold uppercase tracking-widest bg-primary/5"
-          >
-            {badge}
-          </Badge>
-        )}
-        {action}
-      </div>
+
+      {action && (
+        <div className="flex shrink-0 items-center gap-2">{action}</div>
+      )}
     </div>
   );
 }

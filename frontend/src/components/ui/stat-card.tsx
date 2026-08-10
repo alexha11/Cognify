@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Card, CardContent } from "./card";
+import { cardVariants } from "./card";
 import { Badge } from "./badge";
 import { cn } from "@/lib/utils";
 import { type LucideIcon } from "lucide-react";
@@ -16,6 +16,11 @@ interface StatCardProps {
   children?: React.ReactNode;
 }
 
+/**
+ * Renders as a real <button> when it has an onClick, so clickable stats are
+ * keyboard-reachable and announce their pressed state instead of being a div
+ * that only responds to a mouse.
+ */
 export function StatCard({
   icon: Icon,
   label,
@@ -27,55 +32,59 @@ export function StatCard({
   description,
   children,
 }: StatCardProps) {
-  return (
-    <Card
-      className={cn(
-        "transition-all duration-300",
-        onClick && "cursor-pointer",
-        active
-          ? "border-primary/30 bg-primary/5 shadow-[0_0_15px_rgba(139,92,246,0.08)]"
-          : "hover:bg-secondary/20 hover:border-primary/15",
-        className,
+  const content = (
+    <>
+      <div className="flex items-start justify-between gap-3">
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg",
+            active
+              ? "bg-primary text-primary-foreground"
+              : "bg-primary-subtle text-primary",
+          )}
+        >
+          <Icon className="h-5 w-5" />
+        </div>
+        {badge
+          ? <Badge variant="outline">{badge}</Badge>
+          : active
+          ? <Badge variant="default">Active</Badge>
+          : null}
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="text-3xl font-semibold tracking-tight text-foreground tabular-nums">
+          {value}
+        </p>
+      </div>
+
+      {description && (
+        <p className="text-sm text-muted-foreground">{description}</p>
       )}
-      onClick={onClick}
-    >
-      <CardContent className="p-6 space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon className="h-5 w-5" />
-          </div>
-          {badge && (
-            <Badge
-              variant="outline"
-              className="text-[10px] font-bold tracking-widest uppercase"
-            >
-              {badge}
-            </Badge>
-          )}
-          {active && !badge && (
-            <Badge
-              variant="outline"
-              className="text-[10px] font-bold tracking-widest uppercase"
-            >
-              Active
-            </Badge>
-          )}
-        </div>
-        <div className="space-y-1">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
-            {label}
-          </p>
-          <p className="text-4xl font-semibold tracking-tighter text-foreground">
-            {value}
-          </p>
-        </div>
-        {description && (
-          <p className="text-xs text-muted-foreground font-serif italic">
-            {description}
-          </p>
-        )}
-        {children}
-      </CardContent>
-    </Card>
+      {children}
+    </>
   );
+
+  const classes = cn(
+    cardVariants({ interactive: onClick ? true : undefined }),
+    "space-y-4 p-5",
+    active && "border-primary bg-primary-subtle",
+    className,
+  );
+
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        aria-pressed={!!active}
+        className={cn(classes, "w-full text-left")}
+      >
+        {content}
+      </button>
+    );
+  }
+
+  return <div className={classes}>{content}</div>;
 }

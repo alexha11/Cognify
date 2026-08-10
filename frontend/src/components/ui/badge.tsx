@@ -1,40 +1,41 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+
+/**
+ * Status colours come from the token trio (`X` / `X-subtle` / `X-border`), so a
+ * badge themes itself instead of needing a `dark:` counterpart per variant.
+ */
+const badgeVariants = cva(
+  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors [&_svg]:size-3 [&_svg]:shrink-0",
+  {
+    variants: {
+      variant: {
+        default: "border-primary-border bg-primary-subtle text-primary",
+        secondary: "border-transparent bg-secondary text-muted-foreground",
+        success: "border-success-border bg-success-subtle text-success",
+        warning: "border-warning-border bg-warning-subtle text-warning",
+        destructive: "border-error-border bg-error-subtle text-error",
+        info: "border-info-border bg-info-subtle text-info",
+        outline: "border-border-strong bg-transparent text-muted-foreground",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
 
 const Badge = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement> & {
-    variant?:
-      | "default"
-      | "secondary"
-      | "success"
-      | "warning"
-      | "destructive"
-      | "outline";
-  }
->(({ className, variant = "default", ...props }, ref) => {
-  const variants = {
-    default: "bg-primary/10 text-primary",
-    secondary: "bg-muted text-muted-foreground",
-    success: "bg-green-500/5 text-green-700 border border-green-500/10",
-    warning: "bg-yellow-500/5 text-yellow-700 border border-yellow-500/10",
-    destructive:
-      "bg-destructive/5 text-destructive border border-destructive/10",
-    outline: "border border-border",
-  };
-
-  return (
-    <div
-      ref={ref}
-      className={cn(
-        "inline-flex items-center rounded-full px-3 py-0.5 text-[10px] font-semibold uppercase tracking-widest transition-colors",
-        variants[variant],
-        className,
-      )}
-      {...props}
-    />
-  );
-});
+  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof badgeVariants>
+>(({ className, variant, ...props }, ref) => (
+  <div
+    ref={ref}
+    className={cn(badgeVariants({ variant, className }))}
+    {...props}
+  />
+));
 Badge.displayName = "Badge";
 
-export { Badge };
+export { Badge, badgeVariants };

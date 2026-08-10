@@ -1,41 +1,73 @@
 import * as React from "react";
+import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+
+/**
+ * Cards sit one step above the page background. The separation comes from the
+ * surface colour plus a real border — not from a heavy shadow — so the same
+ * card reads correctly in both themes.
+ *
+ * `interactive` is opt-in: hover feedback should only appear on cards that are
+ * actually clickable, otherwise every panel looks like a button.
+ */
+const cardVariants = cva(
+  "rounded-xl border text-foreground transition-colors duration-150",
+  {
+    variants: {
+      variant: {
+        default: "border-border bg-surface shadow-card",
+        /** For nested cards — sits below its container rather than above. */
+        sunken: "border-border bg-surface-sunken",
+        /** Modals, popovers, anything floating over the page. */
+        raised: "border-border bg-surface-raised shadow-raised",
+        /** Empty states and drop targets. */
+        dashed: "border-dashed border-border-strong bg-transparent",
+      },
+      interactive: {
+        true: "hover:border-border-strong hover:bg-surface-hover cursor-pointer",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
+  },
+);
 
 const Card = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
+  React.HTMLAttributes<HTMLDivElement> & VariantProps<typeof cardVariants>
+>(({ className, variant, interactive, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn(
-      "rounded-[32px] border border-border/80 bg-card text-card-foreground shadow-sm transition-all duration-300 hover:border-primary/20",
-      className,
-    )}
+    className={cn(cardVariants({ variant, interactive, className }))}
     {...props}
   />
 ));
 Card.displayName = "Card";
 
+/* Padding steps up at sm: so cards aren't cramped on desktop or wasteful on
+   mobile. Header/content/footer share the same inline padding so their edges
+   align vertically. */
 const CardHeader = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-8", className)}
+    className={cn("flex flex-col gap-1.5 p-5 sm:p-6", className)}
     {...props}
   />
 ));
 CardHeader.displayName = "CardHeader";
 
 const CardTitle = React.forwardRef<
-  HTMLParagraphElement,
+  HTMLHeadingElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight text-foreground",
+      "text-lg font-semibold leading-tight tracking-tight text-foreground",
       className,
     )}
     {...props}
@@ -49,10 +81,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn(
-      "text-base text-muted-foreground font-serif leading-relaxed",
-      className,
-    )}
+    className={cn("text-sm leading-relaxed text-muted-foreground", className)}
     {...props}
   />
 ));
@@ -62,7 +91,7 @@ const CardContent = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-8 pt-0", className)} {...props} />
+  <div ref={ref} className={cn("p-5 pt-0 sm:p-6 sm:pt-0", className)} {...props} />
 ));
 CardContent.displayName = "CardContent";
 
@@ -72,7 +101,10 @@ const CardFooter = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn("flex items-center p-8 pt-0", className)}
+    className={cn(
+      "flex items-center gap-3 p-5 pt-0 sm:p-6 sm:pt-0",
+      className,
+    )}
     {...props}
   />
 ));
@@ -85,4 +117,5 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
+  cardVariants,
 };
