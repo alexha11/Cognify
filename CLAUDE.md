@@ -67,16 +67,28 @@ cp backend/.env.example backend/.env   # Then fill in secrets
 | Backend  | NestJS 11, TypeScript | 3001 |
 | Database | PostgreSQL 16 | 5432 |
 
-The frontend calls `NEXT_PUBLIC_API_URL` (default: `http://localhost:3001/api`) via Axios (`frontend/src/lib/api.ts`). The backend validates JWT tokens on every request via `JwtAuthGuard`.
+Client components always call the local Next.js proxy at `/api/*`, which `next.config.ts` rewrites to the backend. Server-side code hits `NEXT_PUBLIC_API_URL` directly. The backend validates JWT tokens on every request via `JwtAuthGuard`.
 
-### Multi-Tenancy Model
+### Authentication & Session Model
 
-Every resource (Course, Question, Material, etc.) is scoped to an `organizationId`. JWT tokens carry `sub` (userId), `organizationId`, and `role`. The backend reads these from the `@CurrentUser()` decorator to enforce tenant isolation — never trust client-supplied org IDs for authorization.
+**The session is an HttpOnly cookie, not a bearer token in `localStorage`.**
+
+- On login / email verification / OAuth, the backend sets a `cognify_token` cookie (`HttpOnly`, `SameSite=Lax`, `Secure` in production). The token is **never** in a response body or a URL.
+- The frontend cannot read the session. `lib/api.ts` sends `withCredentials: true` and never sets an `Authorization` header; `AuthProvider` learns who the user is by calling `GET /auth/profile`.
+- Logout is a real round-trip (`POST /auth/logout`) — only the server can clear an HttpOnly cookie.
+- CSRF is handled by `SameSite=Lax`, which relies on **every mutating endpoint being non-GET**. Do not add a state-changing `@Get()` route.
+- `JwtStrategy.validate()` re-reads the user from the database on every request, so role changes and deactivations take effect immediately rather than at token expiry. Never trust the `role` claim in the token.
+- Google OAuth uses a signed-cookie `state` parameter (`CookieStateStore`) to prevent login CSRF. The `callbackURL` is absolute and points at the **frontend** origin (`<FRONTEND_URL>/api/auth/google/callback`) so the proxy puts the cookie on the origin the browser uses.
+
+**Privilege rules:** `role` is not a self-editable field. `RegisterDto` accepts only `STUDENT | INSTRUCTOR`, and `UpdateProfileDto` accepts no role at all. Promotion happens exclusively through the `access-control` request/approval flow. Global `ValidationPipe` uses `forbidNonWhitelisted: true`, so sending an unexpected property returns 422 — adding a field to a request means adding it to the DTO.
+
+### Tenancy Model
+
+There is currently **no organization/multi-tenant layer** — `Organization` and `organizationId` do not exist in the schema, and the JWT carries only `sub`, `email`, and `role`. Authorization is per-user: resources are owned via `createdById` / `uploadedById`, and services compare that against the current user (admins bypass). Do not assume tenant isolation exists.
 
 ### Backend Module Structure (`backend/src/modules/`)
 
-- **auth/** — JWT registration/login; creates org + admin user in one transaction
-- **organizations/** — org CRUD, slug-based routing, public discovery
+- **auth/** — registration, OTP email verification, login, Google OAuth, cookie session
 - **courses/** — course CRUD, prerequisites, publish/visibility toggle
 - **questions/** — question CRUD, AI-generated flag, approval workflow
 - **answers/** — answer options for questions (always created with the question)
@@ -88,8 +100,9 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 
 ### Database Schema Key Points (`backend/prisma/schema.prisma`)
 
-- `Organization` is the multi-tenant root; all resources cascade-delete with it
-- `User.organizationId` is nullable (users without an org can exist)
+- `User.passwordHash` is nullable — Google-only accounts have no password
+- `User.googleId` links an OAuth identity; `isEmailVerified` is set to true on Google sign-in
+- `EmailVerification.attempts` caps OTP guesses; the record is destroyed at `OTP_MAX_ATTEMPTS`
 - `Question.approved` gates whether students see AI-generated questions
 - `Attempt` records one answer per question attempt; `isCorrect` is stored
 - `Plan` enum: `FREE | PRO | ENTERPRISE` — controls AI generation limits
@@ -101,8 +114,8 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 
 - **app/** — Next.js App Router pages; one directory per feature
 - **components/ui/** — Radix UI primitives wrapped with Tailwind/CVA
-- **lib/api.ts** — Axios instance with JWT auth interceptor; all API calls go through here
-- **lib/auth.tsx** — Token decode, role checks, auth state helpers
+- **lib/api.ts** — Axios instance (`withCredentials: true`); all API calls go through here. No token handling — the session cookie is attached by the browser.
+- **lib/auth.tsx** — `AuthProvider`; hydrates the user from `GET /auth/profile`. Exposes `user`, `isLoading`, `login`, `register`, `verifyEmail`, `refreshUser`, `logout`. There is no `token` — it is not readable by JavaScript by design.
 - **types/** — Shared TypeScript interfaces mirroring backend DTOs
 
 ### AI Question Generation Flow
@@ -114,7 +127,9 @@ Every resource (Course, Question, Material, etc.) is scoped to an `organizationI
 
 ### Role-Based Access
 
-Roles: `ADMIN > INSTRUCTOR > STUDENT`. Guards (`RolesGuard` + `@Roles()` decorator) protect endpoints. Students can only read approved questions and submit attempts. Instructors can create/edit courses and questions. Admins manage org settings.
+Roles: `ADMIN > INSTRUCTOR > STUDENT`. Guards (`RolesGuard` + `@Roles()` decorator) protect endpoints. Students can only read approved questions and submit attempts. Instructors can create/edit courses and questions. Admins manage settings and approve role requests.
+
+Rate limiting is global via `ThrottlerProxyGuard` (`APP_GUARD`), which reads the client IP from `X-Forwarded-For` because traffic arrives through the Next.js proxy. Auth endpoints tighten the default with `@Throttle`.
 
 ## Agent Rules
 
@@ -128,7 +143,10 @@ The `.agent/rules/` directory contains detailed pattern guides for AI assistance
 
 **Backend** (`backend/.env`):
 - `DATABASE_URL` — PostgreSQL connection string
-- `JWT_SECRET` / `JWT_EXPIRES_IN` — token signing
+- `JWT_SECRET` / `JWT_EXPIRES_IN` — token signing (secret must be ≥32 chars)
+- `COOKIE_SECRET` — signs auth/OAuth-state cookies (≥32 chars, distinct from `JWT_SECRET`)
+- `FRONTEND_URL` — public frontend origin; the only allowed CORS origin and the OAuth redirect base
+- `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — required when `NODE_ENV=production`
 - `OPENROUTER_API_KEY` / `OPENROUTER_MODEL` — AI generation
 - `STRIPE_SECRET_KEY` / `STRIPE_WEBHOOK_SECRET` / `STRIPE_PRICE_ID_PRO` / `STRIPE_PRICE_ID_ENTERPRISE`
 - `SUPABASE_URL` / `SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_KEY` — optional file storage

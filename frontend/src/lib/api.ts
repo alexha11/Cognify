@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { toast } from '@/components/ui/toast';
 
 const isServer = typeof window === 'undefined';
@@ -21,21 +21,11 @@ const api: AxiosInstance = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  // The session rides in an HttpOnly cookie, so the browser attaches it
+  // automatically. There is no token for JavaScript to read or forward, which
+  // is what keeps an XSS bug from stealing a long-lived session.
+  withCredentials: true,
 });
-
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
 
 // Response interceptor to handle auth and other errors
 api.interceptors.response.use(
@@ -50,8 +40,8 @@ api.interceptors.response.use(
 
     if (status === 401) {
       if (typeof window !== 'undefined') {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        // Nothing to clear locally — the session lives in an HttpOnly cookie
+        // that only the server can expire.
 
         // Only redirect if we are NOT on a public route
         const publicRoutes = ['/', '/login', '/register', '/courses'];

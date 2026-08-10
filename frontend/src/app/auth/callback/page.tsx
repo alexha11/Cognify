@@ -1,54 +1,34 @@
 "use client";
 
-import { useEffect, useRef, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 import { Loader2 } from "lucide-react";
-import { apiGet } from "@/lib/api";
+import { useAuth } from "@/lib/auth";
 
-function AuthCallbackContent() {
+/**
+ * Landing page for the Google OAuth redirect.
+ *
+ * There is no token to read here any more: the backend set an HttpOnly session
+ * cookie before redirecting, so this page only has to wait for AuthProvider to
+ * confirm the session and then move the user along. Keeping the token out of
+ * the URL keeps it out of browser history, referrer headers and server logs.
+ */
+export default function AuthCallbackPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const hasProcessed = useRef(false);
+  const { user, isLoading } = useAuth();
 
   useEffect(() => {
-    // Prevent strict mode double-fetching
-    if (hasProcessed.current) return;
+    if (isLoading) return;
 
-    const token = searchParams.get("token");
-
-    if (token) {
-      hasProcessed.current = true;
-      
-      const processLogin = async () => {
-        try {
-          // Save the JWT token first so apiGet can use it in the Authorization header
-          localStorage.setItem("token", token);
-          
-          // Fetch the full user profile from the backend to get firstName/lastName
-          const user = await apiGet<any>("/auth/profile");
-          
-          localStorage.setItem("user", JSON.stringify(user));
-          
-          // Force a full reload to the dashboard so AuthProvider picks up the new localStorage state immediately
-          window.location.href = "/dashboard";
-        } catch (error) {
-          console.error("Failed to fetch profile during OAuth callback", error);
-          router.replace("/login?error=google_auth_failed");
-        }
-      };
-
-      processLogin();
+    if (user) {
+      router.replace("/dashboard");
     } else {
-      // No token — something went wrong, send back to login
+      // Cookie missing or rejected — the sign-in did not complete.
       router.replace("/login?error=google_auth_failed");
     }
-  }, [searchParams, router]);
+  }, [user, isLoading, router]);
 
-  return null;
-}
-
-export default function AuthCallbackPage() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-6">
       <CognifyLogo size={80} />
@@ -56,9 +36,6 @@ export default function AuthCallbackPage() {
         <Loader2 className="h-5 w-5 animate-spin" />
         <span className="text-sm font-medium">Signing you in…</span>
       </div>
-      <Suspense fallback={null}>
-        <AuthCallbackContent />
-      </Suspense>
     </div>
   );
 }

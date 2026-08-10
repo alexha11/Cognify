@@ -160,6 +160,9 @@ model EmailVerification {
   userId    String   @unique
   code      String
   expiresAt DateTime
+  /// Failed submissions so far; the record is destroyed at OTP_MAX_ATTEMPTS
+  /// so a 6-digit code cannot be enumerated.
+  attempts  Int      @default(0)
   createdAt DateTime @default(now())
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 

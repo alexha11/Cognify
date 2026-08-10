@@ -1,7 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from './prisma';
 import { appConfig, appConfigValidationSchema } from './config';
+import { ThrottlerProxyGuard } from './common/guards';
 
 // Feature modules
 import { AuthModule } from './modules/auth';
@@ -29,6 +32,10 @@ import { LeaderboardModule } from './modules/leaderboard';
       },
     }),
 
+    // Baseline abuse protection. Auth endpoints tighten this considerably
+    // with their own @Throttle overrides.
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60_000, limit: 120 }]),
+
     // Database
     PrismaModule,
 
@@ -44,6 +51,10 @@ import { LeaderboardModule } from './modules/leaderboard';
     EmbeddingModule,
     EmailModule,
     LeaderboardModule,
+  ],
+  providers: [
+    // Applies rate limiting to every route unless a handler opts out.
+    { provide: APP_GUARD, useClass: ThrottlerProxyGuard },
   ],
 })
 export class AppModule {}

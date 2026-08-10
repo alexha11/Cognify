@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 
 export default function SettingsPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, refreshUser } = useAuth();
   const router = useRouter();
   const { showToast } = useToast();
   const { theme, setTheme } = useTheme();
@@ -45,9 +45,6 @@ export default function SettingsPage() {
   // Profile fields
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [role, setRole] = useState<"ADMIN" | "INSTRUCTOR" | "STUDENT">(
-    "STUDENT",
-  );
 
   // Password fields
   const [currentPassword, setCurrentPassword] = useState("");
@@ -65,7 +62,6 @@ export default function SettingsPage() {
     else if (user) {
       setFirstName(user.firstName);
       setLastName(user.lastName);
-      setRole(user.role as "ADMIN" | "INSTRUCTOR" | "STUDENT");
     }
   }, [user, authLoading, router]);
 
@@ -77,20 +73,16 @@ export default function SettingsPage() {
   const handleSaveProfile = async () => {
     setIsSavingProfile(true);
     try {
-      const response = await apiPut<{ accessToken: string; user: UserType }>(
-        "/auth/profile",
-        { firstName, lastName, role },
-      );
-      if (response.accessToken)
-        localStorage.setItem("token", response.accessToken);
-      const stored = localStorage.getItem("user");
-      if (stored)
-        localStorage.setItem(
-          "user",
-          JSON.stringify({ ...JSON.parse(stored), ...response.user }),
-        );
+      // `role` is deliberately not sent: it is not a self-editable field, and
+      // the backend rejects unknown properties. Role changes go through the
+      // instructor-request approval flow.
+      await apiPut<{ user: UserType }>("/auth/profile", {
+        firstName,
+        lastName,
+      });
+      // Re-read identity from the server rather than caching it client-side.
+      await refreshUser();
       showToast(s.profileUpdated, "success");
-      window.location.reload();
     } catch {
       showToast(s.profileFailed, "error");
     } finally {
@@ -137,9 +129,7 @@ export default function SettingsPage() {
   const initials =
     `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase() || "?";
   const profileChanged =
-    firstName !== user.firstName ||
-    lastName !== user.lastName ||
-    role !== user.role;
+    firstName !== user.firstName || lastName !== user.lastName;
 
   const themeOptions: { value: "light" | "dark" | "system"; label: string; icon: typeof Sun; desc: string }[] = [
     { value: "light", label: s.themeLight, icon: Sun, desc: s.themeAlwaysLight },
@@ -238,27 +228,24 @@ export default function SettingsPage() {
               <Label htmlFor="role" className="text-xs font-medium text-muted-foreground">
                 {s.role}
               </Label>
-              {user.role === "ADMIN" ? (
-                <div className="flex items-center gap-3 h-9 px-3 rounded-xl border border-border/50 bg-muted/40">
-                  <Shield className="h-3.5 w-3.5 text-muted-foreground/60" />
-                  <span className="text-sm text-muted-foreground">{s.administrator}</span>
-                </div>
-              ) : (
-                <div className="relative">
-                  <select
-                    id="role"
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as typeof role)}
-                    className="w-full h-9 appearance-none pl-3 pr-8 rounded-xl border border-border bg-background text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary/20 transition-colors"
-                  >
-                    <option value="STUDENT">{t.auth.student}</option>
-                    <option value="INSTRUCTOR">{t.auth.instructor}</option>
-                  </select>
-                  <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none rotate-90" />
-                </div>
-              )}
+              {/*
+                Read-only. This used to be an editable <select> that PUT the
+                chosen role straight to the server, letting any user grant
+                themselves elevated access and bypass the instructor-request
+                approval flow. The backend no longer accepts a role here.
+              */}
+              <div className="flex items-center gap-3 h-9 px-3 rounded-xl border border-border/50 bg-muted/40">
+                <Shield className="h-3.5 w-3.5 text-muted-foreground/60" />
+                <span className="text-sm text-muted-foreground">
+                  {user.role === "ADMIN"
+                    ? s.administrator
+                    : user.role === "INSTRUCTOR"
+                      ? t.auth.instructor
+                      : t.auth.student}
+                </span>
+              </div>
               <p className="text-[10px] text-muted-foreground/60">
-                {s.roleDescriptions[role]}
+                {s.roleDescriptions[user.role]}
               </p>
             </div>
 
