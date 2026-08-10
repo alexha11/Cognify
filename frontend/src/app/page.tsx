@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import {
   BookOpen,
   Brain,
@@ -21,6 +20,12 @@ import {
   AmbientLights,
   SectionLightDivider,
 } from "@/components/ui/ambient-lights";
+import {
+  AiGenerationPreview,
+  AnalyticsPreview,
+  ProcessingPreview,
+  QuizPreview,
+} from "@/components/ui/feature-previews";
 import { useLanguage } from "@/lib/i18n";
 
 export default function HomePage() {
@@ -45,8 +50,7 @@ export default function HomePage() {
         text: "AI Engine Ready",
         cls: "text-success bg-success-subtle border-success-border",
       },
-      image: "/images/features/ai_generation.png",
-      alt: h.aiTitle,
+      Preview: AiGenerationPreview,
       title: h.aiTitle,
       description: h.aiDesc,
       linkLabel: h.aiLink,
@@ -59,8 +63,7 @@ export default function HomePage() {
         text: "Live Analytics",
         cls: "text-primary bg-primary-subtle border-primary-border",
       },
-      image: "/images/features/analytics.png",
-      alt: h.engineTitle,
+      Preview: AnalyticsPreview,
       title: h.engineTitle,
       description: h.engineDesc,
       linkLabel: h.engineLink,
@@ -73,8 +76,7 @@ export default function HomePage() {
         text: "Vector RAG Embedded",
         cls: "text-warning bg-warning-subtle border-warning-border",
       },
-      image: "/images/features/processing.png",
-      alt: h.docsTitle,
+      Preview: ProcessingPreview,
       title: h.docsTitle,
       description: h.docsDesc,
       linkLabel: h.docsLink,
@@ -87,8 +89,7 @@ export default function HomePage() {
         text: "Instant Feedback",
         cls: "text-primary bg-primary-subtle border-primary-border",
       },
-      image: "/images/features/quiz.png",
-      alt: h.quizTitle,
+      Preview: QuizPreview,
       title: h.quizTitle,
       description: h.quizDesc,
       linkLabel: h.quizLink,
@@ -251,39 +252,36 @@ export default function HomePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
               {visibleFeatures.map((feature) => {
                 const Icon = feature.icon;
+                const Preview = feature.Preview;
                 return (
                   <div
                     key={feature.id}
                     className="group relative rounded-lg border border-border/40 bg-card/10 overflow-hidden transition-colors duration-300 hover:border-border/70"
                   >
-                    {/* macOS window frame */}
-                    <div className="w-full h-[20rem] bg-[#0c0c0c] border-b border-border/30 flex flex-col">
+                    {/* Window frame */}
+                    <div className="w-full h-[20rem] bg-surface border-b border-border flex flex-col">
                       {/* Title bar */}
-                      <div className="h-9 px-4 flex items-center shrink-0 bg-[#161616] border-b border-white/[0.04]">
+                      <div className="h-9 px-4 flex items-center shrink-0 bg-surface-hover border-b border-border">
                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                          {/* Decorative window dots — kept literal because they
+                              are a macOS reference, not a themed UI colour. */}
                           <div className="w-3 h-3 rounded-full bg-[#FF5F57] shrink-0" />
                           <div className="w-3 h-3 rounded-full bg-[#FFBD2E] shrink-0" />
                           <div className="w-3 h-3 rounded-full bg-[#28C840] shrink-0" />
-                          <span className="ml-3 text-[11px] font-mono text-white/20 truncate">
+                          <span className="ml-3 text-xs font-mono text-muted-foreground truncate">
                             {feature.file}
                           </span>
                         </div>
                         <span
-                          className={`text-xs font-semibold px-2 py-0.5 rounded-md border shrink-0 ml-2 ${feature.badge.cls}`}
+                          className={`text-xs font-medium px-2 py-0.5 rounded-md border shrink-0 ml-2 ${feature.badge.cls}`}
                         >
                           {feature.badge.text}
                         </span>
                       </div>
 
-                      {/* Screenshot viewport */}
+                      {/* Product preview */}
                       <div className="relative flex-1 overflow-hidden">
-                        <Image
-                          src={feature.image}
-                          alt={feature.alt}
-                          fill
-                          className="object-cover object-left-top transition-transform duration-700 ease-out group-hover:scale-[1.02]"
-                          sizes="(max-width: 768px) 100vw, 50vw"
-                        />
+                        <Preview />
                       </div>
                     </div>
 
