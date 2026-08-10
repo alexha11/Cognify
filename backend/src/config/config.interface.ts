@@ -3,6 +3,7 @@ export interface AppConfig {
   databaseUrl: string;
   jwtSecret: string;
   jwtExpiresIn: string;
+  cookieSecret: string;
   openRouterApiKey: string;
   openRouterModel: string;
   stripeSecretKey: string;

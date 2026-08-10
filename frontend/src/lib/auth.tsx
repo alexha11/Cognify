@@ -2,79 +2,77 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
   useState,
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
-import { apiPost } from "./api";
+import { apiGet, apiPost } from "./api";
 import { User, AuthResponse, LoginCredentials, RegisterData } from "@/types";
 
 interface AuthContextType {
   user: User | null;
-  token: string | null;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<{ message: string; email: string }>;
   verifyEmail: (email: string, code: string) => Promise<void>;
   resendVerification: (email: string) => Promise<void>;
-  logout: () => void;
+  refreshUser: () => Promise<void>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    // Check for existing auth on mount
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-
-    if (storedToken && storedUser && storedUser !== "undefined") {
-      try {
-        setToken(storedToken);
-        setUser(JSON.parse(storedUser));
-      } catch (e) {
-        console.error("Failed to parse stored user", e);
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-      }
+  /**
+   * Ask the server who we are. The session cookie is HttpOnly, so the client
+   * cannot inspect it — the server is the only source of truth for identity,
+   * and this call doubles as the check that the session is still valid.
+   */
+  const refreshUser = useCallback(async () => {
+    try {
+      setUser(await apiGet<User>("/auth/profile"));
+    } catch {
+      // 401/403 simply means "not signed in".
+      setUser(null);
     }
-    setIsLoading(false);
   }, []);
 
+  useEffect(() => {
+    void refreshUser().finally(() => setIsLoading(false));
+  }, [refreshUser]);
+
   const login = async (credentials: LoginCredentials) => {
-    const data = await apiPost<AuthResponse>("/auth/login", credentials);
-    const { accessToken, user: userData } = data;
-
-    localStorage.setItem("token", accessToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setToken(accessToken);
+    // The response carries only the user; the token arrives as a Set-Cookie.
+    const { user: userData } = await apiPost<AuthResponse>(
+      "/auth/login",
+      credentials,
+    );
     setUser(userData);
-
     router.push("/dashboard");
   };
 
   const register = async (registerData: RegisterData) => {
-    const data = await apiPost<{ message: string; email: string }>("/auth/register", registerData);
+    const data = await apiPost<{ message: string; email: string }>(
+      "/auth/register",
+      registerData,
+    );
     router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
     return data;
   };
 
   const verifyEmail = async (email: string, code: string) => {
-    const data = await apiPost<AuthResponse>("/auth/verify-email", { email, code });
-    const { accessToken, user: userData } = data;
-
-    localStorage.setItem("token", accessToken);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setToken(accessToken);
+    const { user: userData } = await apiPost<AuthResponse>(
+      "/auth/verify-email",
+      { email, code },
+    );
     setUser(userData);
-
     router.push("/dashboard");
   };
 
@@ -82,17 +80,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await apiPost<{ message: string }>("/auth/resend-code", { email });
   };
 
-  const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setToken(null);
-    setUser(null);
-    router.push("/login");
+  const logout = async () => {
+    try {
+      // Only the server can clear an HttpOnly cookie, so logout must be a
+      // round-trip rather than a local state reset.
+      await apiPost("/auth/logout");
+    } finally {
+      setUser(null);
+      router.push("/login");
+    }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, token, isLoading, login, register, verifyEmail, resendVerification, logout }}
+      value={{
+        user,
+        isLoading,
+        login,
+        register,
+        verifyEmail,
+        resendVerification,
+        refreshUser,
+        logout,
+      }}
     >
       {children}
     </AuthContext.Provider>

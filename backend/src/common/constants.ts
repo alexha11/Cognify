@@ -7,6 +7,18 @@
 export const BCRYPT_SALT_ROUNDS = 12;
 export const OTP_LENGTH = 6;
 export const OTP_EXPIRY_MINUTES = 15;
+/**
+ * Failed OTP submissions allowed before the code is destroyed. A 6-digit code
+ * is only ~1M possibilities, so without this an attacker can simply enumerate.
+ */
+export const OTP_MAX_ATTEMPTS = 5;
+
+/** Name of the HttpOnly cookie carrying the session JWT. */
+export const AUTH_COOKIE_NAME = 'cognify_token';
+/** Name of the short-lived signed cookie carrying the OAuth CSRF state. */
+export const OAUTH_STATE_COOKIE_NAME = 'cognify_oauth_state';
+/** OAuth state cookie lifetime — the user has this long to finish the Google flow. */
+export const OAUTH_STATE_TTL_MS = 10 * 60 * 1000;
 
 // ── File Upload Limits ──
 export const MAX_PDF_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB

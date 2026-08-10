@@ -7,8 +7,12 @@ export interface User {
   role: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
 }
 
+/**
+ * Sign-in result. The session token is not part of this payload — it arrives
+ * as an HttpOnly cookie that JavaScript cannot read, so it can never be
+ * exfiltrated by an XSS bug or written into localStorage.
+ */
 export interface AuthResponse {
-  accessToken: string;
   user: User;
 }
 
@@ -22,7 +26,8 @@ export interface RegisterData {
   password: string;
   firstName: string;
   lastName: string;
-  role?: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
+  // ADMIN is not self-assignable; the backend rejects it.
+  role?: 'INSTRUCTOR' | 'STUDENT';
 }
 
 
