@@ -195,7 +195,7 @@ export default function SharedQuizPage() {
         <div className="max-w-2xl mx-auto px-6 py-16">
           <div className="flex items-center gap-2.5 mb-3">
             <Share2 className="h-4 w-4 text-muted-foreground/60" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Shared Quiz
             </span>
           </div>
@@ -205,7 +205,7 @@ export default function SharedQuizPage() {
 
           <Card className="overflow-hidden">
             <CardContent className="p-12 text-center space-y-8">
-              <div className="mx-auto w-20 h-20 bg-primary/10 rounded-3xl flex items-center justify-center">
+              <div className="mx-auto w-20 h-20 bg-primary/10 rounded-xl flex items-center justify-center">
                 <Trophy className="h-10 w-10 text-primary" />
               </div>
               <div className="space-y-2">
@@ -222,23 +222,23 @@ export default function SharedQuizPage() {
               </div>
 
               <div className="grid grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-200/60 dark:border-emerald-800/40">
-                  <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">
+                <div className="p-4 rounded-lg bg-success-subtle border border-success-border">
+                  <p className="text-2xl font-bold text-success">
                     {stats.correct}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Correct
                   </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/25 border border-red-200/60 dark:border-red-800/40">
-                  <p className="text-2xl font-bold text-red-500 dark:text-red-400">
+                <div className="p-4 rounded-lg bg-error-subtle border border-error-border">
+                  <p className="text-2xl font-bold text-error">
                     {stats.total - stats.correct}
                   </p>
                   <p className="text-xs text-muted-foreground mt-0.5">
                     Incorrect
                   </p>
                 </div>
-                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/15">
+                <div className="p-4 rounded-lg bg-primary/5 border border-primary/15">
                   <p className="text-2xl font-bold text-primary">
                     {percentage}%
                   </p>
@@ -306,7 +306,7 @@ export default function SharedQuizPage() {
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
             <Share2 className="h-4 w-4 text-muted-foreground/60" />
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Shared Quiz
             </span>
           </div>
@@ -314,7 +314,7 @@ export default function SharedQuizPage() {
             {courseName}
           </h1>
           {courseDescription && (
-            <p className="text-sm text-muted-foreground italic">
+            <p className="text-sm text-muted-foreground">
               {courseDescription}
             </p>
           )}
@@ -323,7 +323,7 @@ export default function SharedQuizPage() {
         {/* Progress */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Progress
             </span>
             <div className="flex items-center gap-4">

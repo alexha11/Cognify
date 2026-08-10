@@ -469,7 +469,7 @@ export default function QuestionsPage() {
                           </span>
                         )}
                         {!question.approved && (
-                          <span className="inline-flex items-center text-xs font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50 px-2.5 py-0.5 rounded-full">
+                          <span className="inline-flex items-center text-xs font-medium text-warning bg-warning-subtle border border-warning-border px-2.5 py-0.5 rounded-full">
                             Pending review
                           </span>
                         )}
@@ -478,7 +478,7 @@ export default function QuestionsPage() {
                       {/* Question content: image or text */}
                       {question.contentType === 'image' && question.imageUrl ? (
                         <div className="space-y-2">
-                          <span className="inline-flex items-center gap-1 text-xs font-medium text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/25 border border-indigo-200/60 dark:border-indigo-700/50 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary-subtle border border-primary-border px-2 py-0.5 rounded-full">
                             <ImageIcon className="h-3 w-3" />
                             Image question
                           </span>
@@ -501,7 +501,7 @@ export default function QuestionsPage() {
                       {/* Hint */}
                       {question.hint && (
                         <div className="flex items-start gap-2.5 p-3 rounded-lg bg-muted/40 border border-border/40">
-                          <Lightbulb className="h-3.5 w-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                          <Lightbulb className="h-3.5 w-3.5 text-warning flex-shrink-0 mt-0.5" />
                           <p className="text-xs text-muted-foreground leading-relaxed">
                             {question.hint}
                           </p>
@@ -516,15 +516,15 @@ export default function QuestionsPage() {
                             className={cn(
                               "flex items-center gap-2.5 p-3 rounded-xl border text-xs transition-colors",
                               answer.isCorrect
-                                ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-300"
+                                ? "bg-success-subtle border-success-border text-success"
                                 : "bg-background border-border/50 text-muted-foreground",
                             )}
                           >
                             <span
                               className={cn(
-                                "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md text-[10px] font-bold border",
+                                "flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md text-xs font-bold border",
                                 answer.isCorrect
-                                  ? "bg-emerald-500 border-emerald-500 text-white"
+                                  ? "bg-success border-success text-success-foreground"
                                   : "bg-background border-border text-muted-foreground",
                               )}
                             >
@@ -558,7 +558,7 @@ export default function QuestionsPage() {
                           variant="ghost"
                           size="icon"
                           onClick={() => handleDelete(question.id)}
-                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
+                          className="h-8 w-8 rounded-lg text-muted-foreground hover:text-error hover:bg-error-subtle dark:hover:bg-error-subtle"
                           title="Delete question"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -603,7 +603,7 @@ export default function QuestionsPage() {
             <form onSubmit={handleCreate}>
               <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
                 {error && (
-                  <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/25 border border-red-300/60 dark:border-red-700/50 text-xs font-medium text-red-600 dark:text-red-400">
+                  <div className="p-3 rounded-xl bg-error-subtle border border-error-border text-xs font-medium text-error">
                     {error}
                   </div>
                 )}
@@ -670,7 +670,7 @@ export default function QuestionsPage() {
                       minLength={10}
                     />
                     <div className="flex justify-end">
-                      <span className="text-[10px] text-muted-foreground/50">
+                      <span className="text-xs text-muted-foreground/50">
                         {newQuestion.content.length} characters
                       </span>
                     </div>
@@ -710,7 +710,7 @@ export default function QuestionsPage() {
                             <p className="text-xs font-medium text-foreground">
                               Click or drag image to upload
                             </p>
-                            <p className="text-[10px] text-muted-foreground mt-0.5">
+                            <p className="text-xs text-muted-foreground mt-0.5">
                               PNG, JPG, WEBP, GIF up to 5MB
                             </p>
                           </div>
@@ -803,8 +803,8 @@ export default function QuestionsPage() {
                           className={cn(
                             "h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg border transition-all duration-150",
                             answer.isCorrect
-                              ? "bg-emerald-500 border-emerald-500 text-white shadow-sm"
-                              : "bg-background border-border text-muted-foreground/30 hover:border-emerald-400 hover:text-emerald-600",
+                              ? "bg-success border-success text-success-foreground shadow-sm"
+                              : "bg-background border-border text-muted-foreground/30 hover:border-success-border hover:text-success",
                           )}
                         >
                           <Check className="w-3.5 h-3.5" />
@@ -826,7 +826,7 @@ export default function QuestionsPage() {
                           <button
                             type="button"
                             onClick={() => removeAnswer(index)}
-                            className="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/25 transition-colors"
+                            className="h-8 w-8 flex-shrink-0 flex items-center justify-center rounded-lg text-muted-foreground/40 hover:text-error hover:bg-error-subtle dark:hover:bg-error-subtle transition-colors"
                           >
                             <X className="w-3.5 h-3.5" />
                           </button>
@@ -835,7 +835,7 @@ export default function QuestionsPage() {
                     ))}
                   </div>
 
-                  <p className="text-[10px] text-muted-foreground/50">
+                  <p className="text-xs text-muted-foreground/50">
                     Click the check button to mark the correct answer(s).
                   </p>
                 </div>

@@ -190,11 +190,11 @@ export default function AnalyticsPage() {
           : "Not started";
   const masteryColor = (pct: number) =>
     pct >= 80
-      ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 text-emerald-700 dark:text-emerald-400"
+      ? "bg-success-subtle border-success-border text-success"
       : pct >= 50
         ? "bg-primary/10 border-primary/20 text-primary"
         : pct > 0
-          ? "bg-amber-50 dark:bg-amber-950/25 border-amber-300/60 text-amber-700 dark:text-amber-400"
+          ? "bg-warning-subtle border-warning-border text-warning"
           : "bg-muted border-border/50 text-muted-foreground";
 
   return (
@@ -289,12 +289,12 @@ export default function AnalyticsPage() {
         {(bestCourse || needsAttention.length > 0) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {bestCourse && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/25 border border-emerald-300/60 dark:border-emerald-700/50">
-                <div className="w-9 h-9 rounded-lg bg-emerald-500/20 flex items-center justify-center flex-shrink-0">
-                  <Trophy className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-success-subtle border border-success-border">
+                <div className="w-9 h-9 rounded-lg bg-success-subtle flex items-center justify-center flex-shrink-0">
+                  <Trophy className="h-4 w-4 text-success" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wide mb-0.5">
+                  <p className="text-xs font-semibold text-success uppercase tracking-wide mb-0.5">
                     Best performing
                   </p>
                   <p className="text-sm font-semibold text-foreground truncate">
@@ -308,12 +308,12 @@ export default function AnalyticsPage() {
               </div>
             )}
             {needsAttention.length > 0 && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50">
-                <div className="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+              <div className="flex items-start gap-3 p-4 rounded-xl bg-warning-subtle border border-warning-border">
+                <div className="w-9 h-9 rounded-lg bg-warning-subtle flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle className="h-4 w-4 text-warning" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 uppercase tracking-wide mb-0.5">
+                  <p className="text-xs font-semibold text-warning uppercase tracking-wide mb-0.5">
                     Needs attention
                   </p>
                   <p className="text-sm font-semibold text-foreground">
@@ -400,7 +400,7 @@ export default function AnalyticsPage() {
                   >
                     {/* Course name */}
                     <div className="col-span-4 flex items-center gap-3 min-w-0">
-                      <span className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded-md bg-muted border border-border/60 text-[10px] font-semibold text-muted-foreground group-hover:border-primary/30 group-hover:text-primary transition-colors">
+                      <span className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded-md bg-muted border border-border/60 text-xs font-semibold text-muted-foreground group-hover:border-primary/30 group-hover:text-primary transition-colors">
                         {i + 1}
                       </span>
                       <span className="text-sm font-medium text-foreground truncate">
@@ -439,7 +439,7 @@ export default function AnalyticsPage() {
                       {course.answered > 0 && (
                         <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+                            className="h-full bg-success rounded-full transition-all duration-700"
                             style={{ width: `${course.accuracy}%` }}
                           />
                         </div>
@@ -450,7 +450,7 @@ export default function AnalyticsPage() {
                     <div className="col-span-1 flex justify-end">
                       <span
                         className={cn(
-                          "text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap hidden lg:inline-flex",
+                          "text-xs font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap hidden lg:inline-flex",
                           masteryColor(course.completion),
                         )}
                       >
@@ -465,13 +465,13 @@ export default function AnalyticsPage() {
               <div className="flex items-center gap-5 px-5 py-3 border-t border-border/40 bg-muted/10">
                 <div className="flex items-center gap-1.5">
                   <div className="h-1.5 w-6 bg-primary rounded-full" />
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     Completion
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-6 bg-emerald-500 rounded-full" />
-                  <span className="text-[10px] text-muted-foreground">
+                  <div className="h-1.5 w-6 bg-success rounded-full" />
+                  <span className="text-xs text-muted-foreground">
                     Accuracy
                   </span>
                 </div>

@@ -2,83 +2,270 @@
 
 @variant dark (&:where(.dark, .dark *));
 
+/* ---------------------------------------------------------------------------
+   DESIGN TOKENS
+
+   Every colour in the app resolves to one of the semantic tokens below. The
+   raw values live on :root / .dark; the @theme block underneath maps them onto
+   Tailwind utilities so `bg-surface`, `text-muted-foreground`, `border-border`
+   etc. are real classes.
+
+   Rules of the system:
+   - Components never hardcode a palette colour (no `bg-red-500`, no
+     `dark:bg-emerald-950`). Use a semantic token and it themes itself.
+   - Each status colour comes in three parts: `X` (the colour itself, for text
+     and icons), `X-subtle` (a tinted background) and `X-border`. That trio
+     replaces the light/dark class pairs that used to be written by hand.
+   - Elevation is expressed as background → surface → surface-raised, never as
+     a heavier shadow.
+--------------------------------------------------------------------------- */
+
 :root {
   color-scheme: light;
-  --background: #F9F9F7;
-  --foreground: #141413;
-  --muted: #B0AEA5;
-  --muted-foreground: #6B6B66;
-  --card: #FFFFFF;
-  --card-foreground: #141413;
-  --border: #E8E8E1;
-  --input: #E8E8E1;
-  --ring: #141413;
-  --primary: #141413;
-  --primary-foreground: #F9F9F7;
-  --secondary: #F0EEE6;
-  --secondary-foreground: #141413;
-  --accent: #F0EEE6;
-  --accent-foreground: #141413;
-  --destructive: #7F1D1D;
-  --destructive-foreground: #F9F9F7;
-  --radius: 1.5rem;
+
+  /* Base surfaces, lightest to most raised */
+  --background: #faf9f7;
+  --surface: #ffffff;
+  --surface-hover: #f5f4f1;
+  --surface-raised: #ffffff;
+  --surface-sunken: #f2f1ed;
+
+  /* Text */
+  --foreground: #1c1917;
+  --foreground-muted: #57534e;
+  --foreground-subtle: #79716b;
+
+  /* Lines */
+  --border: #e5e3de;
+  --border-strong: #d3d0c9;
+
+  /* Brand */
+  --primary: #6d28d9;
+  --primary-hover: #5b21b6;
+  --primary-active: #4c1d95;
+  --primary-foreground: #ffffff;
+  --primary-subtle: #f3efff;
+  --primary-border: #ddd0fb;
+
+  /* Neutral action colour, for secondary buttons and chips */
+  --secondary: #f2f1ed;
+  --secondary-hover: #e8e6e0;
+  --secondary-foreground: #1c1917;
+
+  /* Status. `-foreground` is the text colour when the status colour is used
+     as a solid fill; it flips between themes because the light-theme fills are
+     dark and the dark-theme fills are light. */
+  --success: #047857;
+  --success-subtle: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-foreground: #ffffff;
+  --warning: #b45309;
+  --warning-subtle: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-foreground: #ffffff;
+  --error: #b91c1c;
+  --error-subtle: #fef2f2;
+  --error-border: #fecaca;
+  --error-foreground: #ffffff;
+  --info: #0369a1;
+  --info-subtle: #f0f9ff;
+  --info-border: #bae6fd;
+  --info-foreground: #ffffff;
+
+  /* Focus ring */
+  --ring: #6d28d9;
+
+  /* Elevation. Deliberately restrained — depth comes from surface colour. */
+  --shadow-card: 0 1px 2px 0 rgb(28 25 23 / 0.04), 0 1px 3px 0
+    rgb(28 25 23 / 0.06);
+  --shadow-raised: 0 2px 4px -1px rgb(28 25 23 / 0.06), 0 4px 12px -2px
+    rgb(28 25 23 / 0.08);
+  --shadow-overlay: 0 8px 24px -4px rgb(28 25 23 / 0.12), 0 16px 48px -8px
+    rgb(28 25 23 / 0.16);
 }
 
 .dark {
   color-scheme: dark;
-  --background: #141413;
-  --foreground: #FAF9F5;
-  --muted: #3D3D3D;
-  --muted-foreground: #A1A1AA;
-  --card: #1A1A19;
-  --card-foreground: #FAF9F5;
-  --border: #2E2E2D;
-  --input: #2E2E2D;
-  --ring: #8B5CF6;
-  --primary: #8B5CF6;
-  --primary-foreground: #FFFFFF;
-  --secondary: #222221;
-  --secondary-foreground: #FAF9F5;
-  --accent: #1E1E1D;
-  --accent-foreground: #FAF9F5;
-  --destructive: #F87171;
-  --destructive-foreground: #FFFFFF;
 
-  /* Surface layering */
-  --surface-1: #1A1A19;
-  --surface-2: #222221;
-  --surface-3: #2A2A29;
+  --background: #0f0f0e;
+  --surface: #1a1a19;
+  --surface-hover: #242422;
+  --surface-raised: #1f1f1e;
+  --surface-sunken: #131312;
 
-  /* Accent palette */
-  --accent-primary: #8B5CF6;
-  --accent-primary-hover: #7C3AED;
-  --accent-primary-light: #C4B5FD;
-  --accent-secondary: #06B6D4;
+  --foreground: #fafaf9;
+  --foreground-muted: #a8a29e;
+  --foreground-subtle: #837d78;
 
-  /* Semantic */
-  --success: #34D399;
-  --warning: #FBBF24;
-  --error: #F87171;
+  --border: #2e2e2c;
+  --border-strong: #414140;
+
+  /* Lighter than the light-theme violet on purpose. A mid violet (#8b5cf6)
+     only reaches 4.1:1 on these surfaces, so violet-on-dark body text and
+     badges failed AA. Lifting it to violet-400 fixes that, and the fill then
+     takes dark text rather than white — white on this violet is only 2.7:1. */
+  --primary: #a78bfa;
+  --primary-hover: #b39dfb;
+  --primary-active: #9575f7;
+  --primary-foreground: #1c1917;
+  --primary-subtle: #1e1a2e;
+  --primary-border: #4a3d69;
+
+  --secondary: #242422;
+  --secondary-hover: #2e2e2c;
+  --secondary-foreground: #fafaf9;
+
+  /* These fills are light, so text on them is dark — white would land at
+     roughly 2:1 against the mint and amber. */
+  --success: #34d399;
+  --success-subtle: #0c1f18;
+  --success-border: #1d5e46;
+  --success-foreground: #06251a;
+  --warning: #fbbf24;
+  --warning-subtle: #241c0a;
+  --warning-border: #6b4d12;
+  --warning-foreground: #291c00;
+  --error: #f87171;
+  --error-subtle: #241313;
+  --error-border: #6d2b2b;
+  --error-foreground: #2b0d0d;
+  --info: #38bdf8;
+  --info-subtle: #0a1c26;
+  --info-border: #15495e;
+  --info-foreground: #04212e;
+
+  --ring: #8b5cf6;
+
+  /* Shadows read as near-black in dark mode; the surface ramp carries the
+     elevation instead, so these stay subtle and mostly add edge definition. */
+  --shadow-card: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-raised: 0 2px 4px -1px rgb(0 0 0 / 0.4), 0 4px 12px -2px
+    rgb(0 0 0 / 0.35);
+  --shadow-overlay: 0 8px 24px -4px rgb(0 0 0 / 0.5), 0 16px 48px -8px
+    rgb(0 0 0 / 0.45);
+}
+
+/* Map tokens onto Tailwind. `inline` keeps the var() reference in the emitted
+   utility, so switching .dark re-resolves every colour without a rebuild. */
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-hover: var(--surface-hover);
+  --color-surface-raised: var(--surface-raised);
+  --color-surface-sunken: var(--surface-sunken);
+
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--foreground-muted);
+  --color-subtle-foreground: var(--foreground-subtle);
+
+  --color-border: var(--border);
+  --color-border-strong: var(--border-strong);
+
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-border: var(--primary-border);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-hover: var(--secondary-hover);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-success: var(--success);
+  --color-success-subtle: var(--success-subtle);
+  --color-success-border: var(--success-border);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-subtle: var(--warning-subtle);
+  --color-warning-border: var(--warning-border);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-subtle: var(--error-subtle);
+  --color-error-border: var(--error-border);
+  --color-error-foreground: var(--error-foreground);
+  --color-info: var(--info);
+  --color-info-subtle: var(--info-subtle);
+  --color-info-border: var(--info-border);
+  --color-info-foreground: var(--info-foreground);
+
+  --color-ring: var(--ring);
+
+  /* Aliases kept so existing `bg-card` / `text-destructive` markup keeps
+     working and resolves to the same tokens as everything else. */
+  --color-card: var(--surface);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--surface-raised);
+  --color-popover-foreground: var(--foreground);
+  --color-muted: var(--secondary);
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--foreground);
+  --color-destructive: var(--error);
+  --color-destructive-foreground: var(--error-foreground);
+  --color-input: var(--border);
+
+  /* One radius ramp. Cards and modals sit at lg/xl; controls at md. */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --radius-3xl: 1.5rem;
+
+  --shadow-card: var(--shadow-card);
+  --shadow-raised: var(--shadow-raised);
+  --shadow-overlay: var(--shadow-overlay);
+}
+
+/* ---------------------------------------------------------------------------
+   BASE
+--------------------------------------------------------------------------- */
+
+* {
+  border-color: var(--border);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: serif; /* Default to serif for reading */
   font-feature-settings: "kern";
   -webkit-font-smoothing: antialiased;
-  transition: background-color 0.2s ease, color 0.2s ease;
+  -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
-h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
-  font-family: "Inter", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  letter-spacing: -0.01em;
+/* Headings tighten as they grow, so large titles don't read as airy. */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  letter-spacing: -0.02em;
+  text-wrap: balance;
 }
 
-/* Custom scrollbar - subtle taupe */
+h1 {
+  letter-spacing: -0.03em;
+}
+
+/* Anything interactive gets a visible, consistent focus ring — including
+   keyboard traversal of links and custom controls. */
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
@@ -86,42 +273,60 @@ h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--muted);
+  background: var(--border-strong);
   border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--muted-foreground);
+  background: var(--foreground-subtle);
+  background-clip: content-box;
 }
 
-/* Clean text utilities */
+/* ---------------------------------------------------------------------------
+   LAYOUT PRIMITIVES
+--------------------------------------------------------------------------- */
+
 .text-serif {
   font-family: Georgia, "Times New Roman", serif;
 }
 
-.text-sans {
-  font-family: inherit;
-}
-
-/* Anthropic style containers */
+/* Single page container. Padding steps down on small screens so content isn't
+   squeezed into the middle third of a phone. */
 .container-anthropic {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1rem;
 }
 
-/* Section spacing */
-.section-padding {
-  padding-top: 6rem;
-  padding-bottom: 6rem;
-}
-
-@media (max-width: 768px) {
-  .section-padding {
-    padding-top: 4rem;
-    padding-bottom: 4rem;
+@media (min-width: 640px) {
+  .container-anthropic {
+    padding: 0 1.5rem;
   }
 }
+
+@media (min-width: 1024px) {
+  .container-anthropic {
+    padding: 0 2rem;
+  }
+}
+
+.section-padding {
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 768px) {
+  .section-padding {
+    padding-top: 6rem;
+    padding-bottom: 6rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   MOTION
+--------------------------------------------------------------------------- */
 
 @keyframes rotateGlow {
   0% {
@@ -139,9 +344,9 @@ h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
   animation: rotateGlow 4s ease-in-out infinite;
 }
 
-/* Ambient glow pulsing for background orbs */
 @keyframes ambientPulse {
-  0%, 100% {
+  0%,
+  100% {
     opacity: var(--pulse-min, 0.05);
     transform: scale(1);
   }
@@ -160,7 +365,21 @@ h1, h2, h3, h4, h5, h6, nav, button, input, select, textarea, .sans {
   animation-delay: -4s;
 }
 
-/* Logo light/dark theme toggling */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   LOGO THEME SWAP
+--------------------------------------------------------------------------- */
+
 .cognify-logo-light {
   display: block !important;
 }

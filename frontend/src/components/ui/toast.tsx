@@ -78,7 +78,11 @@ function ToastContainer({
   onRemove: (id: string) => void;
 }) {
   return (
-    <div className="fixed bottom-6 right-6 z-[9999] flex flex-col gap-3 max-w-sm w-full pointer-events-none">
+    // Full-width on phones so long messages don't wrap into a narrow column.
+    <div
+      className="pointer-events-none fixed inset-x-4 bottom-4 z-[100] flex flex-col gap-2 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-full sm:max-w-sm"
+      aria-live="polite"
+    >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />
       ))}
@@ -100,57 +104,40 @@ function ToastItem({
     return () => clearTimeout(timer);
   }, [toast.id, onRemove]);
 
+  // Toasts sit on an opaque raised surface rather than a tinted translucent
+  // one, so the message stays legible over whatever is behind it. The status
+  // colour is carried by the icon and the left border.
   const styles = {
-    success: {
-      bg: "bg-emerald-500/10 dark:bg-emerald-500/15 backdrop-blur-md",
-      border: "border-emerald-500/20 dark:border-emerald-500/30",
-      text: "text-emerald-800 dark:text-emerald-400",
-      icon: <CheckCircle className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />,
-    },
-    error: {
-      bg: "bg-destructive/10 backdrop-blur-md",
-      border: "border-destructive/20",
-      text: "text-destructive",
-      icon: <AlertCircle className="w-5 h-5 text-destructive" />,
-    },
-    warning: {
-      bg: "bg-amber-500/10 dark:bg-amber-500/15 backdrop-blur-md",
-      border: "border-amber-500/20 dark:border-amber-500/30",
-      text: "text-amber-800 dark:text-amber-400",
-      icon: <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
-    },
-    info: {
-      bg: "bg-zinc-900/90 dark:bg-zinc-900/95 backdrop-blur-md",
-      border: "border-zinc-800 dark:border-zinc-700/50",
-      text: "text-zinc-100 dark:text-zinc-100",
-      icon: <Info className="w-5 h-5 text-zinc-100" />,
-    },
-  };
+    success: { accent: "border-l-success", icon: CheckCircle, tone: "text-success" },
+    error: { accent: "border-l-error", icon: AlertCircle, tone: "text-error" },
+    warning: { accent: "border-l-warning", icon: AlertTriangle, tone: "text-warning" },
+    info: { accent: "border-l-info", icon: Info, tone: "text-info" },
+  } as const;
 
   const style = styles[toast.type];
+  const Icon = style.icon;
 
   return (
     <div
       className={cn(
-        "flex items-center gap-4 p-5 rounded-2xl border shadow-xl animate-in slide-in-from-right-8 fade-in duration-300 pointer-events-auto",
-        style.bg,
-        style.border
+        "pointer-events-auto flex items-start gap-3 rounded-md border border-l-4 border-border bg-surface-raised p-4",
+        "shadow-overlay animate-in slide-in-from-right-8 fade-in duration-200",
+        style.accent,
       )}
-      role="alert"
+      role={toast.type === "error" ? "alert" : "status"}
     >
-      <div className="shrink-0">{style.icon}</div>
-      <p
-        className={cn("flex-1 text-xs font-medium tracking-tight", style.text)}
-      >
+      <Icon className={cn("mt-px h-4 w-4 shrink-0", style.tone)} aria-hidden="true" />
+      <p className="flex-1 text-sm leading-relaxed text-foreground">
         {toast.message}
       </p>
       <Button
         variant="ghost"
-        size="icon"
+        size="icon-sm"
         onClick={() => onRemove(toast.id)}
-        className={cn(style.text, "opacity-30 hover:opacity-100 h-8 w-8")}
+        aria-label="Dismiss notification"
+        className="-mr-1.5 -mt-1.5 shrink-0 text-muted-foreground"
       >
-        <X className="w-4 h-4" />
+        <X />
       </Button>
     </div>
   );

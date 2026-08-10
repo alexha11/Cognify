@@ -43,7 +43,7 @@ export default function HomePage() {
       file: "ai-question-generator.ts",
       badge: {
         text: "AI Engine Ready",
-        cls: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
+        cls: "text-success bg-success-subtle border-success-border",
       },
       image: "/images/features/ai_generation.png",
       alt: h.aiTitle,
@@ -57,7 +57,7 @@ export default function HomePage() {
       file: "analytics-dashboard.tsx",
       badge: {
         text: "Live Analytics",
-        cls: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+        cls: "text-primary bg-primary-subtle border-primary-border",
       },
       image: "/images/features/analytics.png",
       alt: h.engineTitle,
@@ -71,7 +71,7 @@ export default function HomePage() {
       file: "document-parser.py",
       badge: {
         text: "Vector RAG Embedded",
-        cls: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+        cls: "text-warning bg-warning-subtle border-warning-border",
       },
       image: "/images/features/processing.png",
       alt: h.docsTitle,
@@ -85,7 +85,7 @@ export default function HomePage() {
       file: "quiz-session.tsx",
       badge: {
         text: "Instant Feedback",
-        cls: "text-violet-400 bg-violet-500/10 border-violet-500/20",
+        cls: "text-primary bg-primary-subtle border-primary-border",
       },
       image: "/images/features/quiz.png",
       alt: h.quizTitle,
@@ -179,14 +179,14 @@ export default function HomePage() {
                   <div className="group relative inline-flex overflow-hidden rounded-xl p-[2px] hover:scale-105 transition-transform duration-300">
                     {/* Animated glow border */}
                     <div
-                      className="absolute inset-[-50%] -z-10 h-[200%] w-[200%] animate-rotate-glow bg-gradient-to-r from-blue-500 via-violet-500 to-cyan-500 blur-lg"
+                      className="absolute inset-[-50%] -z-10 h-[200%] w-[200%] animate-rotate-glow bg-gradient-to-r from-primary via-primary-hover to-primary blur-lg"
                       style={{
                         backgroundSize: "50% 25%",
                         backgroundRepeat: "no-repeat",
                         backgroundPosition: "center",
                       }}
                     />
-                    <button className="relative cursor-pointer overflow-hidden rounded-[10px] bg-card px-8 py-4 text-base font-bold text-foreground shadow-sm transition-all duration-300">
+                    <button className="relative cursor-pointer overflow-hidden rounded-md bg-card px-8 py-4 text-base font-bold text-foreground shadow-sm transition-all duration-300">
                       <span className="relative z-20 flex items-center gap-2">
                         {h.getStarted}
                         <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
@@ -254,7 +254,7 @@ export default function HomePage() {
                 return (
                   <div
                     key={feature.id}
-                    className="group relative rounded-2xl border border-border/40 bg-card/10 overflow-hidden transition-colors duration-300 hover:border-border/70"
+                    className="group relative rounded-lg border border-border/40 bg-card/10 overflow-hidden transition-colors duration-300 hover:border-border/70"
                   >
                     {/* macOS window frame */}
                     <div className="w-full h-[20rem] bg-[#0c0c0c] border-b border-border/30 flex flex-col">
@@ -269,7 +269,7 @@ export default function HomePage() {
                           </span>
                         </div>
                         <span
-                          className={`text-[10px] font-semibold px-2 py-0.5 rounded-md border shrink-0 ml-2 ${feature.badge.cls}`}
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-md border shrink-0 ml-2 ${feature.badge.cls}`}
                         >
                           {feature.badge.text}
                         </span>
@@ -385,7 +385,7 @@ export default function HomePage() {
 
       <footer className="border-t border-border/30 z-10 relative">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
-          <p className="text-xs font-serif text-muted-foreground/50">
+          <p className="text-xs text-muted-foreground/50">
             {t.common.copyright}
           </p>
           <div className="flex items-center gap-6">

@@ -355,8 +355,8 @@ export default function QuizPage() {
           description:
             "You answered every single question correctly. Masterclass performance!",
           badgeStyle:
-            "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-          iconStyle: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
+            "border-success-border bg-success-subtle text-success",
+          iconStyle: "text-success bg-success-subtle border-success-border",
           icon: Sparkles,
         };
       }
@@ -367,8 +367,8 @@ export default function QuizPage() {
           description:
             "You've demonstrated a strong understanding of this material.",
           badgeStyle:
-            "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-          iconStyle: "text-emerald-500 bg-emerald-500/10 border-emerald-500/30",
+            "border-success-border bg-success-subtle text-success",
+          iconStyle: "text-success bg-success-subtle border-success-border",
           icon: Trophy,
         };
       }
@@ -390,8 +390,8 @@ export default function QuizPage() {
         description:
           "Practice makes perfect! Review the course material and attempt again.",
         badgeStyle:
-          "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
-        iconStyle: "text-amber-500 bg-amber-500/10 border-amber-500/30",
+          "border-warning-border bg-warning-subtle text-warning",
+        iconStyle: "text-warning bg-warning-subtle border-warning-border",
         icon: RefreshCw,
       };
     };
@@ -408,11 +408,11 @@ export default function QuizPage() {
           {/* Hero header */}
           <div className="text-center space-y-4">
             <div className="relative inline-flex items-center justify-center">
-              <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-primary/20 via-emerald-500/20 to-purple-500/20 blur-lg animate-pulse" />
-              <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl bg-card border border-border/80 shadow-xl backdrop-blur-xl">
+              <div className="absolute -inset-3 rounded-full bg-gradient-to-r from-primary/20 via-success/20 to-primary/20 blur-lg animate-pulse" />
+              <div className="relative flex h-24 w-24 items-center justify-center rounded-xl bg-card border border-border/80 shadow-xl backdrop-blur-xl">
                 <div
                   className={cn(
-                    "p-4 rounded-2xl border transition-all duration-300",
+                    "p-4 rounded-lg border transition-all duration-300",
                     tier.iconStyle,
                   )}
                 >
@@ -442,13 +442,13 @@ export default function QuizPage() {
           </div>
 
           {/* Main score card */}
-          <div className="relative p-6 sm:p-8 rounded-3xl bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl space-y-6">
+          <div className="relative p-6 sm:p-8 rounded-xl bg-card/90 backdrop-blur-xl border border-border/80 shadow-2xl space-y-6">
             {/* Big percentage indicator */}
             <div className="flex flex-col items-center justify-center py-4 border-b border-border/40 space-y-1">
               <div className="text-5xl sm:text-6xl font-black tracking-tight text-foreground">
                 {pct}%
               </div>
-              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+              <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
                 Overall Accuracy
               </span>
             </div>
@@ -456,8 +456,8 @@ export default function QuizPage() {
             {/* Stat metrics grid */}
             <div className="grid grid-cols-3 gap-3 sm:gap-4">
               {/* Correct */}
-              <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 text-center space-y-1">
-                <div className="flex items-center justify-center gap-1 text-emerald-600 dark:text-emerald-400">
+              <div className="p-4 rounded-lg bg-success-subtle border border-success-border text-center space-y-1">
+                <div className="flex items-center justify-center gap-1 text-success">
                   <Check className="h-4 w-4 stroke-[3]" />
                   <span className="text-2xl font-bold">{stats.correct}</span>
                 </div>
@@ -467,8 +467,8 @@ export default function QuizPage() {
               </div>
 
               {/* Incorrect */}
-              <div className="p-4 rounded-2xl bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800/50 text-center space-y-1">
-                <div className="flex items-center justify-center gap-1 text-red-500 dark:text-red-400">
+              <div className="p-4 rounded-lg bg-error-subtle border border-error-border text-center space-y-1">
+                <div className="flex items-center justify-center gap-1 text-error">
                   <X className="h-4 w-4 stroke-[3]" />
                   <span className="text-2xl font-bold">{stats.incorrect}</span>
                 </div>
@@ -478,7 +478,7 @@ export default function QuizPage() {
               </div>
 
               {/* Total Questions */}
-              <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/20 text-center space-y-1">
+              <div className="p-4 rounded-lg bg-primary/5 dark:bg-primary/10 border border-primary/20 text-center space-y-1">
                 <div className="flex items-center justify-center gap-1 text-primary">
                   <FileQuestion className="h-4 w-4 stroke-[2.5]" />
                   <span className="text-2xl font-bold">{stats.total}</span>
@@ -602,9 +602,9 @@ export default function QuizPage() {
       <div className="max-w-2xl mx-auto space-y-6 py-4">
         {/* Guest notification banner */}
         {isGuest && showGuestBanner && (
-          <div className="flex items-center justify-between p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-900 dark:text-amber-200 text-xs font-medium transition-all duration-300">
+          <div className="flex items-center justify-between p-3.5 rounded-xl bg-warning-subtle border border-warning-border text-warning text-xs font-medium transition-all duration-300">
             <div className="flex items-center gap-2">
-              <Info className="h-4 w-4 text-amber-500 flex-shrink-0" />
+              <Info className="h-4 w-4 text-warning flex-shrink-0" />
               <span>
                 You are taking this quiz as a guest. Log in to save your
                 progress.
@@ -621,7 +621,7 @@ export default function QuizPage() {
               </Button>
               <button
                 onClick={() => setShowGuestBanner(false)}
-                className="p-1 rounded-md text-amber-700 dark:text-amber-400 hover:bg-amber-500/20 transition-colors cursor-pointer"
+                className="p-1 rounded-md text-warning hover:bg-warning-subtle transition-colors cursor-pointer"
                 aria-label="Close notification"
               >
                 <X className="h-4 w-4" />
@@ -647,7 +647,7 @@ export default function QuizPage() {
         {/* Progress bar */}
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
               Progress
             </span>
             <div className="flex items-center gap-4">

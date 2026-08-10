@@ -136,7 +136,7 @@ export default function CoursesPage() {
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {c.title}
             </h1>
-            <p className="text-muted-foreground font-serif">
+            <p className="text-muted-foreground">
               {canCreate ? c.manageCourses : c.exploreCourses}
             </p>
           </div>
@@ -300,7 +300,7 @@ export default function CoursesPage() {
                               e.stopPropagation();
                               handleDeleteCourse(course.id, course.name);
                             }}
-                            className="h-7 w-7 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
+                            className="h-7 w-7 rounded-lg text-muted-foreground hover:text-error hover:bg-error-subtle dark:hover:bg-error-subtle"
                             title="Delete Course"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -312,11 +312,11 @@ export default function CoursesPage() {
                 </CardHeader>
                 <CardContent className="space-y-6">
                   <Link href={`/courses/${course.id}`}>
-                    <p className="text-base text-muted-foreground font-serif line-clamp-2 min-h-[3rem] leading-relaxed">
+                    <p className="text-base text-muted-foreground line-clamp-2 min-h-[3rem] leading-relaxed">
                       {course.description || t.common.noDescription}
                     </p>
                   </Link>
-                  <div className="flex items-center gap-6 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                  <div className="flex items-center gap-6 text-xs font-bold text-muted-foreground uppercase tracking-wide">
                     <span className="flex items-center gap-2">
                       <FileQuestion className="h-3.5 w-3.5" />
                       {course._count.questions} {c.questions}
@@ -329,7 +329,7 @@ export default function CoursesPage() {
 
                   {/* Quiz Action Button */}
                   <Link href={`/quiz/${course.id}`} className="block">
-                    <Button variant="pill" size="lg" className="w-full gap-2">
+                    <Button pill size="lg" className="w-full gap-2">
                       {user && progressMap[course.id]?.isCompleted ? (
                         <>
                           <RefreshCw className="h-4 w-4 text-xs" />
@@ -352,7 +352,7 @@ export default function CoursesPage() {
                   </Link>
 
                   <div className="pt-4 border-t border-border">
-                    <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
                       {c.created} {formatDate(course.createdAt)}
                     </p>
                   </div>

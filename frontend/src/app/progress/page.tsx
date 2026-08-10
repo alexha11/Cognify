@@ -99,7 +99,7 @@ export default function ProgressPage() {
           <h1 className="text-3xl font-semibold tracking-tight text-foreground">
             Learning Progress
           </h1>
-          <p className="mt-2 text-muted-foreground font-serif text-base leading-relaxed">
+          <p className="mt-2 text-muted-foreground text-base leading-relaxed">
             Monitor your progress and get valuable insights.
           </p>
         </div>
@@ -168,7 +168,7 @@ export default function ProgressPage() {
                               <h3 className="font-semibold text-xl tracking-tight leading-none">
                                 {course.name}
                               </h3>
-                              <p className="text-sm text-muted-foreground font-serif">
+                              <p className="text-sm text-muted-foreground">
                                 {progress?.answered || 0} /{" "}
                                 {progress?.totalQuestions || 0} units validated
                               </p>
@@ -190,7 +190,7 @@ export default function ProgressPage() {
 
                           {progress && progress.remaining > 0 && (
                             <div className="mt-8 pt-8 border-t border-border/40 flex justify-end">
-                              <Button asChild variant="pill" size="lg">
+                              <Button asChild pill size="lg">
                                 <Link href={`/quiz/${course.id}`}>
                                   Resume session
                                   <ArrowRight className="ml-2 h-4 w-4" />
@@ -212,11 +212,11 @@ export default function ProgressPage() {
               {attempts.length === 0 ? (
                 <Card className="border-0 bg-secondary/20">
                   <CardContent className="py-12 text-center space-y-6">
-                    <p className="text-muted-foreground font-serif italic text-lg">
+                    <p className="text-muted-foreground text-lg">
                       No recent activity found in your learning logs.
                     </p>
                     <Link href="/courses">
-                      <Button variant="pill" size="xl">
+                      <Button pill size="xl">
                         Identify courses
                       </Button>
                     </Link>
@@ -227,7 +227,7 @@ export default function ProgressPage() {
                   {(attempts || []).slice(0, 10).map((attempt) => (
                     <div
                       key={attempt.id}
-                      className="flex items-center gap-6 p-5 rounded-2xl border border-border/40 hover:bg-card transition-all duration-300"
+                      className="flex items-center gap-6 p-5 rounded-lg border border-border/40 hover:bg-card transition-all duration-300"
                     >
                       <div
                         className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${
@@ -249,11 +249,11 @@ export default function ProgressPage() {
                         <div className="flex items-center gap-4 mt-2">
                           <Badge
                             variant="outline"
-                            className="text-[10px] font-bold uppercase tracking-widest"
+                            className="text-xs font-medium uppercase tracking-wide"
                           >
                             {attempt.isCorrect ? "Validated" : "Incorrect"}
                           </Badge>
-                          <p className="text-xs text-muted-foreground font-serif italic">
+                          <p className="text-xs text-muted-foreground">
                             {formatDate(attempt.createdAt)}
                           </p>
                         </div>

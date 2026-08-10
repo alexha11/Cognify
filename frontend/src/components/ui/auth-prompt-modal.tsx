@@ -1,15 +1,9 @@
 "use client";
 
-import { X, LogIn, UserPlus } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "./button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "./card";
+import { Modal } from "./modal";
 import { CognifyLogo } from "@/components/ui/cognify-logo";
 
 interface AuthPromptModalProps {
@@ -17,78 +11,49 @@ interface AuthPromptModalProps {
   onClose: () => void;
   title?: string;
   description?: string;
-  action?: string;
 }
 
 export function AuthPromptModal({
   isOpen,
   onClose,
   title = "Sign up to continue",
-  description = "Create a free account to save your progress and access all features.",
-  action = "Unlock everything",
+  description =
+    "Create a free account to save your progress and access all features.",
 }: AuthPromptModalProps) {
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="fixed inset-0 z-40" onClick={onClose} />
-      <div className="relative w-full max-w-sm z-50 animate-in zoom-in-95 slide-in-from-bottom-2 duration-300">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="absolute right-4 top-4 z-10 h-8 w-8 rounded-full opacity-70 hover:opacity-100 transition-opacity"
-        >
-          <X className="h-4 w-4" />
+    <Modal open={isOpen} onClose={onClose} size="sm">
+      <div className="flex flex-col items-center gap-5 text-center">
+        <CognifyLogo size={72} />
+
+        <div className="space-y-2">
+          <h2 className="text-xl font-semibold tracking-tight text-foreground">
+            {title}
+          </h2>
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            {description}
+          </p>
+        </div>
+
+        <div className="flex w-full flex-col gap-2">
+          <Button asChild size="lg" fullWidth>
+            <Link href="/register">
+              <UserPlus />
+              Create free account
+            </Link>
+          </Button>
+
+          <Button asChild variant="outline" size="lg" fullWidth>
+            <Link href="/login">
+              <LogIn />
+              Sign in
+            </Link>
+          </Button>
+        </div>
+
+        <Button variant="link" size="sm" onClick={onClose}>
+          No thanks, continue as guest
         </Button>
-
-        <Card className="overflow-hidden border-border/50 shadow-2xl bg-card/95 backdrop-blur-sm">
-          <CardHeader className="text-center pt-12 pb-6 px-8">
-            <div className="mx-auto mb-5 flex justify-center animate-in zoom-in duration-500">
-              <CognifyLogo size={100} />
-            </div>
-            <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
-              {title}
-            </CardTitle>
-            <CardDescription className="text-sm mt-3 leading-relaxed text-muted-foreground px-2">
-              {description}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3 pb-10 px-8">
-            <Button
-              asChild
-              size="lg"
-              className="w-full h-11 text-sm font-semibold rounded-xl shadow-sm transition-all hover:scale-[1.02]"
-            >
-              <Link href="/register">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Create free account
-              </Link>
-            </Button>
-
-            <Button
-              asChild
-              variant="outline"
-              size="lg"
-              className="w-full h-11 text-sm font-semibold rounded-xl bg-background hover:bg-muted/50 transition-all border-border/60"
-            >
-              <Link href="/login">
-                <LogIn className="mr-2 h-4 w-4" />
-                Sign in
-              </Link>
-            </Button>
-
-            <div className="mt-4 text-center">
-              <button
-                onClick={onClose}
-                className="text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                No thanks, continue as guest
-              </button>
-            </div>
-          </CardContent>
-        </Card>
       </div>
-    </div>
+    </Modal>
   );
 }

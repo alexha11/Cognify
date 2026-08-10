@@ -127,10 +127,10 @@ export default function ContactPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mt-4">
             {/* Left Column: Contact Form */}
-            <div className="lg:col-span-7 bg-card/60 backdrop-blur-md rounded-2xl border border-border/80 p-6 md:p-8 shadow-xl">
+            <div className="lg:col-span-7 bg-card/60 backdrop-blur-md rounded-lg border border-border/80 p-6 md:p-8 shadow-xl">
               {submitted ? (
                 <div className="py-12 text-center space-y-5 animate-in fade-in zoom-in-95 duration-300">
-                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+                  <div className="w-16 h-16 rounded-lg bg-success-subtle border border-success-border text-success flex items-center justify-center mx-auto">
                     <CheckCircle2 className="h-8 w-8" />
                   </div>
                   <div className="space-y-2">
@@ -173,7 +173,7 @@ export default function ContactPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-foreground/80">
-                        {co.yourName} <span className="text-rose-500">*</span>
+                        {co.yourName} <span className="text-error">*</span>
                       </label>
                       <input
                         type="text"
@@ -187,7 +187,7 @@ export default function ContactPage() {
 
                     <div className="space-y-2">
                       <label className="text-xs font-medium text-foreground/80">
-                        {co.emailAddress} <span className="text-rose-500">*</span>
+                        {co.emailAddress} <span className="text-error">*</span>
                       </label>
                       <input
                         type="email"
@@ -216,14 +216,14 @@ export default function ContactPage() {
                             onClick={() => setCategory(cat.id)}
                             className={`flex items-center gap-2.5 p-3 rounded-xl border text-xs font-medium text-left transition-all duration-200 cursor-pointer select-none ${
                               isSelected
-                                ? "border-violet-500 bg-violet-500/10 text-violet-600 dark:text-violet-400 font-bold shadow-md ring-2 ring-violet-500/20 scale-[1.02]"
-                                : "border-border/80 bg-secondary/30 text-muted-foreground hover:bg-violet-500/10 hover:text-foreground hover:border-violet-500/30"
+                                ? "border-primary bg-primary-subtle text-primary font-bold shadow-md ring-2 ring-primary/20 scale-[1.02]"
+                                : "border-border/80 bg-secondary/30 text-muted-foreground hover:bg-primary-subtle hover:text-foreground hover:border-primary-border"
                             }`}
                           >
                             <Icon
                               className={`h-4 w-4 shrink-0 pointer-events-none ${
                                 isSelected
-                                  ? "text-violet-600 dark:text-violet-400"
+                                  ? "text-primary"
                                   : "text-muted-foreground/70"
                               }`}
                             />
@@ -239,7 +239,7 @@ export default function ContactPage() {
                   {/* Message Field */}
                   <div className="space-y-2">
                     <label className="text-xs font-medium text-foreground/80">
-                      {co.messageDetails} <span className="text-rose-500">*</span>
+                      {co.messageDetails} <span className="text-error">*</span>
                     </label>
                     <textarea
                       required
@@ -273,9 +273,9 @@ export default function ContactPage() {
             {/* Right Column: LinkedIn & Direct Support Options */}
             <div className="lg:col-span-5 space-y-6">
               {/* LinkedIn Connect Card */}
-              <div className="group relative rounded-2xl border border-blue-500/30 bg-gradient-to-br from-blue-950/30 via-card/80 to-card/60 p-6 shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-blue-500/50">
+              <div className="group relative rounded-lg border border-info-border bg-gradient-to-br from-info-subtle via-surface to-surface p-6 shadow-xl backdrop-blur-md overflow-hidden transition-all duration-300 hover:border-info-border">
                 <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
-                  <Linkedin className="h-28 w-28 text-blue-400" />
+                  <Linkedin className="h-28 w-28 text-info" />
                 </div>
                 <div className="relative z-10 space-y-4">
                   <h3 className="text-xl font-semibold text-foreground">
@@ -290,7 +290,7 @@ export default function ContactPage() {
                     href="https://www.linkedin.com/in/duc-thanh-duong-ha/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center justify-between w-full rounded-xl bg-blue-600 hover:bg-blue-500 px-4 py-3 text-sm font-semibold text-white transition-all shadow-md group/btn"
+                    className="inline-flex items-center justify-between w-full rounded-xl bg-info hover:bg-info px-4 py-3 text-sm font-semibold text-info-foreground transition-all shadow-md group/btn"
                   >
                     <span className="flex items-center gap-2">
                       <Linkedin className="h-4 w-4" />
@@ -308,7 +308,7 @@ export default function ContactPage() {
 
       <footer className="border-t border-border/30 z-10 relative">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
-          <p className="text-xs font-serif text-muted-foreground/50">
+          <p className="text-xs text-muted-foreground/50">
             {t.common.copyright}
           </p>
           <div className="flex items-center gap-6">

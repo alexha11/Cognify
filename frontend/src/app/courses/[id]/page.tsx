@@ -367,7 +367,7 @@ export default function CourseDetailPage() {
                       className={cn(
                         "gap-1.5 text-xs",
                         course.isPublic &&
-                          "border-emerald-300/60 text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/25",
+                          "border-success-border text-success bg-success-subtle",
                       )}
                     >
                       {course.isPublic ? (
@@ -434,7 +434,7 @@ export default function CourseDetailPage() {
                     >
                       {copied ? (
                         <>
-                          <Check className="h-3.5 w-3.5 text-emerald-500" />
+                          <Check className="h-3.5 w-3.5 text-success" />
                           Link copied!
                         </>
                       ) : (
@@ -471,7 +471,7 @@ export default function CourseDetailPage() {
                       <Button
                         variant="outline"
                         size="default"
-                        className="rounded-xl gap-2 px-5 text-red-600 border-red-200 dark:border-red-800/40 hover:bg-red-50 dark:hover:bg-red-950/25"
+                        className="rounded-xl gap-2 px-5 text-error border-error-border hover:bg-error-subtle dark:hover:bg-error-subtle"
                         onClick={handleDeleteCourse}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
@@ -486,7 +486,7 @@ export default function CourseDetailPage() {
               <div className="flex-1 p-8 md:p-10 bg-muted/10 flex flex-col justify-between gap-8">
                 {/* Stat grid */}
                 <div>
-                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-5">
+                  <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-5">
                     Overview
                   </p>
                   <div className="grid grid-cols-2 gap-4">
@@ -507,19 +507,19 @@ export default function CourseDetailPage() {
 
                 {/* Pending review alert */}
                 {canEdit && pendingQuestions.length > 0 && (
-                  <div className="flex items-center gap-4 p-4 rounded-xl bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50">
-                    <div className="w-9 h-9 rounded-lg bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-                      <Sparkles className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <div className="flex items-center gap-4 p-4 rounded-xl bg-warning-subtle border border-warning-border">
+                    <div className="w-9 h-9 rounded-lg bg-warning-subtle flex items-center justify-center flex-shrink-0">
+                      <Sparkles className="h-4 w-4 text-warning" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+                      <p className="text-sm font-semibold text-warning">
                         {pendingQuestions.length} pending review
                       </p>
-                      <p className="text-xs text-amber-700/70 dark:text-amber-400/70">
+                      <p className="text-xs text-warning">
                         Awaiting verification
                       </p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-amber-500/50 flex-shrink-0" />
+                    <ArrowRight className="h-4 w-4 text-warning flex-shrink-0" />
                   </div>
                 )}
               </div>
@@ -538,7 +538,7 @@ export default function CourseDetailPage() {
                   <h2 className="text-base font-semibold text-foreground">
                     Pending review
                   </h2>
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/25 border border-amber-300/60 dark:border-amber-700/50 px-2.5 py-1 rounded-full">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-warning bg-warning-subtle border border-warning-border px-2.5 py-1 rounded-full">
                     {pendingQuestions.length} awaiting
                   </span>
                 </div>
@@ -547,7 +547,7 @@ export default function CourseDetailPage() {
                   {pendingQuestions.map((question) => (
                     <Card
                       key={question.id}
-                      className="border-amber-200/60 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10 shadow-sm overflow-hidden"
+                      className="border-warning-border bg-warning-subtle shadow-sm overflow-hidden"
                     >
                       <CardContent className="p-6 space-y-5">
                         <p className="text-sm font-medium text-foreground leading-relaxed">
@@ -562,7 +562,7 @@ export default function CourseDetailPage() {
                               className={cn(
                                 "flex items-center gap-3 p-3 rounded-xl border text-sm transition-colors",
                                 answer.isCorrect
-                                  ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 dark:border-emerald-700/50 text-emerald-800 dark:text-emerald-300"
+                                  ? "bg-success-subtle border-success-border text-success"
                                   : "bg-background border-border/50 text-muted-foreground",
                               )}
                             >
@@ -570,7 +570,7 @@ export default function CourseDetailPage() {
                                 className={cn(
                                   "flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md text-xs font-bold border",
                                   answer.isCorrect
-                                    ? "bg-emerald-500 border-emerald-500 text-white"
+                                    ? "bg-success border-success text-success-foreground"
                                     : "bg-background border-border text-muted-foreground",
                                 )}
                               >
@@ -604,7 +604,7 @@ export default function CourseDetailPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => handleApprove(question.id)}
-                              className="h-8 px-3 text-xs font-semibold text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/25"
+                              className="h-8 px-3 text-xs font-semibold text-success hover:bg-success-subtle dark:hover:bg-success-subtle"
                             >
                               <Check className="h-3.5 w-3.5 mr-1.5" />
                               Approve
@@ -612,7 +612,7 @@ export default function CourseDetailPage() {
                             <Button
                               variant="ghost"
                               size="sm"
-                              className="h-8 px-3 text-xs font-semibold text-red-600/70 hover:bg-red-50 dark:hover:bg-red-950/25 hover:text-red-600"
+                              className="h-8 px-3 text-xs font-semibold text-error hover:bg-error-subtle dark:hover:bg-error-subtle hover:text-error"
                             >
                               <X className="h-3.5 w-3.5 mr-1.5" />
                               Reject
@@ -676,7 +676,7 @@ export default function CourseDetailPage() {
                               className={cn(
                                 "inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-md border font-medium",
                                 answer.isCorrect
-                                  ? "bg-emerald-50 dark:bg-emerald-950/25 border-emerald-300/60 dark:border-emerald-700/50 text-emerald-700 dark:text-emerald-400"
+                                  ? "bg-success-subtle border-success-border text-success"
                                   : "bg-muted/40 border-border/40 text-muted-foreground/60",
                               )}
                             >
@@ -704,7 +704,7 @@ export default function CourseDetailPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteQuestion(question.id)}
-                            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25"
+                            className="h-8 w-8 rounded-lg text-muted-foreground hover:text-error hover:bg-error-subtle dark:hover:bg-error-subtle"
                             title="Delete question"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -752,7 +752,7 @@ export default function CourseDetailPage() {
                         <p className="text-xs font-semibold text-foreground truncate">
                           {material.fileName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {formatFileSize(material.fileSize)}
                           {material.chunkCount > 0 &&
                             ` · ${material.chunkCount} chunks`}
@@ -777,7 +777,7 @@ export default function CourseDetailPage() {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleDeleteMaterial(material.id, material.fileName)}
-                            className="h-7 w-7 rounded-lg border border-border/40 text-muted-foreground hover:border-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/25 transition-colors flex-shrink-0"
+                            className="h-7 w-7 rounded-lg border border-border/40 text-muted-foreground hover:border-error-border hover:text-error hover:bg-error-subtle dark:hover:bg-error-subtle transition-colors flex-shrink-0"
                             title="Delete material"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -793,7 +793,7 @@ export default function CourseDetailPage() {
               {canEdit && (
                 <div className="space-y-3 pt-1">
                   {uploadError && (
-                    <div className="rounded-xl bg-red-50 dark:bg-red-950/25 border border-red-300/60 dark:border-red-700/50 p-3 text-xs font-medium text-red-600 dark:text-red-400">
+                    <div className="rounded-xl bg-error-subtle border border-error-border p-3 text-xs font-medium text-error">
                       {uploadError}
                     </div>
                   )}
@@ -837,7 +837,7 @@ export default function CourseDetailPage() {
                     <Sparkles className="h-4 w-4" />
                     Generate with AI
                   </Button>
-                  <p className="text-center text-[10px] text-muted-foreground/60">
+                  <p className="text-center text-xs text-muted-foreground/60">
                     Creates questions from your PDF material
                   </p>
                 </div>

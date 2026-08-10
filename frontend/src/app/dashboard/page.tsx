@@ -91,7 +91,7 @@ export default function DashboardPage() {
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">
               {d.title}
             </h1>
-            <div className="flex items-center gap-3 text-muted-foreground font-serif text-base">
+            <div className="flex items-center gap-3 text-muted-foreground text-base">
               <span className="text-foreground font-semibold font-sans">
                 {user.firstName} {user.lastName}
               </span>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
               <span className="opacity-40">•</span>
               <Badge
                 variant="outline"
-                className="text-[10px] font-bold uppercase tracking-widest bg-primary/5"
+                className="text-xs font-medium uppercase tracking-wide bg-primary/5"
               >
                 {user.role}
               </Badge>
@@ -108,7 +108,7 @@ export default function DashboardPage() {
           {(isAdmin || isInstructor) && (
             <div className="flex gap-4">
               <Link href="/courses">
-                <Button variant="pill" size="lg">
+                <Button pill size="lg">
                   <Plus className="h-5 w-5 mr-1" />
                   {d.newCourse}
                 </Button>
@@ -141,12 +141,12 @@ export default function DashboardPage() {
               <Card className="relative group hover:bg-secondary/20 transition-all duration-300">
                 <CardContent className="p-6 space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-green-500/5 text-green-700">
+                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-success-subtle text-success">
                       <TrendingUp className="h-5 w-5" />
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                       {d.questionsAnswered}
                     </p>
                     <p className="text-4xl font-semibold tracking-tighter text-foreground">
@@ -174,7 +174,7 @@ export default function DashboardPage() {
             <Link href="/courses">
               <Button
                 variant="link"
-                className="text-primary text-[10px] font-bold uppercase tracking-widest p-0 h-auto hover:opacity-70 transition-opacity"
+                className="text-primary text-xs font-medium uppercase tracking-wide p-0 h-auto hover:opacity-70 transition-opacity"
               >
                 View all
                 <ArrowRight className="h-3 w-3 ml-2" />
@@ -187,7 +187,7 @@ export default function DashboardPage() {
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
-                  className="animate-pulse bg-secondary/50 rounded-[32px] h-64"
+                  className="animate-pulse bg-secondary/50 rounded-xl h-64"
                 />
               ))}
             </div>
@@ -197,7 +197,7 @@ export default function DashboardPage() {
               message={d.noCourses}
               action={
                 isAdmin || isInstructor ? (
-                  <Button asChild variant="pill">
+                  <Button asChild pill>
                     <Link href="/courses">{d.createCourse}</Link>
                   </Button>
                 ) : undefined
@@ -213,13 +213,13 @@ export default function DashboardPage() {
                         <CardTitle className="text-xl font-semibold tracking-tight group-hover:text-primary transition-colors line-clamp-1">
                           {course.name}
                         </CardTitle>
-                        <p className="text-sm text-muted-foreground font-serif line-clamp-3 leading-relaxed min-h-[4.5rem]">
+                        <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed min-h-[4.5rem]">
                           {course.description || "No description yet."}
                         </p>
                       </div>
                     </CardHeader>
                     <CardContent className="px-8 pb-8 pt-0 mt-auto">
-                      <div className="pt-6 border-t border-border/40 flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                      <div className="pt-6 border-t border-border/40 flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wide">
                         <span className="flex items-center gap-2">
                           <FileQuestion className="h-3.5 w-3.5 opacity-40" />
                           {course._count?.questions || 0} Questions

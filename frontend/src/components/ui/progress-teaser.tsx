@@ -30,13 +30,13 @@ export function ProgressTeaser() {
                 </div>
                 <Badge
                   variant="outline"
-                  className="text-[10px] font-bold uppercase tracking-widest"
+                  className="text-xs font-medium uppercase tracking-wide"
                 >
                   Metrics
                 </Badge>
               </div>
               <div className="space-y-1">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
                   {stat.label}
                 </p>
                 <p className="text-4xl font-semibold text-foreground tracking-tighter">
@@ -54,22 +54,22 @@ export function ProgressTeaser() {
         title="Institutional Intelligence"
         description="Every assessment you complete contributes to your personalized learning profile. Join Cognify to archive your progression and unlock deep-dive analytics."
       >
-        <div className="min-h-[450px] rounded-[40px] border-2 border-dashed border-border/60 bg-secondary/10 flex items-center justify-center p-12 text-center group transition-all duration-500 hover:bg-secondary/20">
+        <div className="min-h-[450px] rounded-xl border-2 border-dashed border-border/60 bg-secondary/10 flex items-center justify-center p-12 text-center group transition-all duration-500 hover:bg-secondary/20">
           <div className="max-w-md space-y-8">
-            <div className="mx-auto w-24 h-24 bg-primary/5 rounded-[32px] flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+            <div className="mx-auto w-24 h-24 bg-primary/5 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
               <Sparkles className="h-12 w-12 text-primary" />
             </div>
             <div className="space-y-4">
               <h2 className="text-3xl font-semibold text-foreground tracking-tight">
                 Visualize Your Intellect
               </h2>
-              <p className="text-muted-foreground font-serif text-lg leading-relaxed">
+              <p className="text-muted-foreground text-lg leading-relaxed">
                 Track your performance across course pathways, identify
                 cognitive gaps, and master any domain with data-driven
                 synthesis.
               </p>
             </div>
-            <Button variant="pill" size="xl" className="mt-4">
+            <Button pill size="xl" className="mt-4">
               Initialize Profile
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
