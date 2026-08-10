@@ -1,0 +1,111 @@
+name: Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    name: Ultra Code Review
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for proper diffing
+
+      - name: Checkout base branch for comparison
+        run: git fetch origin ${{ github.base_ref }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run Code Review
+        id: review
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          # Run ultra code review on the PR branch
+          # The review output goes to stdout and is captured
+          claude code-review ultra --output json > /tmp/review-output.json 2>&1 || true
+
+          # Save the exit code
+          echo "exit_code=$?" >> $GITHUB_OUTPUT
+
+      - name: Parse Review Results
+        id: parse
+        if: always()
+        run: |
+          if [ -f /tmp/review-output.json ]; then
+            cat /tmp/review-output.json > /tmp/review.json
+          else
+            echo '{"status":"error","message":"Review output not found"}' > /tmp/review.json
+          fi
+
+          # Extract findings count for the summary
+          FINDINGS=$(cat /tmp/review.json | grep -o '"findings"' | wc -l)
+          echo "findings=$FINDINGS" >> $GITHUB_OUTPUT
+
+      - name: Post Review as PR Comment
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reviewPath = '/tmp/review.json';
+
+            let comment = '';
+
+            if (fs.existsSync(reviewPath)) {
+              try {
+                const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
+
+                if (review.findings && review.findings.length > 0) {
+                  comment += '## 🔍 Code Review Results\n\n';
+                  comment += `Found **${review.findings.length}** issue(s):\n\n`;
+
+                  review.findings.forEach((finding, idx) => {
+                    comment += `### ${idx + 1}. ${finding.short_summary || finding.summary}\n`;
+                    comment += `- **File:** \`${finding.file}\`${finding.line ? `:${finding.line}` : ''}\n`;
+                    comment += `- **Severity:** ${finding.category}\n`;
+                    if (finding.failure_scenario) {
+                      comment += `- **Failure scenario:** ${finding.failure_scenario}\n`;
+                    }
+                    comment += '\n';
+                  });
+                } else {
+                  comment = '✅ **Code Review Passed** — No issues found!\n';
+                }
+              } catch (e) {
+                comment = `❌ Failed to parse review results:\n\`\`\`\n${e.message}\n\`\`\`\n`;
+              }
+            } else {
+              comment = '❌ Code review did not complete. Check the workflow logs.\n';
+            }
+
+            // Post as PR comment
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+      - name: Fail if critical issues found
+        if: failure()
+        run: |
+          echo "Code review workflow encountered issues. Check PR comments for details."
+          exit 1
