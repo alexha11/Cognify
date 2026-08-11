@@ -54,18 +54,51 @@ model Course {
 }
 
 model Material {
-  id           String   @id @default(uuid())
+  id           String          @id @default(uuid())
   fileName     String
   fileUrl      String
   fileType     String
   fileSize     Int
-  createdAt    DateTime @default(now())
+  chunkCount   Int             @default(0)
+  createdAt    DateTime        @default(now())
   courseId     String
   uploadedById String
-  course       Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  uploadedBy   User     @relation("MaterialUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  course       Course          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  uploadedBy   User            @relation("MaterialUploader", fields: [uploadedById], references: [id], onDelete: Cascade)
+  chunks       MaterialChunk[]
 
   @@index([courseId])
+}
+
+/// Embedded text chunks backing AI retrieval.
+///
+/// This model exists here so `prisma db push` and `migrate` create the table —
+/// it previously lived only in hand-written SQL migrations, which meant any
+/// database set up with `db push` silently lacked it and every upload failed
+/// with "relation MaterialChunk does not exist".
+///
+/// `embedding` is Unsupported() because Prisma has no pgvector type. The
+/// consequence is that Prisma Client cannot read or write that column, which is
+/// why MaterialsService and RagService use raw SQL for it. The dimension must
+/// stay in step with EmbeddingService.dimensions (512) — change one without the
+/// other and every insert fails on a dimension mismatch.
+///
+/// CAVEAT: the HNSW index that makes similarity search fast cannot be declared
+/// here, because Prisma cannot index an Unsupported column. It therefore lives
+/// only in SQL, and `prisma db push` may drop it as an unknown object. If
+/// retrieval suddenly gets slow, re-apply the repair migration — it recreates
+/// the index idempotently:
+///   npx prisma db execute --file prisma/migrations/20260811160000_repair_missing_objects/migration.sql
+model MaterialChunk {
+  id         String                       @id @default(uuid())
+  content    String
+  chunkIndex Int
+  embedding  Unsupported("vector(512)")?
+  createdAt  DateTime                     @default(now())
+  materialId String
+  material   Material                     @relation(fields: [materialId], references: [id], onDelete: Cascade)
+
+  @@index([materialId])
 }
 
 model Question {
