@@ -15,15 +15,20 @@ import { cn } from "@/lib/utils";
  * Product previews for the landing page feature cards.
  *
  * These replaced four stock PNGs that showed mockups of unrelated, invented
- * products (QuizSpark AI, ASSESSLY, MindMerge, QUIZLAB) — misleading on our own
- * marketing page, ~2MB of assets, and locked to a single theme. Building them
- * from the same tokens as the real UI means they show the actual Cognify design
- * language, stay sharp at any density, and follow light/dark.
+ * products — misleading on our own marketing page, ~2MB of assets, and locked
+ * to a single theme. Building them from the same tokens as the real UI means
+ * they show the actual Cognify design language and follow light/dark.
+ *
+ * PALETTE: deliberately near-monochrome. Hierarchy is carried by weight and by
+ * the surface ramp, not by hue — an earlier pass tinted every block (violet
+ * hints, green "indexed", a red/amber/green difficulty row) and the result read
+ * as noisy rather than considered. Colour is now spent in exactly one place,
+ * the quiz right/wrong marks, where it is the actual information.
  *
  * The content is illustrative sample data, not a claim about a real account.
  */
 
-/** Shared chrome: the pane a preview is drawn on. */
+/** The pane a preview is drawn on — one step below the card surface. */
 function Pane({
   children,
   className,
@@ -68,7 +73,7 @@ export function AiGenerationPreview() {
   return (
     <Pane>
       <Row className="flex items-center gap-2.5">
-        <FileText className="h-4 w-4 shrink-0 text-error" />
+        <FileText className="h-4 w-4 shrink-0 text-subtle-foreground" />
         <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
           renewable-energy-ch3.pdf
         </span>
@@ -76,8 +81,8 @@ export function AiGenerationPreview() {
       </Row>
 
       <div className="flex items-center gap-2 px-1">
-        <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
-        <span className="text-xs font-medium text-primary">
+        <Sparkles className="h-3.5 w-3.5 shrink-0 text-subtle-foreground" />
+        <span className="text-xs font-medium text-muted-foreground">
           Generated 12 questions
         </span>
         <div className="h-px flex-1 bg-border" />
@@ -99,7 +104,7 @@ export function AiGenerationPreview() {
                 className={cn(
                   "flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border",
                   o.correct
-                    ? "border-success bg-success text-success-foreground"
+                    ? "border-foreground bg-foreground text-background"
                     : "border-border-strong",
                 )}
               >
@@ -120,8 +125,8 @@ export function AiGenerationPreview() {
         </div>
       </Row>
 
-      <Row className="flex items-center gap-2 border-primary-border bg-primary-subtle">
-        <Lightbulb className="h-3.5 w-3.5 shrink-0 text-primary" />
+      <Row className="flex items-center gap-2">
+        <Lightbulb className="h-3.5 w-3.5 shrink-0 text-subtle-foreground" />
         <span className="truncate text-xs text-muted-foreground">
           Hint: see §3.2, global generation mix
         </span>
@@ -144,7 +149,7 @@ export function AnalyticsPreview() {
           { label: "Avg. time", value: "38m", icon: Timer },
         ].map((s) => (
           <Row key={s.label} className="px-2.5 py-2">
-            <s.icon className="mb-1 h-3.5 w-3.5 text-primary" />
+            <s.icon className="mb-1 h-3.5 w-3.5 text-subtle-foreground" />
             <p className="truncate text-xs text-muted-foreground">{s.label}</p>
             <p className="text-sm font-semibold tabular-nums text-foreground">
               {s.value}
@@ -158,15 +163,18 @@ export function AnalyticsPreview() {
           <span className="text-xs font-medium text-foreground">
             Weekly accuracy
           </span>
-          <span className="text-xs text-success">+3.2%</span>
+          <span className="text-xs text-muted-foreground tabular-nums">
+            +3.2%
+          </span>
         </div>
+        {/* A neutral ramp: the current week is simply the most solid bar. */}
         <div className="flex min-h-0 flex-1 items-end gap-1.5">
           {BARS.map((h, i) => (
             <div key={i} className="flex h-full flex-1 items-end">
               <div
                 className={cn(
                   "w-full rounded-t-sm",
-                  i === BARS.length - 1 ? "bg-primary" : "bg-primary/25",
+                  i === BARS.length - 1 ? "bg-foreground/70" : "bg-foreground/15",
                 )}
                 style={{ height: `${h}%` }}
               />
@@ -176,24 +184,12 @@ export function AnalyticsPreview() {
       </Row>
 
       <div className="flex gap-1.5">
-        {[
-          { label: "Easy", tone: "success" as const },
-          { label: "Medium", tone: "warning" as const },
-          { label: "Hard", tone: "error" as const },
-        ].map((d) => (
+        {["Easy", "Medium", "Hard"].map((d) => (
           <span
-            key={d.label}
-            className={cn(
-              "flex-1 rounded-full border px-2 py-1 text-center text-xs font-medium",
-              d.tone === "success" &&
-                "border-success-border bg-success-subtle text-success",
-              d.tone === "warning" &&
-                "border-warning-border bg-warning-subtle text-warning",
-              d.tone === "error" &&
-                "border-error-border bg-error-subtle text-error",
-            )}
+            key={d}
+            className="flex-1 rounded-full border border-border bg-surface px-2 py-1 text-center text-xs text-muted-foreground"
           >
-            {d.label}
+            {d}
           </span>
         ))}
       </div>
@@ -208,14 +204,16 @@ export function ProcessingPreview() {
     <Pane>
       <Row className="space-y-2">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 shrink-0 text-primary" />
+          <FileText className="h-4 w-4 shrink-0 text-subtle-foreground" />
           <span className="min-w-0 flex-1 truncate text-xs font-medium text-foreground">
             lecture-notes-week-7.pdf
           </span>
-          <span className="shrink-0 text-xs text-success">Indexed</span>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            Indexed
+          </span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-          <div className="h-full w-full rounded-full bg-success" />
+        <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
+          <div className="h-full w-full rounded-full bg-foreground/60" />
         </div>
       </Row>
 
@@ -236,9 +234,9 @@ export function ProcessingPreview() {
         ))}
       </div>
 
-      <Row className="flex items-center gap-2 border-primary-border bg-primary-subtle">
-        <Sparkles className="h-3.5 w-3.5 shrink-0 text-primary" />
-        <span className="truncate text-xs font-medium text-primary">
+      <Row className="flex items-center gap-2">
+        <Sparkles className="h-3.5 w-3.5 shrink-0 text-subtle-foreground" />
+        <span className="truncate text-xs text-muted-foreground">
           384 embeddings ready for retrieval
         </span>
       </Row>
@@ -256,8 +254,8 @@ export function QuizPreview() {
           <span className="font-medium text-foreground">Question 4 of 10</span>
           <span className="text-muted-foreground tabular-nums">180 pts</span>
         </div>
-        <div className="h-1.5 w-full overflow-hidden rounded-full bg-secondary">
-          <div className="h-full w-[40%] rounded-full bg-primary" />
+        <div className="h-1 w-full overflow-hidden rounded-full bg-secondary">
+          <div className="h-full w-[40%] rounded-full bg-foreground/60" />
         </div>
       </div>
 
@@ -275,9 +273,10 @@ export function QuizPreview() {
               key={o.k}
               className={cn(
                 "flex items-center gap-2 rounded-md border px-2 py-1.5",
-                o.state === "correct" &&
-                  "border-success-border bg-success-subtle",
-                o.state === "wrong" && "border-error-border bg-error-subtle",
+                // The only colour in the set, and only on the border — the
+                // right/wrong marks are the information here.
+                o.state === "correct" && "border-success-border",
+                o.state === "wrong" && "border-error-border",
                 o.state === "idle" && "border-border",
               )}
             >
@@ -313,7 +312,7 @@ export function QuizPreview() {
         </div>
       </Row>
 
-      <Row className="flex items-center gap-2 border-success-border bg-success-subtle">
+      <Row className="flex items-center gap-2">
         <Check className="h-3.5 w-3.5 shrink-0 text-success" />
         <span className="truncate text-xs text-muted-foreground">
           Correct — halving the range each step

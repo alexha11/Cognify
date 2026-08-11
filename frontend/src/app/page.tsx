@@ -26,6 +26,7 @@ import {
   ProcessingPreview,
   QuizPreview,
 } from "@/components/ui/feature-previews";
+import { Reveal } from "@/components/ui/reveal";
 import { useLanguage } from "@/lib/i18n";
 
 export default function HomePage() {
@@ -48,7 +49,7 @@ export default function HomePage() {
       file: "ai-question-generator.ts",
       badge: {
         text: "AI Engine Ready",
-        cls: "text-success bg-success-subtle border-success-border",
+        cls: "text-muted-foreground bg-surface border-border",
       },
       Preview: AiGenerationPreview,
       title: h.aiTitle,
@@ -61,7 +62,7 @@ export default function HomePage() {
       file: "analytics-dashboard.tsx",
       badge: {
         text: "Live Analytics",
-        cls: "text-primary bg-primary-subtle border-primary-border",
+        cls: "text-muted-foreground bg-surface border-border",
       },
       Preview: AnalyticsPreview,
       title: h.engineTitle,
@@ -74,7 +75,7 @@ export default function HomePage() {
       file: "document-parser.py",
       badge: {
         text: "Vector RAG Embedded",
-        cls: "text-warning bg-warning-subtle border-warning-border",
+        cls: "text-muted-foreground bg-surface border-border",
       },
       Preview: ProcessingPreview,
       title: h.docsTitle,
@@ -87,7 +88,7 @@ export default function HomePage() {
       file: "quiz-session.tsx",
       badge: {
         text: "Instant Feedback",
-        cls: "text-primary bg-primary-subtle border-primary-border",
+        cls: "text-muted-foreground bg-surface border-border",
       },
       Preview: QuizPreview,
       title: h.quizTitle,
@@ -156,7 +157,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-8 items-center">
             <div className="space-y-6 text-center md:text-left">
               {/* Main Hero Title */}
-              <h1 className="text-5xl md:text-7xl lg:text-[5.25rem] font-semibold tracking-tight leading-[1.04] text-foreground">
+              <h1 className="animate-fade-up text-5xl md:text-7xl lg:text-[5.25rem] font-semibold tracking-tight leading-[1.04] text-foreground">
                 {h.heroTitle}{" "}
                 <span className="text-muted-foreground/60 dark:text-muted-foreground/50">
                   {h.heroHighlight}
@@ -164,7 +165,7 @@ export default function HomePage() {
               </h1>
 
               {/* Subtitle with highlighted key phrases */}
-              <p className="max-w-xl text-lg md:text-xl leading-relaxed text-muted-foreground/90 font-normal mx-auto md:mx-0">
+              <p className="animate-fade-up delay-1 max-w-xl text-lg md:text-xl leading-relaxed text-muted-foreground/90 font-normal mx-auto md:mx-0">
                 {h.heroSub1}{" "}
                 <span className="text-foreground font-medium">
                   {h.heroSubHighlight1}
@@ -175,7 +176,7 @@ export default function HomePage() {
                 </span>
                 .
               </p>
-              <div className="flex items-center justify-start gap-3 pt-2">
+              <div className="animate-fade-up delay-2 flex items-center justify-start gap-3 pt-2">
                 <Link href="/courses">
                   <div className="group relative inline-flex overflow-hidden rounded-xl p-[2px] hover:scale-105 transition-transform duration-300">
                     {/* Animated glow border */}
@@ -203,7 +204,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative w-full aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
+            <div className="animate-fade-up delay-3 relative w-full aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/40 to-transparent rounded-full blur-3xl opacity-50 -z-10" />
               <RubiksCube />
             </div>
@@ -215,7 +216,7 @@ export default function HomePage() {
           {/* ── Features ───────────────────────────────────────────────────── */}
           <div id="features" className="mt-12">
             {/* Section heading — left-aligned */}
-            <div className="max-w-2xl mb-10">
+            <Reveal className="max-w-2xl mb-10">
               <h2 className="text-4xl md:text-[3.25rem] font-semibold tracking-tight leading-[1.07] text-foreground">
                 {h.featuresTitle}{" "}
                 <span className="text-muted-foreground/55">{h.featuresHighlight}</span>
@@ -223,7 +224,7 @@ export default function HomePage() {
               <p className="mt-5 text-base text-muted-foreground leading-relaxed max-w-md">
                 {h.featuresSubtitle}
               </p>
-            </div>
+            </Reveal>
 
             {/* Filter tabs */}
             <div className="flex items-center gap-0 mb-10 border-b border-border/40 overflow-x-auto">
@@ -250,12 +251,13 @@ export default function HomePage() {
 
             {/* Feature cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
-              {visibleFeatures.map((feature) => {
+              {visibleFeatures.map((feature, idx) => {
                 const Icon = feature.icon;
                 const Preview = feature.Preview;
                 return (
-                  <div
+                  <Reveal
                     key={feature.id}
+                    delay={idx * 70}
                     className="group relative rounded-lg border border-border/40 bg-card/10 overflow-hidden transition-colors duration-300 hover:border-border/70"
                   >
                     {/* Window frame */}
@@ -263,11 +265,11 @@ export default function HomePage() {
                       {/* Title bar */}
                       <div className="h-9 px-4 flex items-center shrink-0 bg-surface-hover border-b border-border">
                         <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                          {/* Decorative window dots — kept literal because they
-                              are a macOS reference, not a themed UI colour. */}
-                          <div className="w-3 h-3 rounded-full bg-[#FF5F57] shrink-0" />
-                          <div className="w-3 h-3 rounded-full bg-[#FFBD2E] shrink-0" />
-                          <div className="w-3 h-3 rounded-full bg-[#28C840] shrink-0" />
+                          {/* Window dots, kept neutral — the traffic-light
+                              colours pulled focus from the preview itself. */}
+                          <div className="w-2.5 h-2.5 rounded-full bg-border-strong shrink-0" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-border-strong shrink-0" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-border-strong shrink-0" />
                           <span className="ml-3 text-xs font-mono text-muted-foreground truncate">
                             {feature.file}
                           </span>
@@ -289,7 +291,7 @@ export default function HomePage() {
                     <div className="p-6 lg:p-7">
                       <div className="flex items-start gap-4">
                         <div className="shrink-0 mt-0.5 p-2 rounded-xl bg-foreground/5 border border-border/40">
-                          <Icon className="h-4 w-4 text-primary/60" />
+                          <Icon className="h-4 w-4 text-muted-foreground" />
                         </div>
 
                         <div className="space-y-2 min-w-0">
@@ -309,7 +311,7 @@ export default function HomePage() {
                         </div>
                       </div>
                     </div>
-                  </div>
+                  </Reveal>
                 );
               })}
             </div>
@@ -319,7 +321,7 @@ export default function HomePage() {
 
             {/* ── Capabilities grid ── */}
             <div className="pt-6 md:pt-10">
-              <div className="mb-16 max-w-lg">
+              <Reveal className="mb-16 max-w-lg">
                 <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-foreground leading-[1.08]">
                   {h.everythingTitle}{" "}
                   <span className="text-muted-foreground/55">
@@ -329,21 +331,27 @@ export default function HomePage() {
                 <p className="mt-4 text-base text-muted-foreground leading-relaxed">
                   {h.everythingSubtitle}
                 </p>
-              </div>
+              </Reveal>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-x-12 gap-y-12">
                 {capabilities.map((cap, idx) => {
                   const Icon = cap.icon;
                   return (
-                    <div key={idx} className="space-y-3">
-                      <Icon className="h-5 w-5 text-primary/50" />
+                    // Stagger across the row, not the whole list, so the third
+                    // column doesn't wait on the first row to finish.
+                    <Reveal
+                      key={idx}
+                      delay={(idx % 3) * 70}
+                      className="space-y-3"
+                    >
+                      <Icon className="h-5 w-5 text-muted-foreground" />
                       <h4 className="text-sm font-semibold text-foreground">
                         {cap.title}
                       </h4>
                       <p className="text-sm text-muted-foreground leading-relaxed">
                         {cap.description}
                       </p>
-                    </div>
+                    </Reveal>
                   );
                 })}
               </div>
@@ -353,7 +361,7 @@ export default function HomePage() {
             <SectionLightDivider className="my-20 md:my-28" />
 
             {/* ── CTA ── */}
-            <div className="text-center pt-6 md:pt-10">
+            <Reveal className="text-center pt-6 md:pt-10">
               <h2 className="text-4xl md:text-[3.5rem] font-semibold tracking-tight text-foreground leading-[1.06]">
                 {h.ctaTitle}
                 <br />
@@ -376,7 +384,7 @@ export default function HomePage() {
                   </button>
                 </Link>
               </div>
-            </div>
+            </Reveal>
           </div>
         </div>
       </main>
