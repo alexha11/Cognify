@@ -39,13 +39,15 @@
   --border: #e5e3de;
   --border-strong: #d3d0c9;
 
-  /* Brand */
-  --primary: #6d28d9;
-  --primary-hover: #5b21b6;
-  --primary-active: #4c1d95;
+  /* Brand. A deep blue rather than the previous violet: violet at this
+     saturation reads as decorative, and this palette is meant to sit behind
+     assessment data without competing with it. */
+  --primary: #1d4ed8;
+  --primary-hover: #1e40af;
+  --primary-active: #1e3a8a;
   --primary-foreground: #ffffff;
-  --primary-subtle: #f3efff;
-  --primary-border: #ddd0fb;
+  --primary-subtle: #eff5ff;
+  --primary-border: #c7dbfe;
 
   /* Neutral action colour, for secondary buttons and chips */
   --secondary: #f2f1ed;
@@ -73,7 +75,7 @@
   --info-foreground: #ffffff;
 
   /* Focus ring */
-  --ring: #6d28d9;
+  --ring: #1d4ed8;
 
   /* Elevation. Deliberately restrained — depth comes from surface colour. */
   --shadow-card: 0 1px 2px 0 rgb(28 25 23 / 0.04), 0 1px 3px 0
@@ -100,16 +102,15 @@
   --border: #2e2e2c;
   --border-strong: #414140;
 
-  /* Lighter than the light-theme violet on purpose. A mid violet (#8b5cf6)
-     only reaches 4.1:1 on these surfaces, so violet-on-dark body text and
-     badges failed AA. Lifting it to violet-400 fixes that, and the fill then
-     takes dark text rather than white — white on this violet is only 2.7:1. */
-  --primary: #a78bfa;
-  --primary-hover: #b39dfb;
-  --primary-active: #9575f7;
-  --primary-foreground: #1c1917;
-  --primary-subtle: #1e1a2e;
-  --primary-border: #4a3d69;
+  /* Lighter than the light-theme blue on purpose. A mid blue is too dark to
+     read as text on these surfaces, so dark mode lifts it; the fill then takes
+     dark text rather than white, which would only be ~3:1 against it. */
+  --primary: #60a5fa;
+  --primary-hover: #7cb3f8;
+  --primary-active: #4b91ef;
+  --primary-foreground: #10233a;
+  --primary-subtle: #101c2b;
+  --primary-border: #27455f;
 
   --secondary: #242422;
   --secondary-hover: #2e2e2c;
@@ -134,7 +135,7 @@
   --info-border: #15495e;
   --info-foreground: #04212e;
 
-  --ring: #8b5cf6;
+  --ring: #60a5fa;
 
   /* Shadows read as near-black in dark mode; the surface ramp carries the
      elevation instead, so these stay subtle and mostly add edge definition. */

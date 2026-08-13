@@ -31,7 +31,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
       <Header variant="dashboard" />
       <Sidebar />
       <main className="flex min-h-screen flex-col pl-[52px]">
-        <div className="flex-1 p-10">{children}</div>
+        {/* Extra space above the first card so page titles clear the sticky
+            header instead of sitting right under it. Padding steps down on
+            small screens, where a flat 2.5rem inset wasted most of the width. */}
+        <div className="flex-1 px-5 pt-10 pb-16 sm:px-8 sm:pt-12 lg:px-10 lg:pt-14 lg:pb-20">
+          {children}
+        </div>
       </main>
     </div>
   );

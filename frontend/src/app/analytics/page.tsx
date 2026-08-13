@@ -191,11 +191,7 @@ export default function AnalyticsPage() {
   const masteryColor = (pct: number) =>
     pct >= 80
       ? "bg-success-subtle border-success-border text-success"
-      : pct >= 50
-        ? "bg-primary/10 border-primary/20 text-primary"
-        : pct > 0
-          ? "bg-warning-subtle border-warning-border text-warning"
-          : "bg-muted border-border/50 text-muted-foreground";
+      : "bg-surface border-border text-muted-foreground";
 
   return (
     <DashboardLayout>
@@ -266,8 +262,8 @@ export default function AnalyticsPage() {
               ].map((m, i) => (
                 <Card key={i} className="border-border/50 shadow-sm">
                   <CardContent className="p-5 flex items-start gap-4">
-                    <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <m.icon className="h-4 w-4 text-primary" />
+                    <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+                      <m.icon className="h-4 w-4 text-muted-foreground" />
                     </div>
                     <div>
                       <p className="text-xl font-semibold text-foreground tracking-tight">
@@ -289,12 +285,12 @@ export default function AnalyticsPage() {
         {(bestCourse || needsAttention.length > 0) && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {bestCourse && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-success-subtle border border-success-border">
-                <div className="w-9 h-9 rounded-lg bg-success-subtle flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl border border-border border-l-2 border-l-success bg-surface">
+                <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                   <Trophy className="h-4 w-4 text-success" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-success uppercase tracking-wide mb-0.5">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
                     Best performing
                   </p>
                   <p className="text-sm font-semibold text-foreground truncate">
@@ -308,12 +304,12 @@ export default function AnalyticsPage() {
               </div>
             )}
             {needsAttention.length > 0 && (
-              <div className="flex items-start gap-3 p-4 rounded-xl bg-warning-subtle border border-warning-border">
-                <div className="w-9 h-9 rounded-lg bg-warning-subtle flex items-center justify-center flex-shrink-0">
+              <div className="flex items-start gap-3 p-4 rounded-xl border border-border border-l-2 border-l-warning bg-surface">
+                <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
                   <AlertTriangle className="h-4 w-4 text-warning" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-warning uppercase tracking-wide mb-0.5">
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-0.5">
                     Needs attention
                   </p>
                   <p className="text-sm font-semibold text-foreground">
@@ -400,7 +396,7 @@ export default function AnalyticsPage() {
                   >
                     {/* Course name */}
                     <div className="col-span-4 flex items-center gap-3 min-w-0">
-                      <span className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded-md bg-muted border border-border/60 text-xs font-semibold text-muted-foreground group-hover:border-primary/30 group-hover:text-primary transition-colors">
+                      <span className="flex-shrink-0 flex h-6 w-6 items-center justify-center rounded-md bg-muted border border-border/60 text-xs font-semibold text-muted-foreground group-hover:border-border-strong group-hover:text-foreground transition-colors">
                         {i + 1}
                       </span>
                       <span className="text-sm font-medium text-foreground truncate">
@@ -425,7 +421,7 @@ export default function AnalyticsPage() {
                       </div>
                       <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                         <div
-                          className="h-full bg-primary rounded-full transition-all duration-700"
+                          className="h-full bg-foreground/70 rounded-full transition-all duration-700"
                           style={{ width: `${course.completion}%` }}
                         />
                       </div>
@@ -439,7 +435,7 @@ export default function AnalyticsPage() {
                       {course.answered > 0 && (
                         <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-success rounded-full transition-all duration-700"
+                            className="h-full bg-foreground/40 rounded-full transition-all duration-700"
                             style={{ width: `${course.accuracy}%` }}
                           />
                         </div>
@@ -464,13 +460,13 @@ export default function AnalyticsPage() {
               {/* Legend */}
               <div className="flex items-center gap-5 px-5 py-3 border-t border-border/40 bg-muted/10">
                 <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-6 bg-primary rounded-full" />
+                  <div className="h-1.5 w-6 bg-foreground/70 rounded-full" />
                   <span className="text-xs text-muted-foreground">
                     Completion
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5">
-                  <div className="h-1.5 w-6 bg-success rounded-full" />
+                  <div className="h-1.5 w-6 bg-foreground/40 rounded-full" />
                   <span className="text-xs text-muted-foreground">
                     Accuracy
                   </span>
