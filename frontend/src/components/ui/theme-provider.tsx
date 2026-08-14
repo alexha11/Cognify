@@ -47,8 +47,8 @@ interface ThemeProviderProps {
 
 export function ThemeProvider({ children }: ThemeProviderProps) {
   const pathname = usePathname();
-  const [theme, setThemeState] = useState<Theme>("dark");
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("dark");
+  const [theme, setThemeState] = useState<Theme>("light");
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [mounted, setMounted] = useState(false);
 
   // Sync theme based on explicit preference or default to dark
@@ -60,8 +60,8 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
     if (isExplicit && stored) {
       targetTheme = stored;
     } else {
-      // Default theme is always dark mode
-      targetTheme = "dark";
+      // Default theme is always light mode
+      targetTheme = "light";
     }
 
     setThemeState(targetTheme);

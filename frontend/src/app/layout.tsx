@@ -31,11 +31,11 @@ export default function RootLayout({
                 try {
                   var explicit = localStorage.getItem('cognify-theme-explicit') === 'true';
                   var stored = localStorage.getItem('cognify-theme');
-                  var theme = 'dark';
+                  var theme = 'light';
                   if (explicit && stored) {
                     theme = stored;
                   } else {
-                    theme = 'dark';
+                    theme = 'light';
                   }
                   var resolved = theme;
                   if (theme === 'system') {
