@@ -147,6 +147,11 @@ export default function RankingPage() {
                         (you)
                       </span>
                     )}
+                    {entry.isGuest && (
+                      <span className="text-xs text-muted-foreground ml-1">
+                        (guest)
+                      </span>
+                    )}
                   </p>
 
                   <p className="text-2xl font-bold text-foreground mt-1">
@@ -254,6 +259,11 @@ export default function RankingPage() {
                         )}
                       >
                         {entry.displayName}
+                        {entry.isGuest && (
+                          <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                            (guest)
+                          </span>
+                        )}
                         {isCurrentUser && (
                           <Badge
                             variant="outline"

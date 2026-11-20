@@ -1,5 +1,6 @@
 "use client";
 
+import { getApiErrorMessage } from "@/lib/error-utils";
 import { useState, useEffect, useRef, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -93,10 +94,9 @@ function VerifyEmailContent() {
     setIsSubmitting(true);
     try {
       await verifyEmail(email, code);
-    } catch (err: any) {
+    } catch (err) {
       setError(
-        err.response?.data?.message ||
-          "Invalid verification code. Please try again.",
+        getApiErrorMessage(err, "Invalid verification code. Please try again."),
       );
       setIsSubmitting(false);
     }
@@ -110,11 +110,8 @@ function VerifyEmailContent() {
     try {
       await resendVerification(email);
       setResendCooldown(60); // Reset cooldown
-    } catch (err: any) {
-      setError(
-        err.response?.data?.message ||
-          "Failed to resend code. Try again later.",
-      );
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Failed to resend code. Try again later."));
     } finally {
       setResendLoading(false);
     }
@@ -187,7 +184,7 @@ function VerifyEmailContent() {
             </CardContent>
             <CardFooter className="justify-center pt-2 pb-8 text-sm">
               <p className="text-muted-foreground text-center">
-                Didn't receive the code?{" "}
+                Didn&apos;t receive the code?{" "}
                 <button
                   onClick={handleResend}
                   disabled={resendCooldown > 0 || resendLoading}

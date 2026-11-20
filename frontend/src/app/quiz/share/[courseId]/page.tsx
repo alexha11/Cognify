@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { QuizCard } from "@/components/ui/quiz-card";
 import { GuestNameModal } from "@/components/ui/guest-name-modal";
 import { apiGet, apiPost } from "@/lib/api";
-import { Question, AttemptResult } from "@/types";
+import { Question, AttemptResult, CheckAnswerResult } from "@/types";
+import { toAttemptResult } from "@/lib/quiz";
 import { Loader2, X, Trophy, RefreshCw, Share2, Medal } from "lucide-react";
 
 interface PublicCourseData {
@@ -32,6 +33,7 @@ export default function SharedQuizPage() {
   const [showGuestNameModal, setShowGuestNameModal] = useState(false);
   const [scoreSubmitted, setScoreSubmitted] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -85,25 +87,33 @@ export default function SharedQuizPage() {
     );
   };
 
-  const submitAnswer = () => {
-    if (!currentQuestion || result || selectedAnswers.length === 0) return;
-    const correctAnswers = currentQuestion.answers.filter((a) => a.isCorrect);
-    const isCorrect =
-      correctAnswers.length === selectedAnswers.length &&
-      correctAnswers.every((a) => selectedAnswers.includes(a.id));
-    const guestResult = {
-      id: "guest",
-      isCorrect,
-      selectedAnswerIds: selectedAnswers,
-      correctAnswerIds: correctAnswers.map((a) => a.id),
-      hint: currentQuestion.hint,
-      question: { id: currentQuestion.id, content: currentQuestion.content },
-    };
-    setResult(guestResult as AttemptResult);
-    setStats((prev) => ({
-      correct: prev.correct + (isCorrect ? 1 : 0),
-      total: prev.total + 1,
-    }));
+  const submitAnswer = async () => {
+    if (
+      !currentQuestion ||
+      result ||
+      isSubmitting ||
+      selectedAnswers.length === 0
+    )
+      return;
+
+    setIsSubmitting(true);
+    try {
+      // Graded by the server: share links never receive the answer key.
+      const checked = await apiPost<CheckAnswerResult>(
+        `/questions/${currentQuestion.id}/check`,
+        { selectedAnswerIds: selectedAnswers },
+      );
+      setResult(toAttemptResult(checked));
+      setStats((prev) => ({
+        correct: prev.correct + (checked.isCorrect ? 1 : 0),
+        total: prev.total + 1,
+      }));
+    } catch (error) {
+      console.error("Failed to check answer", error);
+      setSelectedAnswers([]);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleNext = () => {
@@ -357,6 +367,7 @@ export default function SharedQuizPage() {
           totalQuestions={questions.length}
           selectedAnswers={selectedAnswers}
           result={result}
+          isSubmitting={isSubmitting}
           onToggleAnswer={toggleAnswer}
           onSubmit={submitAnswer}
           onNext={handleNext}

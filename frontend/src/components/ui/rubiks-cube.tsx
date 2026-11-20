@@ -110,36 +110,39 @@ interface ActiveMove {
   elapsed: number;
 }
 
+/** The 27 pieces in solved position, with a stable material per piece. */
+function buildCubeLayout(): { materialIndices: number[]; cubes: CubeData[] } {
+  const materialIndices: number[] = [];
+  const cubes: CubeData[] = [];
+  for (let x = -1; x <= 1; x++) {
+    for (let y = -1; y <= 1; y++) {
+      for (let z = -1; z <= 1; z++) {
+        const idx = Math.abs(x * 7 + y * 13 + z * 17) % 4;
+        materialIndices.push(idx);
+        cubes.push({
+          position: new THREE.Vector3(x, y, z),
+          quaternion: new THREE.Quaternion(),
+          materialIndex: idx,
+        });
+      }
+    }
+  }
+  return { materialIndices, cubes };
+}
+
 /* ── Scramble cube cluster ── */
 function CubeCluster({ isDark }: { isDark: boolean }) {
   const groupRef = useRef<THREE.Group>(null);
   const pieceRefs = useRef<(THREE.Group | null)[]>([]);
 
+  // Layout is built once (lazy state initialiser), then mutated through a ref.
+  const [layout] = useState(buildCubeLayout);
+  const materialIndices = layout.materialIndices;
   // Cube state — survives re-renders via ref
-  const cubes = useRef<CubeData[]>([]);
+  const cubes = useRef<CubeData[]>(layout.cubes);
   const moveRef = useRef<ActiveMove | null>(null);
   const pauseRef = useRef(2.0); // initial delay before first scramble
 
-  // Stable material indices
-  const materialIndices = useMemo(() => {
-    const indices: number[] = [];
-    const data: CubeData[] = [];
-    for (let x = -1; x <= 1; x++) {
-      for (let y = -1; y <= 1; y++) {
-        for (let z = -1; z <= 1; z++) {
-          const idx = (Math.abs(x * 7 + y * 13 + z * 17) % 4);
-          indices.push(idx);
-          data.push({
-            position: new THREE.Vector3(x, y, z),
-            quaternion: new THREE.Quaternion(),
-            materialIndex: idx,
-          });
-        }
-      }
-    }
-    cubes.current = data;
-    return indices;
-  }, []);
 
   const materials = isDark ? DARK_MATERIALS : LIGHT_MATERIALS;
 

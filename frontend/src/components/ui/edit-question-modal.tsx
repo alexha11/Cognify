@@ -35,7 +35,7 @@ export function EditQuestionModal({
     answers: question?.answers.map((a) => ({
       id: a.id,
       content: a.content,
-      isCorrect: a.isCorrect,
+      isCorrect: a.isCorrect === true,
     })) || [],
   }));
 
@@ -51,7 +51,7 @@ export function EditQuestionModal({
       answers: question.answers.map((a) => ({
         id: a.id,
         content: a.content,
-        isCorrect: a.isCorrect,
+        isCorrect: a.isCorrect === true,
       })),
     });
   }

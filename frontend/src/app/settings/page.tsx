@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/lib/auth";
-import { apiPut } from "@/lib/api";
+import { apiDelete, apiPut } from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/error-utils";
 import { User as UserType } from "@/types";
 import { useToast } from "@/components/ui/toast";
 import { useTheme } from "@/components/ui/theme-provider";
@@ -56,6 +57,9 @@ export default function SettingsPage() {
 
   // Danger zone
   const [deleteConfirm, setDeleteConfirm] = useState("");
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteError, setDeleteError] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) router.push("/");
@@ -107,10 +111,29 @@ export default function SettingsPage() {
       setNewPassword("");
       setConfirmPassword("");
       showToast(s.passwordUpdated, "success");
-    } catch {
-      setPwError(s.passwordIncorrect);
+    } catch (err) {
+      setPwError(getApiErrorMessage(err, s.passwordIncorrect));
     } finally {
       setIsSavingPassword(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (deleteConfirm !== "DELETE") return;
+    setDeleteError("");
+    setIsDeleting(true);
+    try {
+      await apiDelete("/auth/account", {
+        confirmation: deleteConfirm,
+        ...(user?.hasPassword !== false && { password: deletePassword }),
+      });
+      // The server cleared the session cookie; this resolves to "signed out".
+      await refreshUser();
+      router.push("/");
+    } catch (err) {
+      setDeleteError(getApiErrorMessage(err, s.deleteFailed));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -349,6 +372,10 @@ export default function SettingsPage() {
             <h2 className="text-sm font-semibold text-foreground">{s.security}</h2>
           </div>
           <CardContent className="p-6 space-y-4">
+            {user.hasPassword === false ? (
+              <p className="text-sm text-muted-foreground">{s.googleNoPassword}</p>
+            ) : (
+            <>
             <p className="text-xs text-muted-foreground">
               Update your password. Use at least 8 characters with a mix of letters and numbers.
             </p>
@@ -479,6 +506,8 @@ export default function SettingsPage() {
                 {s.updatePassword}
               </Button>
             </div>
+            </>
+            )}
           </CardContent>
         </Card>
 
@@ -505,9 +534,30 @@ export default function SettingsPage() {
                 placeholder="DELETE"
               />
             </div>
+            {user.hasPassword !== false && (
+              <div className="space-y-2">
+                <Label htmlFor="deletePassword" className="text-xs font-medium text-muted-foreground">
+                  {s.currentPassword}
+                </Label>
+                <Input
+                  id="deletePassword"
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="h-9 rounded-xl text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            )}
+            {deleteError && (
+              <div className="p-3 rounded-xl bg-error-subtle border border-error-border text-xs font-medium text-error">
+                {deleteError}
+              </div>
+            )}
             <Button
               variant="outline"
-              disabled={deleteConfirm !== "DELETE"}
+              onClick={handleDeleteAccount}
+              disabled={deleteConfirm !== "DELETE" || isDeleting}
               className={cn(
                 "rounded-xl h-9 px-5 text-sm font-semibold border-error-border text-error",
                 deleteConfirm === "DELETE"
@@ -515,6 +565,7 @@ export default function SettingsPage() {
                   : "opacity-50 cursor-not-allowed",
               )}
             >
+              {isDeleting && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
               {s.deleteAccount}
             </Button>
           </CardContent>

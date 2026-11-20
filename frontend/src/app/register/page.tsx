@@ -1,5 +1,6 @@
 "use client";
 
+import { getApiErrorMessage } from "@/lib/error-utils";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -99,12 +100,8 @@ export default function RegisterPage() {
     try {
       await authRegister({ ...values, role: selectedRole });
       router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
-    } catch (err: any) {
-      setError(
-        err.response?.data?.error?.message ||
-          err.response?.data?.message ||
-          "Registration failed",
-      );
+    } catch (err) {
+      setError(getApiErrorMessage(err, "Registration failed"));
     }
   };
 

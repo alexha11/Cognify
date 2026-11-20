@@ -204,6 +204,8 @@ export const fi: TranslationKeys = {
     profileFailed: "Profiilin tallennus epäonnistui. Yritä uudelleen.",
     passwordUpdated: "Salasana päivitetty onnistuneesti.",
     passwordIncorrect: "Nykyinen salasana on virheellinen tai päivitys epäonnistui.",
+    googleNoPassword: "Kirjaudut sisään Googlella, joten vaihdettavaa salasanaa ei ole.",
+    deleteFailed: "Tiliäsi ei voitu poistaa. Yritä uudelleen.",
     passwordTooShort: "Salasanan on oltava vähintään 8 merkkiä.",
     passwordsNoMatch: "Salasanat eivät täsmää.",
     passwordStrong: "Vahva salasana",

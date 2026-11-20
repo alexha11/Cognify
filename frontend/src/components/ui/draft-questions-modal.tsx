@@ -37,15 +37,14 @@ export function DraftQuestionsModal({
   isSaving,
 }: DraftQuestionsModalProps) {
   const [questions, setQuestions] = useState<DraftQuestion[]>([]);
+  const [syncedFrom, setSyncedFrom] = useState<DraftQuestion[] | null>(null);
 
-  // Synchronize internal state when the modal opens with new questions
-  useEffect(() => {
-    if (isOpen) {
-      setQuestions(
-        initialQuestions.map((q) => ({ ...q, id: crypto.randomUUID() })),
-      );
-    }
-  }, [isOpen, initialQuestions]);
+  // Start a fresh editable copy whenever a new batch of drafts is shown. The
+  // ids are assigned once here, so they stay stable when items are removed.
+  if (isOpen && syncedFrom !== initialQuestions) {
+    setSyncedFrom(initialQuestions);
+    setQuestions(initialQuestions.map((q, i) => ({ ...q, id: `draft-${i}` })));
+  }
 
   const updateQuestion = (
     index: number,

@@ -11,7 +11,13 @@ import { AuthPromptModal } from "@/components/ui/auth-prompt-modal";
 import { GuestNameModal } from "@/components/ui/guest-name-modal";
 import { apiGet, apiPost } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
-import { Question, AttemptResult, QuizProgress } from "@/types";
+import {
+  Question,
+  AttemptResult,
+  CheckAnswerResult,
+  QuizProgress,
+} from "@/types";
+import { summarizeQuizScore, toAttemptResult } from "@/lib/quiz";
 import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
@@ -89,7 +95,8 @@ export default function QuizPage() {
             ),
             apiGet<
               {
-                question: { id: string; courseId: string };
+                question?: { id: string; courseId: string };
+                questionId?: string;
                 isCorrect: boolean;
               }[]
             >("/attempts/me").catch(() => []),
@@ -103,7 +110,7 @@ export default function QuizPage() {
             );
 
             myAttempts.forEach((a) => {
-              const qId = a.question?.id || (a as any).questionId;
+              const qId = a.question?.id ?? a.questionId;
               if (qId && courseQuestionIds.has(qId)) {
                 // If question was answered correctly in any attempt, count as correct
                 if (a.isCorrect || initialMap[qId] === undefined) {
@@ -157,51 +164,36 @@ export default function QuizPage() {
     )
       return;
 
-    if (isGuest) {
-      const correctAnswers = currentQuestion.answers.filter((a) => a.isCorrect);
-      const isCorrect =
-        correctAnswers.length === selectedAnswers.length &&
-        correctAnswers.every((a) => selectedAnswers.includes(a.id));
-      const guestResult: AttemptResult = {
-        id: "guest",
-        isCorrect,
-        selectedAnswerIds: selectedAnswers,
-        correctAnswerIds: correctAnswers.map((a) => a.id),
-        hint: currentQuestion.hint,
-        question: { id: currentQuestion.id, content: currentQuestion.content },
-      } as AttemptResult;
+    setIsSubmitting(true);
+    try {
+      // Guests are graded by the server too: the answer key is never sent to
+      // the browser, so the right option is revealed only after answering.
+      const data: AttemptResult = isGuest
+        ? toAttemptResult(
+            await apiPost<CheckAnswerResult>(
+              `/questions/${currentQuestion.id}/check`,
+              { selectedAnswerIds: selectedAnswers },
+            ),
+          )
+        : await apiPost<AttemptResult>("/attempts", {
+            questionId: currentQuestion.id,
+            selectedAnswerIds: selectedAnswers,
+          });
 
-      setResult(guestResult);
+      setResult(data);
       setSessionAttemptsMap((prev) => ({
         ...prev,
-        [currentQuestion.id]: isCorrect,
+        [currentQuestion.id]: data.isCorrect,
       }));
       setAttemptsMap((prev) => ({
         ...prev,
-        [currentQuestion.id]: isCorrect,
+        [currentQuestion.id]: data.isCorrect,
       }));
-    } else {
-      setIsSubmitting(true);
-      try {
-        const data = await apiPost<AttemptResult>("/attempts", {
-          questionId: currentQuestion.id,
-          selectedAnswerIds: selectedAnswers,
-        });
-        setResult(data);
-        setSessionAttemptsMap((prev) => ({
-          ...prev,
-          [currentQuestion.id]: data.isCorrect,
-        }));
-        setAttemptsMap((prev) => ({
-          ...prev,
-          [currentQuestion.id]: data.isCorrect,
-        }));
-      } catch (error) {
-        console.error("Failed to submit answer", error);
-        setSelectedAnswers([]);
-      } finally {
-        setIsSubmitting(false);
-      }
+    } catch (error) {
+      console.error("Failed to submit answer", error);
+      setSelectedAnswers([]);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -234,37 +226,10 @@ export default function QuizPage() {
     }
   };
 
-  // Helper to compute overall quiz score strictly scoped to this course's questions
-  const getScoreSummary = () => {
-    const totalQuestions = questions.length || 1;
-    let correctCount = 0;
-    let answeredCount = 0;
-
-    questions.forEach((q) => {
-      if (attemptsMap[q.id] !== undefined) {
-        answeredCount++;
-        if (attemptsMap[q.id] === true) {
-          correctCount++;
-        }
-      }
-    });
-
-    const incorrectCount = Math.max(0, totalQuestions - correctCount);
-    const percentage = Math.min(
-      100,
-      Math.round((correctCount / totalQuestions) * 100),
-    );
-
-    return {
-      correct: correctCount,
-      incorrect: incorrectCount,
-      total: totalQuestions,
-      answered: answeredCount,
-      percentage,
-    };
-  };
-
-  const stats = getScoreSummary();
+  const stats = summarizeQuizScore(
+    questions.map((q) => q.id),
+    attemptsMap,
+  );
 
   // Auto-submit score for logged-in users when quiz explicitly completes
   useEffect(() => {

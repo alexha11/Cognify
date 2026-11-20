@@ -38,7 +38,17 @@ api.interceptors.response.use(
       error.message ||
       'An unexpected error occurred';
 
+    // GET /auth/profile is how the app asks "who is signed in?" on every page
+    // load. A 401 there just means "nobody", so it must not raise an alarm.
+    const isIdentityProbe =
+      error.config?.method === 'get' &&
+      typeof error.config?.url === 'string' &&
+      error.config.url.endsWith('/auth/profile');
+
     if (status === 401) {
+      if (isIdentityProbe) {
+        return Promise.reject(error);
+      }
       if (typeof window !== 'undefined') {
         // Nothing to clear locally — the session lives in an HttpOnly cookie
         // that only the server can expire.
@@ -99,8 +109,8 @@ export const apiPut = async <T>(url: string, data?: unknown): Promise<T> => {
   return response.data.data;
 };
 
-export const apiDelete = async <T>(url: string): Promise<T> => {
-  const response = await api.delete(url);
+export const apiDelete = async <T>(url: string, data?: unknown): Promise<T> => {
+  const response = await api.delete(url, data === undefined ? undefined : { data });
   return response.data.data;
 };
 

@@ -5,6 +5,8 @@ export interface User {
   firstName: string;
   lastName: string;
   role: 'ADMIN' | 'INSTRUCTOR' | 'STUDENT';
+  /** False for Google-only accounts, which have no password to change. */
+  hasPassword?: boolean;
 }
 
 /**
@@ -79,8 +81,12 @@ export interface Material {
 export interface Answer {
   id: string;
   content: string;
-  isCorrect: boolean;
-  questionId: string;
+  /**
+   * Only present for people who manage the course. Learners find out which
+   * option was right after answering (POST /attempts or /questions/:id/check).
+   */
+  isCorrect?: boolean;
+  questionId?: string;
 }
 
 export interface Question {
@@ -137,6 +143,32 @@ export interface AttemptResult {
   };
 }
 
+/** Result of POST /questions/:id/check (guest grading, nothing is saved). */
+export interface CheckAnswerResult {
+  isCorrect: boolean;
+  selectedAnswerIds: string[];
+  correctAnswerIds: string[];
+  hint?: string | null;
+  question: {
+    id: string;
+    content: string;
+  };
+}
+
+/** One row of GET /attempts/analytics: every learner's results in a course. */
+export interface CourseAnalytics {
+  courseId: string;
+  courseName: string;
+  isPublic: boolean;
+  totalQuestions: number;
+  learners: number;
+  answered: number;
+  correct: number;
+  completions: number;
+  accuracy: number;
+  completionRate: number;
+}
+
 export interface AttemptStats {
   overall: {
     total: number;
@@ -171,6 +203,8 @@ export interface QuizProgress {
 export interface LeaderboardEntry {
   id: string;
   displayName: string;
+  /** Guest names are free text, so the UI marks them. */
+  isGuest?: boolean;
   score: number;
   totalQuestions: number;
   percentage: number;
