@@ -4,9 +4,11 @@ import {
   ConflictException,
   BadRequestException,
   ForbiddenException,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 import { randomInt, timingSafeEqual } from 'crypto';
 import { PrismaService } from '../../prisma';
@@ -15,6 +17,8 @@ import {
   LoginDto,
   AuthResponseDto,
   UpdateProfileDto,
+  ChangePasswordDto,
+  DeleteAccountDto,
 } from './dto';
 import { JwtPayload } from './interfaces';
 import { Role, User } from '@prisma/client';
@@ -24,6 +28,7 @@ import {
   OTP_EXPIRY_MINUTES,
   OTP_LENGTH,
   OTP_MAX_ATTEMPTS,
+  OTP_RESEND_COOLDOWN_SECONDS,
 } from '../../common/constants';
 
 /**
@@ -34,6 +39,8 @@ import {
  */
 const DUMMY_PASSWORD_HASH =
   '$2b$12$tO0q520ZVV6oRerS.MXKteT3dy2hiSXJKEOAiphWPSOhK95Psdsr6';
+
+const OTP_EXPIRY_MS = OTP_EXPIRY_MINUTES * 60 * 1000;
 
 /** Fields needed to generate a JWT token. */
 export interface TokenUser {
@@ -49,6 +56,16 @@ export interface UserResponse {
   firstName: string;
   lastName: string;
   role: Role;
+  hasPassword: boolean;
+}
+
+/** What the Google strategy hands over after Google has verified the user. */
+export interface GoogleProfile {
+  googleId: string;
+  email: string;
+  emailVerified: boolean;
+  firstName: string;
+  lastName: string;
 }
 
 @Injectable()
@@ -56,7 +73,6 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
     private readonly emailService: EmailService,
   ) {}
 
@@ -67,7 +83,6 @@ export class AuthService {
   async register(
     dto: RegisterDto,
   ): Promise<{ message: string; email: string }> {
-    // Check if email already exists
     const existingUser = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -84,7 +99,6 @@ export class AuthService {
       throw new ConflictException('Email already registered');
     }
 
-    // Hash password
     const passwordHash = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
 
     let user: User;
@@ -101,7 +115,6 @@ export class AuthService {
         },
       });
     } else {
-      // Create User Only
       user = await this.prisma.user.create({
         data: {
           email: dto.email,
@@ -113,7 +126,6 @@ export class AuthService {
       });
     }
 
-    // Generate and store a 6-digit OTP
     await this.sendOtpToUser(user.id, dto.email);
 
     return {
@@ -149,7 +161,7 @@ export class AuthService {
     }
 
     if (new Date() > verification.expiresAt) {
-      await this.prisma.emailVerification.delete({
+      await this.prisma.emailVerification.deleteMany({
         where: { userId: user.id },
       });
       throw new BadRequestException(
@@ -157,42 +169,39 @@ export class AuthService {
       );
     }
 
-    if (!this.codesMatch(verification.code, code)) {
-      // Burn one attempt. Once the budget is exhausted the code is destroyed,
-      // which caps a brute-force run at OTP_MAX_ATTEMPTS guesses per issued
-      // code instead of the full 10^6 keyspace. This is enforced per record,
-      // so rotating source IPs does not help an attacker.
-      const { attempts } = await this.prisma.emailVerification.update({
+    // Spend one attempt *before* comparing, in a single conditional update.
+    // Reading the counter and incrementing it in separate steps let
+    // concurrent guesses all see a fresh counter, so a burst of requests got
+    // far more than OTP_MAX_ATTEMPTS comparisons. The database now admits at
+    // most OTP_MAX_ATTEMPTS submissions per issued code, however they race.
+    const { count } = await this.prisma.emailVerification.updateMany({
+      where: { userId: user.id, attempts: { lt: OTP_MAX_ATTEMPTS } },
+      data: { attempts: { increment: 1 } },
+    });
+
+    if (count === 0) {
+      await this.prisma.emailVerification.deleteMany({
         where: { userId: user.id },
-        data: { attempts: { increment: 1 } },
-        select: { attempts: true },
       });
+      throw new BadRequestException(
+        'Too many incorrect attempts. Please request a new verification code.',
+      );
+    }
 
-      if (attempts >= OTP_MAX_ATTEMPTS) {
-        await this.prisma.emailVerification.delete({
-          where: { userId: user.id },
-        });
-        throw new BadRequestException(
-          'Too many incorrect attempts. Please request a new verification code.',
-        );
-      }
-
+    if (!this.codesMatch(verification.code, code)) {
       throw new BadRequestException('Invalid verification code');
     }
 
-    // Activate the user and remove the verification record
     const updatedUser = await this.prisma.$transaction(async (tx) => {
-      await tx.emailVerification.delete({ where: { userId: user.id } });
+      await tx.emailVerification.deleteMany({ where: { userId: user.id } });
       return tx.user.update({
         where: { id: user.id },
         data: { isEmailVerified: true },
       });
     });
 
-    const token = this.generateToken(updatedUser);
-
     return {
-      accessToken: token,
+      accessToken: this.generateToken(updatedUser),
       user: this.toUserResponse(updatedUser),
     };
   }
@@ -218,14 +227,33 @@ export class AuthService {
 
   /**
    * Generate a 6-digit OTP, upsert it in the database, and send the email.
+   * Refuses when the previous code for this user is less than
+   * OTP_RESEND_COOLDOWN_SECONDS old.
    */
   private async sendOtpToUser(userId: string, email: string): Promise<void> {
+    const previous = await this.prisma.emailVerification.findUnique({
+      where: { userId },
+      select: { expiresAt: true },
+    });
+
+    if (previous) {
+      const sentAt = previous.expiresAt.getTime() - OTP_EXPIRY_MS;
+      const waitMs = sentAt + OTP_RESEND_COOLDOWN_SECONDS * 1000 - Date.now();
+      if (waitMs > 0) {
+        throw new HttpException(
+          `Please wait ${Math.ceil(waitMs / 1000)} seconds before requesting another code.`,
+          HttpStatus.TOO_MANY_REQUESTS,
+        );
+      }
+    }
+
     // `crypto.randomInt` is a CSPRNG. `Math.random()` is not: V8's internal
     // state is recoverable from a handful of observed outputs, which would let
     // an attacker predict other users' codes after harvesting a few of their own.
-    const max = 10 ** OTP_LENGTH;
-    const code = randomInt(0, max).toString().padStart(OTP_LENGTH, '0');
-    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MINUTES * 60 * 1000);
+    const code = randomInt(0, 10 ** OTP_LENGTH)
+      .toString()
+      .padStart(OTP_LENGTH, '0');
+    const expiresAt = new Date(Date.now() + OTP_EXPIRY_MS);
 
     await this.prisma.emailVerification.upsert({
       where: { userId },
@@ -286,17 +314,12 @@ export class AuthService {
       );
     }
 
-    const token = this.generateToken(user);
-
     return {
-      accessToken: token,
+      accessToken: this.generateToken(user),
       user: this.toUserResponse(user),
     };
   }
 
-  /**
-   * Get current user profile
-   */
   async getProfile(userId: string): Promise<UserResponse> {
     const user = await this.prisma.user.findUnique({
       where: { id: userId },
@@ -309,9 +332,6 @@ export class AuthService {
     return this.toUserResponse(user);
   }
 
-  /**
-   * Update current user profile
-   */
   async updateProfile(
     userId: string,
     dto: UpdateProfileDto,
@@ -328,17 +348,81 @@ export class AuthService {
     });
 
     // Re-issue so the cookie reflects the current profile (and resets its TTL).
-    const token = this.generateToken(updatedUser);
-
     return {
-      accessToken: token,
+      accessToken: this.generateToken(updatedUser),
       user: this.toUserResponse(updatedUser),
     };
   }
 
   /**
-   * Generate JWT token with user context
+   * Change the password of an account that has one. Wrong current passwords
+   * get 400, not 401: the client treats 401 as "your session ended".
    */
+  async changePassword(
+    userId: string,
+    dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!user.passwordHash) {
+      throw new BadRequestException(
+        'This account signs in with Google and has no password to change.',
+      );
+    }
+
+    if (!(await bcrypt.compare(dto.currentPassword, user.passwordHash))) {
+      throw new BadRequestException('Current password is incorrect');
+    }
+
+    if (await bcrypt.compare(dto.newPassword, user.passwordHash)) {
+      throw new BadRequestException(
+        'The new password must be different from the current one',
+      );
+    }
+
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: {
+        passwordHash: await bcrypt.hash(dto.newPassword, BCRYPT_SALT_ROUNDS),
+      },
+    });
+
+    return { message: 'Password updated' };
+  }
+
+  /**
+   * Permanently delete the account. Everything the user owns goes with it
+   * (courses, questions, attempts, …) through the database's cascades.
+   * Accounts with a password must confirm it.
+   */
+  async deleteAccount(
+    userId: string,
+    dto: DeleteAccountDto,
+  ): Promise<{ message: string }> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.passwordHash) {
+      const ok =
+        !!dto.password &&
+        (await bcrypt.compare(dto.password, user.passwordHash));
+      if (!ok) {
+        throw new BadRequestException(
+          'Enter your current password to delete your account',
+        );
+      }
+    }
+
+    await this.prisma.user.delete({ where: { id: userId } });
+
+    return { message: 'Account deleted' };
+  }
+
   private generateToken(user: TokenUser): string {
     const payload: JwtPayload = {
       sub: user.id,
@@ -349,11 +433,11 @@ export class AuthService {
     return this.jwtService.sign(payload);
   }
 
-  /**
-   * Map a User entity to the public-facing user response shape.
-   */
   private toUserResponse(
-    user: Pick<User, 'id' | 'email' | 'firstName' | 'lastName' | 'role'>,
+    user: Pick<
+      User,
+      'id' | 'email' | 'firstName' | 'lastName' | 'role' | 'passwordHash'
+    >,
   ): UserResponse {
     return {
       id: user.id,
@@ -361,6 +445,7 @@ export class AuthService {
       firstName: user.firstName,
       lastName: user.lastName,
       role: user.role,
+      hasPassword: !!user.passwordHash,
     };
   }
 
@@ -370,13 +455,9 @@ export class AuthService {
    * - If a user with the same email exists, link the googleId to their account.
    * - Otherwise, create a brand-new user.
    */
-  async validateGoogleUser(googleProfile: {
-    googleId: string;
-    email: string;
-    emailVerified: boolean;
-    firstName: string;
-    lastName: string;
-  }): Promise<AuthResponseDto> {
+  async validateGoogleUser(
+    googleProfile: GoogleProfile,
+  ): Promise<AuthResponseDto> {
     // Linking by email is only safe if Google actually owns and verified the
     // address. Without this check an unverified alias could be used to seize
     // an existing Cognify account.
@@ -386,27 +467,44 @@ export class AuthService {
       );
     }
 
-    // 1. Try to find by googleId first
     let user = await this.prisma.user.findUnique({
       where: { googleId: googleProfile.googleId },
     });
 
     if (!user) {
-      // 2. Try to find by email (link existing account)
       const existing = await this.prisma.user.findUnique({
         where: { email: googleProfile.email },
       });
 
       if (existing) {
-        // Link the google id to the existing account. Completing a Google sign-in
-        // proves mailbox control, so this also settles any pending email
-        // verification on that account.
+        // Completing a Google sign-in proves control of the mailbox. If the
+        // existing account was never verified, nothing on it was proven to
+        // come from that mailbox's owner: anyone can register any address.
+        // Keeping its password would let whoever registered it first sign in
+        // to the owner's account later, so it is discarded along with the
+        // name and role they chose. A verified account keeps everything.
         user = await this.prisma.user.update({
           where: { id: existing.id },
-          data: { googleId: googleProfile.googleId, isEmailVerified: true },
+          data: {
+            googleId: googleProfile.googleId,
+            isEmailVerified: true,
+            ...(existing.isEmailVerified
+              ? {}
+              : {
+                  passwordHash: null,
+                  firstName: googleProfile.firstName,
+                  lastName: googleProfile.lastName,
+                  role: Role.STUDENT,
+                }),
+          },
         });
+
+        if (!existing.isEmailVerified) {
+          await this.prisma.emailVerification.deleteMany({
+            where: { userId: existing.id },
+          });
+        }
       } else {
-        // 3. Create a brand-new user
         user = await this.prisma.user.create({
           data: {
             email: googleProfile.email,
@@ -427,10 +525,8 @@ export class AuthService {
       throw new UnauthorizedException('Account is deactivated');
     }
 
-    const token = this.generateToken(user);
-
     return {
-      accessToken: token,
+      accessToken: this.generateToken(user),
       user: this.toUserResponse(user),
     };
   }

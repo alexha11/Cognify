@@ -13,42 +13,46 @@ import {
   FileTypeValidator,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Throttle } from '@nestjs/throttler';
 import { MaterialsService } from './materials.service';
 import { CreateMaterialDto, UploadMaterialDto } from './dto';
-import { JwtAuthGuard, RolesGuard } from '../../common/guards';
+import {
+  JwtAuthGuard,
+  OptionalJwtAuthGuard,
+  RolesGuard,
+} from '../../common/guards';
 import { Roles, CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
+import { MAX_PDF_SIZE_BYTES } from '../../common/constants';
 
 @Controller('materials')
 export class MaterialsController {
   constructor(private readonly materialsService: MaterialsService) {}
 
-  /**
-   * Create new study material
-   */
+  /** POST /materials — record a material hosted elsewhere. */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async create(
+  create(
     @Body() dto: CreateMaterialDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.materialsService.create(dto, user.userId);
+  ) {
+    return this.materialsService.create(dto, user);
   }
 
-  /**
-   * Upload a PDF file, extract text, chunk, embed, and store
-   */
+  /** POST /materials/upload — PDF upload; extracts, chunks and embeds the text. */
   @Post('upload')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  // Each upload calls the paid embeddings API.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @UseInterceptors(FileInterceptor('file'))
-  async upload(
+  upload(
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 10 * 1024 * 1024 }), // 10MB
+          new MaxFileSizeValidator({ maxSize: MAX_PDF_SIZE_BYTES }),
           new FileTypeValidator({ fileType: 'application/pdf' }),
         ],
       }),
@@ -56,35 +60,25 @@ export class MaterialsController {
     file: Express.Multer.File,
     @Body() dto: UploadMaterialDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.materialsService.uploadAndProcess(
-      file.buffer,
-      file.originalname,
-      file.mimetype,
-      file.size,
-      dto.courseId,
-      user.userId,
-    );
+  ) {
+    return this.materialsService.uploadAndProcess(file, dto.courseId, user);
   }
 
-  /**
-   * Get materials for a course
-   */
+  /** GET /materials/course/:courseId — private courses answer 404 to outsiders. */
   @Get('course/:courseId')
-  async findByCourse(@Param('courseId') courseId: string): Promise<any[]> {
-    return this.materialsService.findByCourse(courseId);
+  @UseGuards(OptionalJwtAuthGuard)
+  findByCourse(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ) {
+    return this.materialsService.findByCourse(courseId, user);
   }
 
-  /**
-   * Delete material
-   */
+  /** DELETE /materials/:id */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async remove(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ message: string }> {
-    return this.materialsService.remove(id, user.userId, user.role);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.materialsService.remove(id, user);
   }
 }

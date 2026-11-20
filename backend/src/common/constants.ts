@@ -12,6 +12,12 @@ export const OTP_EXPIRY_MINUTES = 15;
  * is only ~1M possibilities, so without this an attacker can simply enumerate.
  */
 export const OTP_MAX_ATTEMPTS = 5;
+/**
+ * Minimum gap between two codes for the same address. Rate limits key on IP,
+ * which a client can vary; this one keys on the mailbox, so nobody can flood
+ * an inbox (or the email bill) by rotating addresses.
+ */
+export const OTP_RESEND_COOLDOWN_SECONDS = 60;
 
 /** Name of the HttpOnly cookie carrying the session JWT. */
 export const AUTH_COOKIE_NAME = 'cognify_token';

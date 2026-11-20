@@ -1,8 +1,9 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { AttemptsService } from './attempts.service';
 import { CreateAttemptDto, UpdateProgressDto } from './dto';
-import { JwtAuthGuard } from '../../common/guards';
-import { CurrentUser } from '../../common/decorators';
+import { JwtAuthGuard, RolesGuard } from '../../common/guards';
+import { CurrentUser, Roles } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 
 @Controller('attempts')
@@ -10,93 +11,75 @@ import type { AuthenticatedUser } from '../auth/interfaces';
 export class AttemptsController {
   constructor(private readonly attemptsService: AttemptsService) {}
 
-  /**
-   * Submit an answer
-   * POST /attempts
-   */
+  /** POST /attempts — score an answer. */
   @Post()
-  async create(
+  create(
     @Body() dto: CreateAttemptDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.attemptsService.create(dto, user.userId);
+  ) {
+    return this.attemptsService.create(dto, user);
   }
 
-  /**
-   * Get all active quiz progress records for the user
-   * GET /attempts/user-progress
-   */
+  /** GET /attempts/user-progress — all my saved quiz positions. */
   @Get('user-progress')
-  async getUserQuizProgresses(
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any[]> {
+  getUserQuizProgresses(@CurrentUser() user: AuthenticatedUser) {
     return this.attemptsService.getUserQuizProgresses(user.userId);
   }
 
-  /**
-   * Get active quiz session progress for a course
-   * GET /attempts/progress/:courseId
-   */
-  @Get('progress/:courseId')
-  async getQuizProgress(
-    @Param('courseId') courseId: string,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.attemptsService.getQuizProgress(user.userId, courseId);
+  /** GET /attempts/analytics — every learner's results in the caller's courses. */
+  @Get('analytics')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.INSTRUCTOR)
+  getCourseAnalytics(@CurrentUser() user: AuthenticatedUser) {
+    return this.attemptsService.getCourseAnalytics(user);
   }
 
-  /**
-   * Update active quiz session progress
-   * POST /attempts/progress/:courseId
-   */
+  /** GET /attempts/progress/:courseId — read-only; never creates a row. */
+  @Get('progress/:courseId')
+  getQuizProgress(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    return this.attemptsService.getQuizProgress(user, courseId);
+  }
+
+  /** POST /attempts/progress/:courseId — save position and completion. */
   @Post('progress/:courseId')
-  async updateQuizProgress(
+  updateQuizProgress(
     @Param('courseId') courseId: string,
     @Body() dto: UpdateProgressDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.attemptsService.updateQuizProgress(user.userId, courseId, dto);
+  ) {
+    return this.attemptsService.updateQuizProgress(user, courseId, dto);
   }
 
-  /**
-   * Reset active quiz session progress for retaking
-   * POST /attempts/reset/:courseId
-   */
+  /** POST /attempts/reset/:courseId — start the quiz again (attempts are kept). */
   @Post('reset/:courseId')
-  async resetQuizProgress(
+  resetQuizProgress(
     @Param('courseId') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.attemptsService.resetQuizProgress(user.userId, courseId);
+  ) {
+    return this.attemptsService.resetQuizProgress(user, courseId);
   }
 
-  /**
-   * Get my attempt history
-   * GET /attempts/me
-   */
+  /** GET /attempts/me */
   @Get('me')
-  async findMyAttempts(@CurrentUser() user: AuthenticatedUser): Promise<any[]> {
+  findMyAttempts(@CurrentUser() user: AuthenticatedUser) {
     return this.attemptsService.findByUser(user.userId);
   }
 
-  /**
-   * Get my statistics
-   * GET /attempts/stats
-   */
+  /** GET /attempts/stats */
   @Get('stats')
-  async getStats(@CurrentUser() user: AuthenticatedUser): Promise<any> {
+  getStats(@CurrentUser() user: AuthenticatedUser) {
     return this.attemptsService.getOverallStats(user.userId);
   }
 
-  /**
-   * Get course progress
-   * GET /attempts/course/:courseId
-   */
+  /** GET /attempts/course/:courseId — the caller's own progress in one course. */
   @Get('course/:courseId')
-  async getCourseProgress(
+  getCourseProgress(
     @Param('courseId') courseId: string,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.attemptsService.getCourseProgress(courseId, user.userId);
+  ) {
+    return this.attemptsService.getCourseProgress(courseId, user);
   }
 }

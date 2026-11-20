@@ -1,4 +1,5 @@
 import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AiService } from './ai.service';
 import { GenerateQuestionsDto } from './dto';
 import { JwtAuthGuard, RolesGuard } from '../../common/guards';
@@ -7,28 +8,19 @@ import type { AuthenticatedUser } from '../auth/interfaces';
 import { Role } from '@prisma/client';
 
 @Controller('ai')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
-  /**
-   * Generate AI questions
-   * POST /ai/generate-questions
-   */
+  /** POST /ai/generate-questions — drafts only; nothing is saved. */
   @Post('generate-questions')
-  @UseGuards(RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async generateQuestions(
+  // Every call spends OpenRouter credit.
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  generateQuestions(
     @Body() dto: GenerateQuestionsDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
-    return this.aiService.generateQuestions(
-      dto.courseId,
-      dto.topic,
-      dto.count || 5,
-      user.userId,
-      dto.materialId,
-      dto.difficulty,
-    );
+    return this.aiService.generateQuestions(dto, user);
   }
 }

@@ -1,4 +1,5 @@
 import { Controller, Get, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { LeaderboardService } from './leaderboard.service';
 import { CreateLeaderboardEntryDto } from './dto';
 import { OptionalJwtAuthGuard } from '../../common/guards';
@@ -6,32 +7,26 @@ import { CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
 
 @Controller('leaderboard')
+@UseGuards(OptionalJwtAuthGuard)
 export class LeaderboardController {
   constructor(private readonly leaderboardService: LeaderboardService) {}
 
-  /**
-   * Get leaderboard for a course (public — no auth required)
-   * GET /leaderboard/:courseId
-   */
+  /** GET /leaderboard/:courseId — private courses answer 404 to outsiders. */
   @Get(':courseId')
-  async getLeaderboard(@Param('courseId') courseId: string): Promise<any> {
-    const [entries, courseName] = await Promise.all([
-      this.leaderboardService.getLeaderboard(courseId),
-      this.leaderboardService.getCourseName(courseId),
-    ]);
-    return { courseName, entries };
+  getLeaderboard(
+    @Param('courseId') courseId: string,
+    @CurrentUser() user?: AuthenticatedUser,
+  ) {
+    return this.leaderboardService.getLeaderboard(courseId, user);
   }
 
-  /**
-   * Submit a leaderboard entry (optional auth — guests and users)
-   * POST /leaderboard
-   */
+  /** POST /leaderboard — guests and signed-in users. */
   @Post()
-  @UseGuards(OptionalJwtAuthGuard)
-  async submitEntry(
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
+  submitEntry(
     @Body() dto: CreateLeaderboardEntryDto,
     @CurrentUser() user?: AuthenticatedUser,
-  ): Promise<any> {
-    return this.leaderboardService.submitEntry(dto, user?.userId);
+  ) {
+    return this.leaderboardService.submitEntry(dto, user);
   }
 }

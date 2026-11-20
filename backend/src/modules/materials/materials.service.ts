@@ -7,11 +7,21 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateMaterialDto } from './dto';
-import { SupabaseStorageService } from './supabase-storage.service';
-import { EmbeddingService } from '../embedding';
-import { chunkText } from '../embedding';
-import { Role } from '@prisma/client';
+import { SupabaseStorageService } from '../storage';
+import { EmbeddingService, chunkText } from '../embedding';
 import { MIN_PDF_TEXT_LENGTH } from '../../common/constants';
+import { CourseAccessService, type Viewer } from '../../common/access';
+import type { AuthenticatedUser } from '../auth/interfaces';
+
+/** Writing every chunk of a large PDF to a remote database can take a while. */
+const UPLOAD_TRANSACTION_TIMEOUT_MS = 60_000;
+
+export interface UploadedPdf {
+  buffer: Buffer;
+  originalname: string;
+  mimetype: string;
+  size: number;
+}
 
 @Injectable()
 export class MaterialsService {
@@ -19,21 +29,14 @@ export class MaterialsService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly supabaseStorage: SupabaseStorageService,
+    private readonly access: CourseAccessService,
+    private readonly storage: SupabaseStorageService,
     private readonly embeddingService: EmbeddingService,
   ) {}
 
-  /**
-   * Create new study material
-   */
-  async create(dto: CreateMaterialDto, userId: string): Promise<any> {
-    const course = await this.prisma.course.findFirst({
-      where: { id: dto.courseId },
-    });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
+  /** Record a material that already lives at a web URL. */
+  async create(dto: CreateMaterialDto, user: AuthenticatedUser) {
+    await this.access.assertCanManage(dto.courseId, user);
 
     return this.prisma.material.create({
       data: {
@@ -42,169 +45,149 @@ export class MaterialsService {
         fileType: dto.fileType,
         fileSize: dto.fileSize,
         courseId: dto.courseId,
-        uploadedById: userId,
+        uploadedById: user.userId,
       },
     });
   }
 
   /**
-   * Upload a PDF, extract text, chunk, embed, and store with vectors
+   * PDF → text → chunks → embeddings → storage → rows.
+   *
+   * Text extraction and embedding run before the file is stored, so a scanned
+   * PDF or an embedding failure leaves nothing behind. If the database write
+   * fails after the upload, the stored file is removed again.
    */
   async uploadAndProcess(
-    buffer: Buffer,
-    fileName: string,
-    contentType: string,
-    fileSize: number,
+    file: UploadedPdf,
     courseId: string,
-    userId: string,
-  ): Promise<any> {
-    const course = await this.prisma.course.findFirst({
-      where: { id: courseId },
-    });
+    user: AuthenticatedUser,
+  ) {
+    await this.access.assertCanManage(courseId, user);
 
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
-    // 1. Upload to Supabase storage
-    const fileUrl = await this.supabaseStorage.uploadFile(
-      buffer,
-      fileName,
-      contentType,
-      courseId,
-    );
-    this.logger.log(`File uploaded: ${fileName}`);
-
-    // 2. Extract text from PDF
-    const { PDFParse } = await import('pdf-parse');
-    const pdfParser = new PDFParse({ data: new Uint8Array(buffer) });
-    const pdf = await pdfParser.getText();
-    const text = pdf.text;
-    this.logger.log(`Extracted ${text.length} chars from PDF`);
-
-    // 3. Check if we actually extracted meaningful text
-    const cleanText = text.replace(/-- \d+ of \d+ --/g, '').trim();
-    if (cleanText.length < MIN_PDF_TEXT_LENGTH) {
+    const text = await this.extractText(file.buffer);
+    const chunks = chunkText(text);
+    if (chunks.length === 0) {
       throw new BadRequestException(
-        'The uploaded PDF appears to be empty or a scanned image. Please upload a PDF with selectable text.',
+        'The uploaded PDF does not contain enough text to use.',
       );
     }
 
-    // 4. Chunk the text
-    const chunks = chunkText(text);
-    this.logger.log(`Created ${chunks.length} chunks`);
-
-    // 4. Embed all chunks
     const embeddings = await this.embeddingService.embedTexts(chunks);
-    this.logger.log(`Generated ${embeddings.length} embeddings`);
+    if (embeddings.length !== chunks.length) {
+      throw new Error(
+        `Embedding count mismatch: ${embeddings.length} for ${chunks.length} chunks`,
+      );
+    }
 
-    // 5. Store everything in a transaction
-    const material = await this.prisma.$transaction(async (tx) => {
-      // Create the material record
-      const mat = await tx.material.create({
-        data: {
-          fileName,
-          fileUrl,
-          fileType: contentType,
-          fileSize,
-          courseId,
-          uploadedById: userId,
-        },
-      });
-
-      // Insert chunks with embeddings via raw SQL (Prisma can't handle vector type natively)
-      for (let i = 0; i < chunks.length; i++) {
-        const embeddingStr = `[${embeddings[i].join(',')}]`;
-        await tx.$executeRawUnsafe(
-          `INSERT INTO "MaterialChunk" ("id", "content", "chunkIndex", "embedding", "materialId", "createdAt")
-           VALUES (gen_random_uuid(), $1, $2, $3::vector, $4, NOW())`,
-          chunks[i],
-          i,
-          embeddingStr,
-          mat.id,
-        );
-      }
-
-      return mat;
-    });
-
-    this.logger.log(
-      `Material ${material.id} created with ${chunks.length} chunks`,
+    const fileUrl = await this.storage.uploadFile(
+      file.buffer,
+      file.originalname,
+      file.mimetype,
+      courseId,
     );
 
-    return material;
+    try {
+      const material = await this.prisma.$transaction(
+        async (tx) => {
+          const created = await tx.material.create({
+            data: {
+              fileName: file.originalname,
+              fileUrl,
+              fileType: file.mimetype,
+              fileSize: file.size,
+              chunkCount: chunks.length,
+              courseId,
+              uploadedById: user.userId,
+            },
+          });
+
+          // One statement for all chunks. Prisma cannot write the vector
+          // column, so it is cast from its text form ('[0.1,0.2,...]').
+          const indexes = chunks.map((_, i) => i);
+          const vectors = embeddings.map((e) => `[${e.join(',')}]`);
+          await tx.$executeRaw`
+            INSERT INTO "MaterialChunk" ("id", "content", "chunkIndex", "embedding", "materialId", "createdAt")
+            SELECT gen_random_uuid(), c.content, c.idx, c.embedding::vector, ${created.id}, NOW()
+            FROM unnest(${chunks}::text[], ${indexes}::int[], ${vectors}::text[])
+              AS c(content, idx, embedding)`;
+
+          return created;
+        },
+        { timeout: UPLOAD_TRANSACTION_TIMEOUT_MS },
+      );
+
+      this.logger.log(
+        `Material ${material.id} created with ${chunks.length} chunks`,
+      );
+      return material;
+    } catch (error) {
+      await this.storage.deleteFile(fileUrl);
+      throw error;
+    }
   }
 
-  /**
-   * Get materials for a course
-   */
-  async findByCourse(courseId: string): Promise<any[]> {
+  async findByCourse(courseId: string, user?: Viewer) {
+    await this.access.assertCanView(courseId, user);
+
     return this.prisma.material.findMany({
-      where: {
-        courseId,
-      },
+      where: { courseId },
       include: {
         uploadedBy: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
+          select: { id: true, firstName: true, lastName: true },
         },
       },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  /**
-   * Delete material
-   */
-  async remove(
-    id: string,
-    userId?: string,
-    userRole?: Role,
-  ): Promise<{ message: string }> {
-    const material = await this.prisma.material.findFirst({
+  /** The uploader, the course owner and admins may delete a material. */
+  async remove(id: string, user: Viewer): Promise<{ message: string }> {
+    const material = await this.prisma.material.findUnique({
       where: { id },
-      include: { course: true },
+      include: { course: { select: { createdById: true } } },
     });
 
     if (!material) {
       throw new NotFoundException('Material not found');
     }
 
-    if (
-      userRole !== Role.ADMIN &&
-      userId &&
-      material.uploadedById !== userId &&
-      material.course.createdById !== userId
-    ) {
+    const isUploader = !!user && material.uploadedById === user.userId;
+    if (!isUploader && !this.access.canManage(material.course, user)) {
       throw new ForbiddenException(
         'You do not have permission to delete this material',
       );
     }
 
-    // Delete file from storage
-    try {
-      await this.supabaseStorage.deleteFile(material.fileUrl);
-    } catch (e) {
-      this.logger.warn(`Failed to delete file from storage: ${e}`);
-    }
-
-    // Delete MaterialChunk vector records if any
-    try {
-      await this.prisma.$executeRawUnsafe(
-        `DELETE FROM "MaterialChunk" WHERE "materialId" = $1`,
-        id,
-      );
-    } catch (err: any) {
-      this.logger.warn(`MaterialChunk cleanup warning: ${err.message}`);
-    }
-
-    await this.prisma.material.delete({
-      where: { id },
-    });
+    // Chunks go with the row (ON DELETE CASCADE); the stored file does not.
+    await this.prisma.material.delete({ where: { id } });
+    await this.storage.deleteFile(material.fileUrl);
 
     return { message: 'Material deleted successfully' };
+  }
+
+  private async extractText(buffer: Buffer): Promise<string> {
+    const { PDFParse } = await import('pdf-parse');
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+
+    let text: string;
+    try {
+      ({ text } = await parser.getText());
+    } catch (error) {
+      this.logger.warn(`PDF text extraction failed: ${String(error)}`);
+      throw new BadRequestException(
+        'This file could not be read as a PDF. Please upload a valid PDF.',
+      );
+    } finally {
+      await parser.destroy().catch(() => undefined);
+    }
+
+    // pdf-parse marks page breaks as "-- 1 of 3 --"; they are noise for retrieval.
+    const clean = text.replace(/-- \d+ of \d+ --/g, '').trim();
+    if (clean.length < MIN_PDF_TEXT_LENGTH) {
+      throw new BadRequestException(
+        'The uploaded PDF appears to be empty or a scanned image. Please upload a PDF with selectable text.',
+      );
+    }
+    return clean;
   }
 }

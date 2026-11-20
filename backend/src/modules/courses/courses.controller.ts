@@ -10,7 +10,12 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { CoursesService } from './courses.service';
-import { CreateCourseDto, UpdateCourseDto } from './dto';
+import {
+  AddPrerequisiteDto,
+  CreateCourseDto,
+  UpdateCourseDto,
+  UpdateVisibilityDto,
+} from './dto';
 import {
   JwtAuthGuard,
   OptionalJwtAuthGuard,
@@ -24,129 +29,81 @@ import { Role } from '@prisma/client';
 export class CoursesController {
   constructor(private readonly coursesService: CoursesService) {}
 
-  /**
-   * Create a new course
-   * POST /courses
-   */
+  /** POST /courses */
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async create(
-    @Body() dto: CreateCourseDto,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
+  create(@Body() dto: CreateCourseDto, @CurrentUser() user: AuthenticatedUser) {
     return this.coursesService.create(dto, user.userId);
   }
 
-  /**
-   * Get all courses
-   * GET /courses
-   */
+  /** GET /courses — public courses, plus your own (instructors) or all (admins). */
   @Get()
   @UseGuards(OptionalJwtAuthGuard)
-  async findAll(@CurrentUser() user?: AuthenticatedUser): Promise<any[]> {
-    return this.coursesService.findAll(user?.role, user?.userId);
+  findAll(@CurrentUser() user?: AuthenticatedUser) {
+    return this.coursesService.findAll(user);
   }
 
-  /**
-   * Get single course
-   * GET /courses/:id
-   */
+  /** GET /courses/:id — private courses answer 404 to anyone but their owner. */
   @Get(':id')
   @UseGuards(OptionalJwtAuthGuard)
-  async findOne(
-    @Param('id') id: string,
-    @CurrentUser() user?: AuthenticatedUser,
-  ): Promise<any> {
-    return this.coursesService.findOne(id, user?.role);
+  findOne(@Param('id') id: string, @CurrentUser() user?: AuthenticatedUser) {
+    return this.coursesService.findOne(id, user);
   }
 
-  /**
-   * Update course
-   * PUT /courses/:id
-   */
+  /** PUT /courses/:id */
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async update(
+  update(
     @Param('id') id: string,
     @Body() dto: UpdateCourseDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.coursesService.update(id, dto, user.userId, user.role);
+  ) {
+    return this.coursesService.update(id, dto, user);
   }
 
-  /**
-   * Toggle course visibility (public/private)
-   * PATCH /courses/:id/visibility
-   */
+  /** PATCH /courses/:id/visibility */
   @Patch(':id/visibility')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async updateVisibility(
+  updateVisibility(
     @Param('id') id: string,
-    @Body() dto: { isPublic: boolean },
+    @Body() dto: UpdateVisibilityDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.coursesService.updateVisibility(
-      id,
-      dto.isPublic,
-      user.userId,
-      user.role,
-    );
+  ) {
+    return this.coursesService.updateVisibility(id, dto.isPublic, user);
   }
 
-  /**
-   * Delete course
-   * DELETE /courses/:id
-   */
+  /** DELETE /courses/:id */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async remove(
-    @Param('id') id: string,
-    @CurrentUser() user: AuthenticatedUser,
-  ): Promise<{ message: string }> {
-    return this.coursesService.remove(id, user.userId, user.role);
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    return this.coursesService.remove(id, user);
   }
 
-  /**
-   * Add prerequisite to course
-   * POST /courses/:id/prerequisites
-   */
+  /** POST /courses/:id/prerequisites */
   @Post(':id/prerequisites')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async addPrerequisite(
+  addPrerequisite(
     @Param('id') id: string,
-    @Body('prerequisiteId') prerequisiteId: string,
+    @Body() dto: AddPrerequisiteDto,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.coursesService.addPrerequisite(
-      id,
-      prerequisiteId,
-      user.userId,
-      user.role,
-    );
+  ) {
+    return this.coursesService.addPrerequisite(id, dto.prerequisiteId, user);
   }
 
-  /**
-   * Remove prerequisite from course
-   * DELETE /courses/:id/prerequisites/:prerequisiteId
-   */
+  /** DELETE /courses/:id/prerequisites/:prerequisiteId */
   @Delete(':id/prerequisites/:prerequisiteId')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.ADMIN, Role.INSTRUCTOR)
-  async removePrerequisite(
+  removePrerequisite(
     @Param('id') id: string,
     @Param('prerequisiteId') prerequisiteId: string,
     @CurrentUser() user: AuthenticatedUser,
-  ): Promise<any> {
-    return this.coursesService.removePrerequisite(
-      id,
-      prerequisiteId,
-      user.userId,
-      user.role,
-    );
+  ) {
+    return this.coursesService.removePrerequisite(id, prerequisiteId, user);
   }
 }

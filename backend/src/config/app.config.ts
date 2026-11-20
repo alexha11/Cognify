@@ -41,8 +41,16 @@ export const appConfigValidationSchema = Joi.object({
   // Must be the public https origin in production: it is both the OAuth
   // redirect target and the only allowed CORS origin.
   FRONTEND_URL: Joi.string().uri().default('http://localhost:3000'),
-  RESEND_API_KEY: Joi.string().optional().allow(''),
+  // Without it, verification codes cannot reach anyone. Outside production the
+  // API logs codes instead of sending them.
+  RESEND_API_KEY: requiredInProduction(Joi.string()),
   RESEND_FROM_EMAIL: Joi.string().default('onboarding@resend.dev'),
+  // Where contact-form messages go. Defaults to RESEND_FROM_EMAIL.
+  SUPPORT_EMAIL: Joi.string().email().optional().allow(''),
+  // How many X-Forwarded-For entries your own proxies append (the Next.js
+  // proxy adds one). Unset keeps the old behaviour of trusting the left-most
+  // entry, which clients can forge.
+  TRUSTED_PROXY_HOPS: Joi.number().integer().min(1).max(10).optional(),
 });
 
 export const appConfig = registerAs(
@@ -69,5 +77,9 @@ export const appConfig = registerAs(
     frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
     resendApiKey: process.env.RESEND_API_KEY || '',
     resendFromEmail: process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev',
+    supportEmail: process.env.SUPPORT_EMAIL || '',
+    trustedProxyHops: process.env.TRUSTED_PROXY_HOPS
+      ? parseInt(process.env.TRUSTED_PROXY_HOPS, 10)
+      : undefined,
   }),
 );

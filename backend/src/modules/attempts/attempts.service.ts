@@ -1,79 +1,82 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-  Logger,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../prisma';
 import { CreateAttemptDto, UpdateProgressDto } from './dto';
+import { CourseAccessService } from '../../common/access';
+import { gradeSelection } from '../questions/questions.service';
+import type { AuthenticatedUser } from '../auth/interfaces';
+
+/** One row of the instructor analytics table. */
+export interface CourseAnalytics {
+  courseId: string;
+  courseName: string;
+  isPublic: boolean;
+  totalQuestions: number;
+  /** Distinct users who answered at least one approved question. */
+  learners: number;
+  /** Answer rows across all learners (one per learner and question). */
+  answered: number;
+  correct: number;
+  /** Learners whose quiz progress is marked complete. */
+  completions: number;
+  accuracy: number;
+  completionRate: number;
+}
 
 @Injectable()
 export class AttemptsService {
   private readonly logger = new Logger(AttemptsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: CourseAccessService,
+  ) {}
 
-  /**
-   * Get all active quiz progress records for a user
-   */
   async getUserQuizProgresses(userId: string) {
-    return this.prisma.quizProgress.findMany({
-      where: { userId },
-    });
+    return this.prisma.quizProgress.findMany({ where: { userId } });
   }
 
   /**
-   * Get active quiz progress for a user and course
+   * Current quiz position. Reading never writes: a learner without a saved
+   * position is simply at question 0 until they save one.
    */
-  async getQuizProgress(userId: string, courseId: string) {
-    let progress = await this.prisma.quizProgress.findUnique({
-      where: {
-        userId_courseId: {
-          userId,
-          courseId,
-        },
-      },
+  async getQuizProgress(user: AuthenticatedUser, courseId: string) {
+    await this.access.assertCanView(courseId, user);
+
+    const progress = await this.prisma.quizProgress.findUnique({
+      where: { userId_courseId: { userId: user.userId, courseId } },
     });
 
-    if (!progress) {
-      progress = await this.prisma.quizProgress.create({
-        data: {
-          userId,
-          courseId,
-          currentIndex: 0,
-          isCompleted: false,
-        },
-      });
-    }
-
-    return progress;
+    return (
+      progress ?? {
+        id: null,
+        userId: user.userId,
+        courseId,
+        currentIndex: 0,
+        isCompleted: false,
+        lastAnsweredAt: null,
+        createdAt: null,
+      }
+    );
   }
 
-  /**
-   * Update active quiz progress (current index and/or completion state)
-   */
   async updateQuizProgress(
-    userId: string,
+    user: AuthenticatedUser,
     courseId: string,
     dto: UpdateProgressDto,
   ) {
+    await this.access.assertCanView(courseId, user);
+
     return this.prisma.quizProgress.upsert({
-      where: {
-        userId_courseId: {
-          userId,
-          courseId,
-        },
-      },
+      where: { userId_courseId: { userId: user.userId, courseId } },
       update: {
-        ...(dto.currentIndex !== undefined
-          ? { currentIndex: dto.currentIndex }
-          : {}),
-        ...(dto.isCompleted !== undefined
-          ? { isCompleted: dto.isCompleted }
-          : {}),
+        ...(dto.currentIndex !== undefined && {
+          currentIndex: dto.currentIndex,
+        }),
+        ...(dto.isCompleted !== undefined && { isCompleted: dto.isCompleted }),
       },
       create: {
-        userId,
+        userId: user.userId,
         courseId,
         currentIndex: dto.currentIndex ?? 0,
         isCompleted: dto.isCompleted ?? false,
@@ -81,23 +84,14 @@ export class AttemptsService {
     });
   }
 
-  /**
-   * Reset quiz progress for retaking a course
-   */
-  async resetQuizProgress(userId: string, courseId: string) {
+  async resetQuizProgress(user: AuthenticatedUser, courseId: string) {
+    await this.access.assertCanView(courseId, user);
+
     return this.prisma.quizProgress.upsert({
-      where: {
-        userId_courseId: {
-          userId,
-          courseId,
-        },
-      },
-      update: {
-        currentIndex: 0,
-        isCompleted: false,
-      },
+      where: { userId_courseId: { userId: user.userId, courseId } },
+      update: { currentIndex: 0, isCompleted: false },
       create: {
-        userId,
+        userId: user.userId,
         courseId,
         currentIndex: 0,
         isCompleted: false,
@@ -105,151 +99,83 @@ export class AttemptsService {
     });
   }
 
-  /**
-   * Submit an answer attempt
-   */
-  async create(dto: CreateAttemptDto, userId: string) {
+  /** Score an answer on the server. A retry replaces the earlier attempt. */
+  async create(dto: CreateAttemptDto, user: AuthenticatedUser) {
     const question = await this.prisma.question.findFirst({
-      where: {
-        id: dto.questionId,
-        approved: true,
-      },
+      where: { id: dto.questionId, approved: true },
       include: {
         answers: true,
+        course: { select: { isPublic: true, createdById: true } },
       },
     });
 
-    if (!question) {
+    if (!question || !this.access.canView(question.course, user)) {
       throw new NotFoundException('Question not found');
     }
 
-    // Verify all submitted answers belong to question
-    const validAnswerIds = question.answers.map((a) => a.id);
-    const isValid = dto.selectedAnswerIds.every((id) =>
-      validAnswerIds.includes(id),
+    const { isCorrect, correctAnswerIds } = gradeSelection(
+      question.answers,
+      dto.selectedAnswerIds,
     );
-    if (!isValid || dto.selectedAnswerIds.length === 0) {
-      throw new ForbiddenException(
-        'Invalid answers selected for this question',
-      );
-    }
 
-    const correctAnswers = question.answers.filter((a) => a.isCorrect);
-    const isCorrect =
-      correctAnswers.length === dto.selectedAnswerIds.length &&
-      correctAnswers.every((a) => dto.selectedAnswerIds.includes(a.id));
-
-    // Check if already answered - if so, update the attempt instead of throwing
     const existingAttempt = await this.prisma.attempt.findFirst({
-      where: {
-        userId,
-        questionId: dto.questionId,
-      },
+      where: { userId: user.userId, questionId: dto.questionId },
     });
 
-    let attempt;
-    if (existingAttempt) {
-      // Update existing attempt for retry
-      attempt = await this.prisma.attempt.update({
-        where: { id: existingAttempt.id },
-        data: {
-          selectedAnswerIds: dto.selectedAnswerIds,
-          isCorrect,
-        },
-        include: {
-          question: {
-            include: {
-              answers: true,
-            },
+    const attempt = existingAttempt
+      ? await this.prisma.attempt.update({
+          where: { id: existingAttempt.id },
+          data: { selectedAnswerIds: dto.selectedAnswerIds, isCorrect },
+        })
+      : await this.prisma.attempt.create({
+          data: {
+            userId: user.userId,
+            questionId: dto.questionId,
+            selectedAnswerIds: dto.selectedAnswerIds,
+            isCorrect,
           },
-        },
-      });
-    } else {
-      // Create new attempt
-      attempt = await this.prisma.attempt.create({
-        data: {
-          userId,
-          questionId: dto.questionId,
-          selectedAnswerIds: dto.selectedAnswerIds,
-          isCorrect,
-        },
-        include: {
-          question: {
-            include: {
-              answers: true,
-            },
-          },
-        },
-      });
-    }
+        });
 
-    // After success, check if course is completed
     if (attempt.isCorrect) {
-      await this.checkAndMarkCompletion(userId, question.courseId);
+      await this.checkAndMarkCompletion(user.userId, question.courseId);
     }
 
     return {
       id: attempt.id,
       isCorrect: attempt.isCorrect,
       selectedAnswerIds: attempt.selectedAnswerIds,
-      correctAnswerIds: correctAnswers.map((a) => a.id),
+      correctAnswerIds,
       hint: question.hint,
-      question: {
-        id: question.id,
-        content: question.content,
-      },
+      question: { id: question.id, content: question.content },
     };
   }
 
-  /**
-   * Get user's attempt history
-   */
   async findByUser(userId: string) {
     return this.prisma.attempt.findMany({
       where: { userId },
-      include: {
-        question: true,
-      },
+      include: { question: true },
       orderBy: { createdAt: 'desc' },
     });
   }
 
-  /**
-   * Get attempt statistics for user
-   */
   async getOverallStats(userId: string) {
     const attempts = await this.prisma.attempt.findMany({
-      where: {
-        userId,
-      },
-      select: {
-        isCorrect: true,
-        question: {
-          select: {
-            courseId: true,
-          },
-        },
-      },
+      where: { userId },
+      select: { isCorrect: true, question: { select: { courseId: true } } },
     });
 
     const total = attempts.length;
     const correct = attempts.filter((a) => a.isCorrect).length;
 
-    // Group by course
-    const byCourse = attempts.reduce(
-      (acc, attempt) => {
-        const courseId = attempt.question.courseId;
-        if (!acc[courseId]) {
-          acc[courseId] = { total: 0, correct: 0 };
-        }
-        acc[courseId].total++;
-        if (attempt.isCorrect) {
-          acc[courseId].correct++;
-        }
-        return acc;
-      },
-      {} as Record<string, { total: number; correct: number }>,
-    );
+    const byCourse: Record<string, { total: number; correct: number }> = {};
+    for (const attempt of attempts) {
+      const entry = (byCourse[attempt.question.courseId] ??= {
+        total: 0,
+        correct: 0,
+      });
+      entry.total++;
+      if (attempt.isCorrect) entry.correct++;
+    }
 
     return {
       overall: {
@@ -261,42 +187,27 @@ export class AttemptsService {
     };
   }
 
-  /**
-   * Get course progress for user
-   */
-  async getCourseProgress(courseId: string, userId: string) {
-    const course = await this.prisma.course.findFirst({
-      where: {
-        id: courseId,
-      },
-      include: {
-        questions: {
-          where: { approved: true },
-        },
-      },
+  /** The caller's own progress in one course. */
+  async getCourseProgress(courseId: string, user: AuthenticatedUser) {
+    const course = await this.access.assertCanView(courseId, user);
+
+    const questions = await this.prisma.question.findMany({
+      where: { courseId, approved: true },
+      select: { id: true },
     });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
-    const totalQuestions = course.questions.length;
+    const totalQuestions = questions.length;
 
     const attempts = await this.prisma.attempt.findMany({
       where: {
-        userId,
-        questionId: { in: course.questions.map((q) => q.id) },
+        userId: user.userId,
+        questionId: { in: questions.map((q) => q.id) },
       },
     });
 
     const answered = attempts.length;
     const correct = attempts.filter((a) => a.isCorrect).length;
-
     const percentage =
       totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
-
-    // Also check if they officially have a completion record
-    const isCompleted = percentage === 100;
 
     return {
       courseId,
@@ -306,55 +217,83 @@ export class AttemptsService {
       correct,
       remaining: totalQuestions - answered,
       percentage,
-      isCompleted,
+      isCompleted: percentage === 100,
     };
   }
 
   /**
-   * Check if all approved questions in a course are correctly answered.
-   * Updates QuizProgress to mark the course as completed if all questions are correct.
+   * Results across every learner, per course the caller manages (every
+   * course for admins). This is what instructor analytics should show; the
+   * per-user endpoints above only ever describe the caller.
    */
-  async checkAndMarkCompletion(userId: string, courseId: string) {
-    const course = await this.prisma.course.findUnique({
-      where: { id: courseId },
-      include: {
-        questions: {
-          where: { approved: true },
-          select: { id: true },
-        },
-      },
-    });
+  async getCourseAnalytics(
+    user: AuthenticatedUser,
+  ): Promise<CourseAnalytics[]> {
+    const ownerFilter =
+      user.role === Role.ADMIN
+        ? Prisma.empty
+        : Prisma.sql`WHERE c."createdById" = ${user.userId}`;
 
-    if (!course || course.questions.length === 0) return;
+    const rows = await this.prisma.$queryRaw<
+      Omit<CourseAnalytics, 'accuracy' | 'completionRate'>[]
+    >`
+      SELECT c.id AS "courseId",
+             c.name AS "courseName",
+             c."isPublic" AS "isPublic",
+             (SELECT count(*)::int FROM "Question" qq
+               WHERE qq."courseId" = c.id AND qq.approved) AS "totalQuestions",
+             count(DISTINCT a."userId")::int AS "learners",
+             count(a.id)::int AS "answered",
+             (count(a.id) FILTER (WHERE a."isCorrect"))::int AS "correct",
+             (SELECT count(*)::int FROM "QuizProgress" p
+               WHERE p."courseId" = c.id AND p."isCompleted") AS "completions"
+      FROM "Course" c
+      LEFT JOIN "Question" q ON q."courseId" = c.id AND q.approved
+      LEFT JOIN "Attempt" a ON a."questionId" = q.id
+      ${ownerFilter}
+      GROUP BY c.id
+      ORDER BY c."createdAt" DESC`;
+
+    return rows.map((row) => ({
+      ...row,
+      accuracy:
+        row.answered > 0 ? Math.round((row.correct / row.answered) * 100) : 0,
+      completionRate:
+        row.learners > 0
+          ? Math.min(100, Math.round((row.completions / row.learners) * 100))
+          : 0,
+    }));
+  }
+
+  /** Marks the quiz complete once every approved question is answered correctly. */
+  async checkAndMarkCompletion(userId: string, courseId: string) {
+    const questions = await this.prisma.question.findMany({
+      where: { courseId, approved: true },
+      select: { id: true },
+    });
+    if (questions.length === 0) return;
 
     const correctAttempts = await this.prisma.attempt.findMany({
       where: {
         userId,
-        questionId: { in: course.questions.map((q) => q.id) },
+        questionId: { in: questions.map((q) => q.id) },
         isCorrect: true,
       },
       select: { questionId: true },
     });
 
-    const uniqueCorrectQuestions = new Set(
-      correctAttempts.map((a) => a.questionId),
-    );
-
-    if (uniqueCorrectQuestions.size === course.questions.length) {
-      // Mark quiz progress as completed
+    const uniqueCorrect = new Set(correctAttempts.map((a) => a.questionId));
+    if (uniqueCorrect.size === questions.length) {
       await this.prisma.quizProgress.upsert({
-        where: {
-          userId_courseId: { userId, courseId },
-        },
+        where: { userId_courseId: { userId, courseId } },
         update: { isCompleted: true },
         create: {
           userId,
           courseId,
-          currentIndex: course.questions.length,
+          currentIndex: questions.length,
           isCompleted: true,
         },
       });
-
       this.logger.log(`User ${userId} completed course ${courseId}`);
     }
   }

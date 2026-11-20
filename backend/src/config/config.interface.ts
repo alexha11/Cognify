@@ -19,6 +19,8 @@ export interface AppConfig {
   frontendUrl: string;
   resendApiKey: string;
   resendFromEmail: string;
+  supportEmail: string;
+  trustedProxyHops?: number;
 }
 
 export interface Config {

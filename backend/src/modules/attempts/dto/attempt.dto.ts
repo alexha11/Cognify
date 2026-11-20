@@ -1,4 +1,10 @@
-import { IsArray, IsNotEmpty, IsString } from 'class-validator';
+import {
+  ArrayMaxSize,
+  ArrayNotEmpty,
+  IsArray,
+  IsNotEmpty,
+  IsString,
+} from 'class-validator';
 
 export class CreateAttemptDto {
   @IsString()
@@ -6,7 +12,8 @@ export class CreateAttemptDto {
   questionId: string;
 
   @IsArray()
+  @ArrayNotEmpty()
+  @ArrayMaxSize(10)
   @IsString({ each: true })
-  @IsNotEmpty()
   selectedAnswerIds: string[];
 }
