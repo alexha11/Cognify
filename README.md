@@ -48,21 +48,31 @@ are printed in the backend log.
 
 To run everything in containers instead: `docker-compose up -d`.
 
-### Databases created with `prisma db push`
+### Migrations
 
-The migration history was replaced by an idempotent baseline in November 2026
-(the old one could not be applied to an empty database). If your database was
-created with `prisma db push`, mark the baseline as applied once, then deploy:
+`npm run db:migrate` (`backend/scripts/migrate.mjs`) brings any database up to
+date: an empty one, one with a migration history, and one created with
+`prisma db push`. The migration history was replaced by an idempotent baseline
+in November 2026, so for a `db push` database the script runs that baseline
+(adding only what is missing) and records it before applying the rest; a
+leftover failed record from the old history is marked rolled back.
 
-```bash
-cd backend
-npm run db:baseline
-npm run db:migrate
-```
+Change the schema with `npx prisma migrate dev --name <name>`. Do not use
+`prisma db push`: it drops the vector index that Prisma cannot model.
 
-From then on, change the schema with `npx prisma migrate dev --name <name>`
-and deploy with `npm run db:migrate`. Do not use `prisma db push`: it drops
-the vector index that Prisma cannot model.
+## Deploying
+
+The API image (`backend/Dockerfile`) and `npm run start:prod` both run the
+migrations before starting the server. If a migration fails, the process
+exits instead of serving an API whose queries would fail, so on a host such as
+Render the deploy fails and the previous version stays live; the log names the
+migration to resolve.
+
+Production needs `DATABASE_URL`, `JWT_SECRET`, `COOKIE_SECRET`,
+`GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `FRONTEND_URL` (the public https
+origin) and `NODE_ENV=production`, plus `TRUSTED_PROXY_HOPS` when behind a
+proxy. `RESEND_API_KEY` is optional: without it the API runs, but email sign-up
+and the contact form answer 503 until it is set (Google sign-in works).
 
 ## Tests
 
@@ -97,16 +107,19 @@ for the frontend), install the e2e dependencies (`npm ci` in `e2e/`), set
 1. Backend: lint, build, unit tests with coverage.
 2. Backend system: migrations on an empty database, a check that
    `schema.prisma` matches the migrations, system tests.
-3. Frontend: lint, type-check, unit tests, production build.
-4. End-to-end: builds both apps and runs Playwright (after 1 and 3 pass).
+3. Production image: builds `backend/Dockerfile`, starts it with
+   `NODE_ENV=production` on an empty database (no email key), checks that it
+   is healthy with every migration applied, then restarts it.
+4. Frontend: lint, type-check, unit tests, production build.
+5. End-to-end: builds both apps and runs Playwright (after 1 and 4 pass).
 
 ## Configuration
 
 See [`backend/.env.example`](backend/.env.example) for every backend setting.
-In production, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` and
-`RESEND_API_KEY` are required, and `TRUSTED_PROXY_HOPS` should be set to the
-number of proxies in front of the API so rate limits cannot be dodged by
-forging `X-Forwarded-For`.
+In production, `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are required,
+`RESEND_API_KEY` is needed for email sign-up (see Deploying), and
+`TRUSTED_PROXY_HOPS` should be set to the number of proxies in front of the API
+so rate limits cannot be dodged by forging `X-Forwarded-For`.
 
 The frontend needs `NEXT_PUBLIC_API_URL` (the backend's URL) at build time.
 

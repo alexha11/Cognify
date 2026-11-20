@@ -1,4 +1,4 @@
-import { ServiceUnavailableException } from '@nestjs/common';
+import { Logger, ServiceUnavailableException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Config } from '../../config';
 import { contactEmailHtml, EmailService } from './email.service';
@@ -34,6 +34,26 @@ describe('EmailService', () => {
       service.sendVerificationEmail('a@example.com', '123456'),
     ).resolves.toBeUndefined();
     await expect(service.sendContactEmail(contact)).resolves.toBeUndefined();
+  });
+
+  it('in production without a key, refuses to send and never logs the code', async () => {
+    const logged: string[] = [];
+    const record = (message: unknown) => void logged.push(String(message));
+    jest.spyOn(Logger.prototype, 'log').mockImplementation(record);
+    jest.spyOn(Logger.prototype, 'warn').mockImplementation(record);
+    jest.spyOn(Logger.prototype, 'error').mockImplementation(record);
+
+    const service = new EmailService(config({ nodeEnv: 'production' }));
+
+    await expect(
+      service.sendVerificationEmail('a@example.com', '482913'),
+    ).rejects.toThrow(ServiceUnavailableException);
+    await expect(service.sendContactEmail(contact)).rejects.toThrow(
+      ServiceUnavailableException,
+    );
+    expect(logged.join('\n')).toContain('RESEND_API_KEY is not set');
+    expect(logged.join('\n')).not.toContain('482913');
+    jest.restoreAllMocks();
   });
 
   it('sends contact mail to SUPPORT_EMAIL, with the visitor as Reply-To', async () => {

@@ -36,8 +36,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    command: >
-      sh -c "npx prisma migrate deploy && node dist/src/main"
+    # The image applies migrations (scripts/migrate.mjs) before it starts.
 
   frontend:
     build:
