@@ -15,7 +15,7 @@ import {
   Sliders,
 } from "lucide-react";
 import { Header } from "@/components/layout";
-import { RubiksCube } from "@/components/ui/rubiks-cube";
+import { HeroCube } from "@/components/ui/hero-cube";
 import {
   AmbientLights,
   SectionLightDivider,
@@ -159,7 +159,7 @@ export default function HomePage() {
               {/* Main Hero Title */}
               <h1 className="animate-fade-up text-5xl md:text-7xl lg:text-[5.25rem] font-semibold tracking-tight leading-[1.04] text-foreground">
                 {h.heroTitle}{" "}
-                <span className="text-muted-foreground/60 dark:text-muted-foreground/50">
+                <span className="text-subtle-foreground">
                   {h.heroHighlight}
                 </span>
               </h1>
@@ -176,37 +176,42 @@ export default function HomePage() {
                 </span>
                 .
               </p>
-              <div className="animate-fade-up delay-2 flex items-center justify-start gap-3 pt-2">
-                <Link href="/courses">
-                  <div className="group relative inline-flex overflow-hidden rounded-xl p-[2px] hover:scale-105 transition-transform duration-300">
-                    {/* Animated glow border */}
-                    <div
-                      className="absolute inset-[-50%] -z-10 h-[200%] w-[200%] animate-rotate-glow bg-gradient-to-r from-primary via-primary-hover to-primary blur-lg"
-                      style={{
-                        backgroundSize: "50% 25%",
-                        backgroundRepeat: "no-repeat",
-                        backgroundPosition: "center",
-                      }}
-                    />
-                    <button className="relative cursor-pointer overflow-hidden rounded-md bg-card px-8 py-4 text-base font-bold text-foreground shadow-sm transition-all duration-300">
-                      <span className="relative z-20 flex items-center gap-2">
-                        {h.getStarted}
-                        <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-                      </span>
-                      <span className="absolute left-[-75%] top-0 z-10 h-full w-[50%] rotate-12 bg-foreground/10 blur-lg transition-all duration-1000 ease-in-out group-hover:left-[125%]" />
-                      <span className="absolute left-0 top-0 block h-[20%] w-1/2 rounded-tl-[10px] border-l-2 border-t-2 border-foreground transition-all duration-300" />
-                      <span className="absolute right-0 top-0 block h-[60%] w-1/2 rounded-tr-[10px] border-r-2 border-t-2 border-foreground transition-all duration-300 group-hover:h-[90%]" />
-                      <span className="absolute bottom-0 left-0 block h-[60%] w-1/2 rounded-bl-[10px] border-b-2 border-l-2 border-foreground transition-all duration-300 group-hover:h-[90%]" />
-                      <span className="absolute bottom-0 right-0 block h-[20%] w-1/2 rounded-br-[10px] border-b-2 border-r-2 border-foreground transition-all duration-300" />
-                    </button>
-                  </div>
+              {/* Centred under the centred hero text on phones. The link is
+                  the control itself: a <button> inside an <a> is two tab
+                  stops and is announced as a button that navigates. */}
+              <div className="animate-fade-up delay-2 flex items-center justify-center md:justify-start gap-3 pt-2">
+                <Link
+                  href="/courses"
+                  className="group relative inline-flex overflow-hidden rounded-xl p-[2px] hover:scale-105 transition-transform duration-300"
+                >
+                  {/* Animated glow border */}
+                  <div
+                    aria-hidden="true"
+                    className="absolute inset-[-50%] -z-10 h-[200%] w-[200%] animate-rotate-glow bg-gradient-to-r from-primary via-primary-hover to-primary blur-lg"
+                    style={{
+                      backgroundSize: "50% 25%",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                  <span className="relative overflow-hidden rounded-md bg-card px-8 py-4 text-base font-bold text-foreground shadow-sm transition-all duration-300">
+                    <span className="relative z-20 flex items-center gap-2">
+                      {h.getStarted}
+                      <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                    </span>
+                    <span className="absolute left-[-75%] top-0 z-10 h-full w-[50%] rotate-12 bg-foreground/10 blur-lg transition-all duration-1000 ease-in-out group-hover:left-[125%]" />
+                    <span className="absolute left-0 top-0 block h-[20%] w-1/2 rounded-tl-[10px] border-l-2 border-t-2 border-foreground transition-all duration-300" />
+                    <span className="absolute right-0 top-0 block h-[60%] w-1/2 rounded-tr-[10px] border-r-2 border-t-2 border-foreground transition-all duration-300 group-hover:h-[90%]" />
+                    <span className="absolute bottom-0 left-0 block h-[60%] w-1/2 rounded-bl-[10px] border-b-2 border-l-2 border-foreground transition-all duration-300 group-hover:h-[90%]" />
+                    <span className="absolute bottom-0 right-0 block h-[20%] w-1/2 rounded-br-[10px] border-b-2 border-r-2 border-foreground transition-all duration-300" />
+                  </span>
                 </Link>
               </div>
             </div>
 
             <div className="animate-fade-up delay-3 relative w-full aspect-square md:aspect-video lg:aspect-square flex items-center justify-center">
               <div className="absolute inset-0 bg-gradient-to-tr from-secondary/40 to-transparent rounded-full blur-3xl opacity-50 -z-10" />
-              <RubiksCube />
+              <HeroCube />
             </div>
           </div>
 
@@ -219,7 +224,7 @@ export default function HomePage() {
             <Reveal className="max-w-2xl mb-10">
               <h2 className="text-4xl md:text-[3.25rem] font-semibold tracking-tight leading-[1.07] text-foreground">
                 {h.featuresTitle}{" "}
-                <span className="text-muted-foreground/55">{h.featuresHighlight}</span>
+                <span className="text-subtle-foreground">{h.featuresHighlight}</span>
               </h2>
               <p className="mt-5 text-base text-muted-foreground leading-relaxed max-w-md">
                 {h.featuresSubtitle}
@@ -303,7 +308,7 @@ export default function HomePage() {
                           </p>
                           <Link
                             href="/courses"
-                            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground/60 hover:text-foreground transition-colors pt-1 group/link"
+                            className="inline-flex items-center gap-1.5 text-sm text-subtle-foreground hover:text-foreground transition-colors pt-1 group/link"
                           >
                             {feature.linkLabel}
                             <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover/link:translate-x-0.5" />
@@ -324,7 +329,7 @@ export default function HomePage() {
               <Reveal className="mb-16 max-w-lg">
                 <h3 className="text-3xl md:text-5xl font-semibold tracking-tight text-foreground leading-[1.08]">
                   {h.everythingTitle}{" "}
-                  <span className="text-muted-foreground/55">
+                  <span className="text-subtle-foreground">
                     {h.everythingHighlight}
                   </span>
                 </h3>
@@ -365,23 +370,25 @@ export default function HomePage() {
               <h2 className="text-4xl md:text-[3.5rem] font-semibold tracking-tight text-foreground leading-[1.06]">
                 {h.ctaTitle}
                 <br />
-                <span className="text-muted-foreground/55">
+                <span className="text-subtle-foreground">
                   {h.ctaHighlight}
                 </span>
               </h2>
 
               <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
-                <Link href="/courses">
-                  <button className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-85 transition-opacity">
-                    {h.getStarted}
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                <Link
+                  href="/courses"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-foreground text-background text-sm font-semibold hover:opacity-85 transition-opacity"
+                >
+                  {h.getStarted}
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
-                <Link href="/contact">
-                  <button className="inline-flex items-center gap-1.5 px-6 py-3 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors cursor-pointer">
-                    {h.contactUs}
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
+                <Link
+                  href="/contact"
+                  className="inline-flex items-center gap-1.5 px-6 py-3 text-muted-foreground text-sm font-medium hover:text-foreground transition-colors"
+                >
+                  {h.contactUs}
+                  <ArrowRight className="h-4 w-4" />
                 </Link>
               </div>
             </Reveal>
@@ -391,14 +398,14 @@ export default function HomePage() {
 
       <footer className="border-t border-border/30 z-10 relative">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
-          <p className="text-xs text-muted-foreground/50">
+          <p className="text-xs text-subtle-foreground">
             {t.common.copyright}
           </p>
           <div className="flex items-center gap-6">
-            <Link href="/courses" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
+            <Link href="/courses" className="text-xs text-subtle-foreground hover:text-foreground transition-colors">
               {h.footerCourses}
             </Link>
-            <Link href="/contact" className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors">
+            <Link href="/contact" className="text-xs text-subtle-foreground hover:text-foreground transition-colors">
               {h.footerContact}
             </Link>
           </div>

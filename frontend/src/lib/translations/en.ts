@@ -42,6 +42,7 @@ export interface TranslationKeys {
   header: {
     loginButton: string;
     signupButton: string;
+    accountMenu: string;
   };
   auth: {
     welcomeBack: string;
@@ -84,6 +85,8 @@ export interface TranslationKeys {
     cognifyDescription: string;
     getStartedFree: string;
     browseCourses: string;
+    viewAll: string;
+    noDescription: string;
   };
   courses: {
     title: string;
@@ -163,6 +166,7 @@ export interface TranslationKeys {
     currentPassword: string;
     newPassword: string;
     confirmPassword: string;
+    showPassword: string;
     firstName: string;
     lastName: string;
     emailAddress: string;
@@ -357,6 +361,7 @@ export const en: TranslationKeys = {
   header: {
     loginButton: "Log in",
     signupButton: "Sign up",
+    accountMenu: "Account menu",
   },
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -404,6 +409,8 @@ export const en: TranslationKeys = {
       "Cognify synthesizes personalized assessments, providing data-driven trajectory for students and educators.",
     getStartedFree: "Get started free",
     browseCourses: "Browse courses",
+    viewAll: "View all",
+    noDescription: "No description yet.",
   },
 
   // ── Courses ──────────────────────────────────────────────────────────────────
@@ -492,6 +499,7 @@ export const en: TranslationKeys = {
     currentPassword: "Current password",
     newPassword: "New password",
     confirmPassword: "Confirm password",
+    showPassword: "Show password",
     firstName: "First name",
     lastName: "Last name",
     emailAddress: "Email address",

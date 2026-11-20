@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiPut, apiDelete, apiUpload } from "@/lib/api";
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { GenerateQuestionsModal, DraftQuestionsModal } from "@/components/ui";
-import type { DraftQuestion } from "@/components/ui";
+import { GenerateQuestionsModal } from "@/components/ui/generate-questions-modal";
+import { DraftQuestionsModal } from "@/components/ui/draft-questions-modal";
+import type { DraftQuestion } from "@/components/ui/draft-questions-modal";
 import { toast } from "@/components/ui/toast";
 import { cn } from "@/lib/utils";
 import {
@@ -346,6 +347,21 @@ export default function QuestionsPage() {
     setError("");
   };
 
+  // Escape closes the question dialog, as it does every other dialog, and
+  // resets the form the same way the close button does.
+  const closeModalRef = useRef(closeModal);
+  useEffect(() => {
+    closeModalRef.current = closeModal;
+  });
+  useEffect(() => {
+    if (!showCreate) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeModalRef.current();
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [showCreate]);
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto space-y-8">
@@ -360,7 +376,7 @@ export default function QuestionsPage() {
             </p>
           </div>
           {canManageSelectedCourse() && (
-            <div className="flex gap-2.5">
+            <div className="flex flex-wrap gap-2.5">
               <Button
                 onClick={() => setShowCreate(true)}
                 variant="outline"
@@ -412,7 +428,7 @@ export default function QuestionsPage() {
           </div>
           {questions.length > 0 && (
             <span className="text-xs text-muted-foreground whitespace-nowrap">
-              {questions.length} questions
+              {questions.length} {questions.length === 1 ? "question" : "questions"}
             </span>
           )}
         </div>
@@ -575,12 +591,18 @@ export default function QuestionsPage() {
 
       {/* ── Create / Edit modal ── */}
       {showCreate && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <Card className="max-w-2xl w-full shadow-xl border-border/50 animate-in fade-in zoom-in-95 duration-200">
+        // z-300: the same layer as <Modal>, above the sticky header (z-100).
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm flex items-center justify-center z-300 p-4">
+          <Card
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="question-dialog-title"
+            className="max-w-2xl w-full shadow-xl border-border/50 animate-in fade-in zoom-in-95 duration-200"
+          >
             <CardHeader className="p-6 border-b border-border/40">
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <CardTitle className="text-base font-semibold">
+                  <CardTitle id="question-dialog-title" className="text-base font-semibold">
                     {editingQuestion ? "Edit question" : "Add question"}
                   </CardTitle>
                   <CardDescription className="text-xs">
@@ -670,7 +692,7 @@ export default function QuestionsPage() {
                       minLength={10}
                     />
                     <div className="flex justify-end">
-                      <span className="text-xs text-muted-foreground/50">
+                      <span className="text-xs text-subtle-foreground">
                         {newQuestion.content.length} characters
                       </span>
                     </div>
@@ -733,7 +755,7 @@ export default function QuestionsPage() {
                         className="text-xs font-medium text-muted-foreground"
                       >
                         Caption / Description{" "}
-                        <span className="text-muted-foreground/50 font-normal">
+                        <span className="text-subtle-foreground font-normal">
                           (optional)
                         </span>
                       </Label>
@@ -760,7 +782,7 @@ export default function QuestionsPage() {
                     className="text-xs font-medium text-muted-foreground"
                   >
                     Hint{" "}
-                    <span className="text-muted-foreground/50 font-normal">
+                    <span className="text-subtle-foreground font-normal">
                       (optional)
                     </span>
                   </Label>
@@ -835,7 +857,7 @@ export default function QuestionsPage() {
                     ))}
                   </div>
 
-                  <p className="text-xs text-muted-foreground/50">
+                  <p className="text-xs text-subtle-foreground">
                     Click the check button to mark the correct answer(s).
                   </p>
                 </div>

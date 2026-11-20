@@ -60,11 +60,12 @@ const CardHeader = React.forwardRef<
 ));
 CardHeader.displayName = "CardHeader";
 
+/** `as` keeps the outline in order: a card directly under the page's h1 is an h2. */
 const CardTitle = React.forwardRef<
   HTMLHeadingElement,
-  React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
-  <h3
+  React.HTMLAttributes<HTMLHeadingElement> & { as?: "h2" | "h3" | "h4" }
+>(({ className, as: Heading = "h3", ...props }, ref) => (
+  <Heading
     ref={ref}
     className={cn(
       "text-lg font-semibold leading-tight tracking-tight text-foreground",

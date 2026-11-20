@@ -53,7 +53,7 @@ export function Sidebar() {
   const items = user ? navItems[user.role] || navItems.STUDENT : guestItems;
 
   return (
-    <aside className="group fixed left-0 top-14 flex h-[calc(100vh-3.5rem)] w-[52px] flex-col overflow-hidden border-r border-border/90 transition-all duration-300 hover:w-56 hover:shadow-2xl z-40 bg-[var(--background)]">
+    <aside className="group fixed left-0 top-14 flex h-[calc(100vh-3.5rem)] w-[52px] flex-col overflow-hidden border-r border-border/90 transition-all duration-300 hover:w-56 hover:shadow-2xl focus-within:w-56 focus-within:shadow-2xl z-40 bg-[var(--background)]">
       <div className="flex h-full w-56 flex-col">
         {/* Nav items */}
         <nav className="flex flex-col gap-0.5 p-2 pt-4">
@@ -65,6 +65,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm font-medium transition-all duration-200",
                   isActive
@@ -78,7 +79,7 @@ export function Sidebar() {
                     isActive ? "text-primary" : "text-muted-foreground",
                   )}
                 />
-                <span className="whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                <span className="whitespace-nowrap opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100">
                   {item.label}
                 </span>
               </Link>

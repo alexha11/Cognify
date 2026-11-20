@@ -23,6 +23,8 @@ test('a guest takes a shared quiz graded by the server, never seeing the answer 
   expect(questionsBody).not.toContain('isCorrect');
 
   await expect(page.getByText('What is the capital of France?')).toBeVisible();
+  // The share page has no site header, so it needs its own main landmark.
+  await expect(page.getByRole('main')).toBeVisible();
   await page.getByText('Rome', { exact: true }).click();
 
   const graded = page.waitForResponse((res) =>

@@ -7,6 +7,9 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+// Imported here rather than in the root layout so only quiz pages, the one
+// place maths is rendered, pay for KaTeX's stylesheet.
+import "katex/dist/katex.min.css";
 import {
   Check,
   X,
@@ -73,7 +76,7 @@ export function QuizCard({
                   />
                 </div>
                 {question.content && (
-                  <CardTitle className="text-xl md:text-2xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0">
+                  <CardTitle as="h2" className="text-xl md:text-2xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0">
                     <ReactMarkdown
                       remarkPlugins={[remarkMath]}
                       rehypePlugins={[rehypeKatex]}
@@ -84,7 +87,7 @@ export function QuizCard({
                 )}
               </div>
             ) : (
-              <CardTitle className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
+              <CardTitle as="h2" className="text-2xl md:text-3xl font-semibold leading-snug tracking-tight text-foreground [&>p]:mb-4 [&>p:last-child]:mb-0 [&_img]:max-w-full [&_img]:rounded-xl [&_img]:shadow-sm">
                 <ReactMarkdown
                   remarkPlugins={[remarkMath]}
                   rehypePlugins={[rehypeKatex]}

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,6 @@ import { cn } from "@/lib/utils";
 import {
   Trophy,
   Medal,
-  Loader2,
   ArrowLeft,
   Crown,
   Play,
@@ -48,9 +48,7 @@ export default function RankingPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-7 w-7 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }
@@ -85,12 +83,12 @@ export default function RankingPage() {
                 </div>
               </div>
             </div>
-            <Link href={`/quiz/${courseId}`}>
-              <Button size="sm" className="rounded-xl gap-2">
+            <Button asChild size="sm" className="rounded-xl gap-2">
+              <Link href={`/quiz/${courseId}`}>
                 <Play className="h-3.5 w-3.5" />
                 Take quiz
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 
@@ -179,12 +177,12 @@ export default function RankingPage() {
                   Be the first to complete this quiz and claim the top spot!
                 </p>
               </div>
-              <Link href={`/quiz/${courseId}`}>
-                <Button className="rounded-xl mt-2">
+              <Button asChild className="rounded-xl mt-2">
+                <Link href={`/quiz/${courseId}`}>
                   <Play className="h-4 w-4 mr-2" />
                   Start quiz
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </CardContent>
           </Card>
         ) : (

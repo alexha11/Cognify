@@ -28,6 +28,12 @@ test('sign up, verify by emailed code, change the password, sign in with it', as
   await page.waitForURL(/\/dashboard/);
 
   await page.goto('/settings');
+  // The eye icons had no accessible name; they are named toggles now.
+  const reveal = page.getByRole('button', { name: 'Show password' }).first();
+  await reveal.click();
+  await expect(reveal).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#currentPw')).toHaveAttribute('type', 'text');
+
   await page.locator('#currentPw').fill(FIRST_PASSWORD);
   await page.locator('#newPw').fill(NEW_PASSWORD);
   await page.locator('#confirmPw').fill(NEW_PASSWORD);

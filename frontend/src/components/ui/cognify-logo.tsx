@@ -6,6 +6,13 @@ interface CognifyLogoProps {
   className?: string;
 }
 
+/**
+ * Both theme variants are in the markup and CSS hides one (display: none).
+ * They are deliberately not `priority`: a priority image is preloaded even
+ * while hidden, so every page fetched both. A lazy image that is not
+ * displayed is never requested, so each visitor downloads only the one they
+ * see.
+ */
 export function CognifyLogo({ size = 50, className }: CognifyLogoProps) {
   return (
     <div
@@ -18,7 +25,6 @@ export function CognifyLogo({ size = 50, className }: CognifyLogoProps) {
         width={size}
         height={size}
         className="object-contain cognify-logo-light w-full h-full"
-        priority
       />
       <Image
         src="/logo-dark.png"
@@ -26,7 +32,6 @@ export function CognifyLogo({ size = 50, className }: CognifyLogoProps) {
         width={size}
         height={size}
         className="object-contain cognify-logo-dark w-full h-full"
-        priority
       />
     </div>
   );

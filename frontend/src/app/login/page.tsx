@@ -178,13 +178,14 @@ export default function LoginPage() {
                       <Label htmlFor="password" className="text-xs font-medium text-muted-foreground">
                         {a.password}
                       </Label>
-                      <Button
-                        type="button"
-                        variant="link"
-                        className="h-auto p-0 text-xs font-medium text-primary/40 hover:text-primary transition-colors"
+                      {/* There is no self-service reset yet, so this goes to
+                          support rather than being a button that does nothing. */}
+                      <Link
+                        href="/contact"
+                        className="text-xs font-medium text-primary underline-offset-4 hover:underline"
                       >
                         {a.forgotPassword}
-                      </Button>
+                      </Link>
                     </div>
                     <Input
                       id="password"

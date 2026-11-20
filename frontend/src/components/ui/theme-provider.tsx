@@ -51,10 +51,18 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
   const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>("light");
   const [mounted, setMounted] = useState(false);
 
-  // Sync theme based on explicit preference or default to dark
+  // Sync theme based on explicit preference, defaulting to light
   useEffect(() => {
-    const isExplicit = localStorage.getItem(EXPLICIT_KEY) === "true";
-    const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    // Storage can throw (site data blocked); fall back to the default theme
+    // instead of failing the whole render, as the inline script in the layout does.
+    let isExplicit = false;
+    let stored: Theme | null = null;
+    try {
+      isExplicit = localStorage.getItem(EXPLICIT_KEY) === "true";
+      stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
+    } catch {
+      // keep the defaults
+    }
 
     let targetTheme: Theme;
     if (isExplicit && stored) {
@@ -96,8 +104,12 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
 
   const setTheme = useCallback((newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem(STORAGE_KEY, newTheme);
-    localStorage.setItem(EXPLICIT_KEY, "true");
+    try {
+      localStorage.setItem(STORAGE_KEY, newTheme);
+      localStorage.setItem(EXPLICIT_KEY, "true");
+    } catch {
+      // Not persisted, but the switch still applies to this visit.
+    }
 
     const resolved = newTheme === "system" ? getSystemTheme() : newTheme;
     setResolvedTheme(resolved);

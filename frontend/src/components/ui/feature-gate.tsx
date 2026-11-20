@@ -82,7 +82,7 @@ export function FeatureGate({
         onClick={() => setShowModal(true)}
         className="contents cursor-pointer"
       >
-        <div className="pointer-events-none opacity-80grayscale">
+        <div className="pointer-events-none opacity-80 grayscale">
           {children}
         </div>
       </div>

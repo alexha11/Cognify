@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { StatCard, EmptyState } from "@/components/ui";
+import { StatCard } from "@/components/ui/stat-card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/lib/auth";
 import { useLanguage } from "@/lib/i18n";
 import { apiGet } from "@/lib/api";
@@ -15,10 +17,10 @@ import { Course, AttemptStats } from "@/types";
 import {
   BookOpen,
   FileQuestion,
-  TrendingUp,
+  ListChecks,
+  Target,
   ArrowRight,
   Plus,
-  Loader2,
 } from "lucide-react";
 
 export default function DashboardPage() {
@@ -66,9 +68,7 @@ export default function DashboardPage() {
   if (authLoading || !user) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-7 w-7 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }
@@ -102,18 +102,21 @@ export default function DashboardPage() {
           </div>
           {(isAdmin || isInstructor) && (
             <div className="flex gap-4">
-              <Link href="/courses">
-                <Button pill size="lg">
+              <Button asChild pill size="lg">
+                <Link href="/courses">
                   <Plus className="h-5 w-5 mr-1" />
                   {d.newCourse}
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           )}
         </div>
 
-        {/* Audit Metrics */}
-        <div className="grid gap-6 md:grid-cols-4">
+        {/* Metrics. All three are StatCards: the middle one used to be
+            hand-built, with its own padding (its icon touched the card's top
+            border), label style and number size. Two columns on phones and
+            three from md, so a row is never three-quarters empty. */}
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-3">
           <StatCard
             icon={BookOpen}
             label={d.courses}
@@ -133,26 +136,13 @@ export default function DashboardPage() {
 
           {isStudent && (
             <>
-              <Card className="relative group hover:bg-secondary/20 transition-all duration-300">
-                <CardContent className="p-6 space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="h-10 w-10 flex items-center justify-center rounded-xl bg-success-subtle text-success">
-                      <TrendingUp className="h-5 w-5" />
-                    </div>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">
-                      {d.questionsAnswered}
-                    </p>
-                    <p className="text-4xl font-semibold tracking-tighter text-foreground">
-                      {stats ? stats.overall.total : "0"}
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
               <StatCard
-                icon={TrendingUp}
+                icon={ListChecks}
+                label={d.questionsAnswered}
+                value={stats ? stats.overall.total : 0}
+              />
+              <StatCard
+                icon={Target}
                 label={d.accuracy}
                 value={stats ? `${stats.overall.percentage}%` : "0%"}
               />
@@ -166,15 +156,16 @@ export default function DashboardPage() {
             <h2 className="text-2xl font-semibold tracking-tight">
               {d.yourCourses}
             </h2>
-            <Link href="/courses">
-              <Button
-                variant="link"
-                className="text-primary text-xs font-medium uppercase tracking-wide p-0 h-auto hover:opacity-70 transition-opacity"
-              >
-                View all
+            <Button
+              asChild
+              variant="link"
+              className="text-primary text-xs font-medium uppercase tracking-wide p-0 h-auto hover:opacity-70 transition-opacity"
+            >
+              <Link href="/courses">
+                {d.viewAll}
                 <ArrowRight className="h-3 w-3 ml-2" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
 
           {isLoading ? (
@@ -203,25 +194,26 @@ export default function DashboardPage() {
               {(courses || []).slice(0, 6).map((course) => (
                 <Link key={course.id} href={`/courses/${course.id}`}>
                   <Card className="group h-full hover:bg-card hover:border-primary/20 transition-all duration-300 flex flex-col">
-                    <CardHeader className="p-8">
+                    <CardHeader className="p-6 sm:p-8">
                       <div className="space-y-3">
                         <CardTitle className="text-xl font-semibold tracking-tight group-hover:text-primary transition-colors line-clamp-1">
                           {course.name}
                         </CardTitle>
                         <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed min-h-[4.5rem]">
-                          {course.description || "No description yet."}
+                          {course.description || d.noDescription}
                         </p>
                       </div>
                     </CardHeader>
-                    <CardContent className="px-8 pb-8 pt-0 mt-auto">
+                    <CardContent className="px-6 pb-6 pt-0 mt-auto sm:px-8 sm:pb-8">
+                      {/* Same words as the courses page ("materials", not "assets"). */}
                       <div className="pt-6 border-t border-border/40 flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wide">
                         <span className="flex items-center gap-2">
                           <FileQuestion className="h-3.5 w-3.5 opacity-40" />
-                          {course._count?.questions || 0} Questions
+                          {course._count?.questions || 0} {t.courses.questions}
                         </span>
                         <span className="flex items-center gap-2">
                           <BookOpen className="h-3.5 w-3.5 opacity-40" />
-                          {course._count?.materials || 0} Assets
+                          {course._count?.materials || 0} {t.courses.materials}
                         </span>
                       </div>
                     </CardContent>

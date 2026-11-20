@@ -139,6 +139,16 @@ There is **no organization/multi-tenant layer**. Authorization is per course, de
 - **lib/i18n.tsx** + **lib/translations/** — en/vi/fi; new UI strings go into all three
 - **types/** — Shared TypeScript interfaces mirroring backend DTOs
 
+### Frontend conventions (performance and UI)
+
+- **Import components from their own file** (`@/components/ui/button`). There is deliberately no `components/ui` barrel: it pulled `QuizCard` with KaTeX and react-markdown (~118 KB gzipped) into every page that imported anything from it. Heavy libraries (three.js, KaTeX, react-markdown) must only be imported where they render.
+- **The landing-page cube** (`hero-cube.tsx` → `rubiks-cube.tsx`) is a dynamic import: three.js is ~265 KB gzipped and must never be imported statically, or every page that links to `/` prefetches it. It loads only near the viewport and on a hardware GPU, pauses off screen, and uses `RoomEnvironment` for lighting (no HDR download).
+- **Page loading states use `<PageLoader />`**, never a bare spinner `<div>`: React reuses that div as the content container, which shows up as a layout shift (CLS 0.13–0.45).
+- **Dialogs use `<Modal>`**, which renders into `<body>`. Layers: sidebar `z-40`, header `z-100`, menus `z-200`, dialogs `z-300`, toasts `z-400`.
+- **Entrance animations** (`animate-in fade-in zoom-in-95 slide-in-from-*`) come from `tw-animate-css`, imported in `globals.css`.
+- **Links styled as buttons** are `<Button asChild><Link …/></Button>`; a `<button>` inside an `<a>` is invalid and two tab stops.
+- **Text colours:** de-emphasised text uses `text-subtle-foreground` (meets WCAG AA in both themes); `text-muted-foreground/50`–`/70` does not and is only for decorative icons and disabled states.
+
 ### AI Question Generation Flow
 
 1. The instructor uploads a PDF (`POST /materials/upload`): text is extracted, split into 800-character chunks (100 overlap), embedded (512-d) and stored with pgvector.

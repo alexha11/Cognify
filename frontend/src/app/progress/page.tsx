@@ -3,20 +3,19 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  StatCard,
-  SectionHeader,
-  EmptyState,
-  ProgressBar,
-} from "@/components/ui";
+import { StatCard } from "@/components/ui/stat-card";
+import { SectionHeader } from "@/components/ui/section-header";
+import { EmptyState } from "@/components/ui/empty-state";
+import { ProgressBar } from "@/components/ui/progress-bar";
 import { apiGet } from "@/lib/api";
 import { AttemptStats, Attempt, Course, CourseProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { useAuth } from "@/lib/auth";
-import { ProgressTeaser } from "@/components/ui";
+import { ProgressTeaser } from "@/components/ui/progress-teaser";
 import { useLanguage } from "@/lib/i18n";
 import {
   BarChart3,
@@ -24,7 +23,6 @@ import {
   Check,
   X,
   BookOpen,
-  Loader2,
   ArrowRight,
 } from "lucide-react";
 
@@ -84,9 +82,7 @@ export default function ProgressPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }
@@ -215,11 +211,11 @@ export default function ProgressPage() {
                     <p className="text-muted-foreground text-lg">
                       No recent activity found in your learning logs.
                     </p>
-                    <Link href="/courses">
-                      <Button pill size="xl">
+                    <Button asChild pill size="xl">
+                      <Link href="/courses">
                         Identify courses
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   </CardContent>
                 </Card>
               ) : (

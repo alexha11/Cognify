@@ -1,4 +1,8 @@
 @import "tailwindcss";
+/* Entrance utilities (animate-in, fade-in, zoom-in-95, slide-in-from-top-2…)
+   used by modals, menus, toasts and alerts. Without this import those classes
+   produced no CSS at all, so nothing animated. */
+@import "tw-animate-css";
 
 @variant dark (&:where(.dark, .dark *));
 
@@ -426,8 +430,4 @@ h1 {
 }
 .dark .cognify-logo-dark {
   display: block !important;
-}
-
-.dark img[src*="logo.png"]:not(.cognify-logo-dark) {
-  filter: invert(1) brightness(1.1);
 }
