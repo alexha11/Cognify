@@ -1,15 +1,17 @@
 "use client";
 
-import { useRef, useMemo, useEffect, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useRef, useMemo, useEffect, useState, useSyncExternalStore } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   OrbitControls,
-  Environment,
   ContactShadows,
+  Environment,
   Float,
+  PerformanceMonitor,
   RoundedBox,
 } from "@react-three/drei";
 import * as THREE from "three";
+import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 
 /* ── Constants ── */
 const SPACING = 1.08;
@@ -276,6 +278,44 @@ function CubeCluster({ isDark }: { isDark: boolean }) {
   );
 }
 
+/**
+ * Studio reflections without a download. drei's `<Environment preset>` pulled
+ * a 1.6 MB HDR file from a third-party CDN (raw.githack.com) on every visit,
+ * and another one on each theme switch. RoomEnvironment is three.js's built-in
+ * procedural studio: the same soft overhead light boxes, generated on the GPU.
+ */
+function StudioEnvironment({ intensity }: { intensity: number }) {
+  const gl = useThree((s) => s.gl);
+  // With frameloop="demand" nothing re-renders unless asked to.
+  const invalidate = useThree((s) => s.invalidate);
+
+  const texture = useMemo(() => {
+    const pmrem = new THREE.PMREMGenerator(gl);
+    const room = new RoomEnvironment();
+    const map = pmrem.fromScene(room, 0.04).texture;
+    room.dispose();
+    pmrem.dispose();
+    return map;
+  }, [gl]);
+
+  useEffect(() => () => texture.dispose(), [texture]);
+  useEffect(() => invalidate(), [texture, intensity, invalidate]);
+
+  return <Environment map={texture} environmentIntensity={intensity} />;
+}
+
+function useMediaQuery(query: string): boolean {
+  return useSyncExternalStore(
+    (onChange) => {
+      const mql = window.matchMedia(query);
+      mql.addEventListener("change", onChange);
+      return () => mql.removeEventListener("change", onChange);
+    },
+    () => window.matchMedia(query).matches,
+    () => false,
+  );
+}
+
 /* ── Dark mode detection hook ── */
 function useIsDark(): boolean {
   const [isDark, setIsDark] = useState(false);
@@ -297,12 +337,39 @@ function useIsDark(): boolean {
 }
 
 /* ── Exported component ── */
-export function RubiksCube() {
+interface RubiksCubeProps {
+  /** False while the cube is scrolled out of view: rendering stops entirely. */
+  active?: boolean;
+}
+
+export function RubiksCube({ active = true }: RubiksCubeProps) {
   const isDark = useIsDark();
+  const reducedMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  // Drag-to-rotate only with a mouse or trackpad. On touch screens the
+  // controls claim every gesture on the canvas (touch-action: none), and the
+  // cube covers most of a phone's width, so the page could not be scrolled.
+  const finePointer = useMediaQuery("(pointer: fine)");
+  // A GPU that cannot keep the scene above 24 fps gets a still cube instead
+  // of a stuttering one that also eats the battery and blocks scrolling.
+  const [struggling, setStruggling] = useState(false);
 
   return (
     <div className="w-full h-full min-h-[400px] md:min-h-[500px]">
-      <Canvas camera={{ position: [5, 4, 6], fov: 45 }}>
+      <Canvas
+        camera={{ position: [5, 4, 6], fov: 45 }}
+        // Above 1.5x the extra pixels are not visible on a soft, glossy
+        // object, but a 3x phone would shade four times as many.
+        dpr={[1, 1.5]}
+        // Off screen: no frames at all. Reduced motion or a slow GPU: a still
+        // cube that only re-renders when dragged.
+        frameloop={
+          !active ? "never" : reducedMotion || struggling ? "demand" : "always"
+        }
+      >
+        <PerformanceMonitor
+          bounds={() => [24, 1000]}
+          onDecline={() => setStruggling(true)}
+        />
         <ambientLight intensity={isDark ? 0.3 : 0.4} />
         <directionalLight
           position={[10, 10, 5]}
@@ -319,14 +386,16 @@ export function RubiksCube() {
           intensity={isDark ? 0.6 : 0.5}
           color={isDark ? "#4466ff" : "#c8a87c"}
         />
-        <Environment preset={isDark ? "night" : "studio"} />
+        <StudioEnvironment intensity={isDark ? 0.35 : 1} />
 
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          enableDamping
-          dampingFactor={0.05}
-        />
+        {finePointer && (
+          <OrbitControls
+            enableZoom={false}
+            enablePan={false}
+            enableDamping
+            dampingFactor={0.05}
+          />
+        )}
 
         <Float speed={1.2} rotationIntensity={0.3} floatIntensity={0.8}>
           <CubeCluster isDark={isDark} />

@@ -47,6 +47,7 @@ export const fi: TranslationKeys = {
   header: {
     loginButton: "Kirjaudu",
     signupButton: "Rekisteröidy",
+    accountMenu: "Tilivalikko",
   },
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -94,6 +95,8 @@ export const fi: TranslationKeys = {
       "Cognify luo yksilöllisiä arviointeja ja tarjoaa datapohjaisen oppimispolun opiskelijoille ja opettajille.",
     getStartedFree: "Aloita ilmaiseksi",
     browseCourses: "Selaa kursseja",
+    viewAll: "Näytä kaikki",
+    noDescription: "Ei vielä kuvausta.",
   },
 
   // ── Courses ──────────────────────────────────────────────────────────────────
@@ -182,6 +185,7 @@ export const fi: TranslationKeys = {
     currentPassword: "Nykyinen salasana",
     newPassword: "Uusi salasana",
     confirmPassword: "Vahvista salasana",
+    showPassword: "Näytä salasana",
     firstName: "Etunimi",
     lastName: "Sukunimi",
     emailAddress: "Sähköpostiosoite",

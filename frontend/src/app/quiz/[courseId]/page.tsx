@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { QuizCard } from "@/components/ui/quiz-card";
@@ -22,7 +23,6 @@ import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   Trophy,
-  Loader2,
   Sparkles,
   RefreshCw,
   Medal,
@@ -301,9 +301,7 @@ export default function QuizPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }
@@ -467,19 +465,20 @@ export default function QuizPage() {
                   <Sparkles className="h-4 w-4" />
                   Save progress
                 </Button>
-                <Link
-                  href={`/ranking/${courseId}`}
-                  className="w-full sm:w-auto"
+                <Button
+                  asChild
+                  size="lg"
+                  variant="outline"
+                  className="w-full rounded-xl px-8 font-semibold gap-2 border-border/80"
                 >
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    className="w-full rounded-xl px-8 font-semibold gap-2 border-border/80"
+                  <Link
+                    href={`/ranking/${courseId}`}
+                    className="w-full sm:w-auto"
                   >
                     <Medal className="h-4 w-4" />
                     View Ranking
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button
                   size="lg"
                   variant="outline"
@@ -492,18 +491,19 @@ export default function QuizPage() {
               </>
             ) : (
               <>
-                <Link
-                  href={`/ranking/${courseId}`}
-                  className="w-full sm:w-auto"
+                <Button
+                  asChild
+                  size="lg"
+                  className="w-full rounded-xl px-8 font-semibold shadow-lg shadow-primary/20 gap-2"
                 >
-                  <Button
-                    size="lg"
-                    className="w-full rounded-xl px-8 font-semibold shadow-lg shadow-primary/20 gap-2"
+                  <Link
+                    href={`/ranking/${courseId}`}
+                    className="w-full sm:w-auto"
                   >
                     <Medal className="h-4 w-4" />
                     View Ranking
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button
                   size="lg"
                   variant="outline"
@@ -513,15 +513,16 @@ export default function QuizPage() {
                   <RefreshCw className="h-4 w-4" />
                   Retry quiz
                 </Button>
-                <Link href="/courses" className="w-full sm:w-auto">
-                  <Button
-                    size="lg"
-                    variant="ghost"
-                    className="w-full rounded-xl px-6 text-muted-foreground hover:text-foreground"
-                  >
+                <Button
+                  asChild
+                  size="lg"
+                  variant="ghost"
+                  className="w-full rounded-xl px-6 text-muted-foreground hover:text-foreground"
+                >
+                  <Link href="/courses" className="w-full sm:w-auto">
                     Back to courses
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </>
             )}
           </div>
@@ -551,9 +552,9 @@ export default function QuizPage() {
       <DashboardLayout>
         <div className="text-center py-12">
           <p className="text-muted-foreground">No questions available.</p>
-          <Link href="/courses">
-            <Button className="mt-4 rounded-xl">Back to courses</Button>
-          </Link>
+          <Button asChild className="mt-4 rounded-xl">
+            <Link href="/courses">Back to courses</Link>
+          </Button>
         </div>
       </DashboardLayout>
     );

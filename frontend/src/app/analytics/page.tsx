@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { EmptyState } from "@/components/ui";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
 import { CourseAnalytics } from "@/types";
@@ -17,7 +18,6 @@ import {
   BookOpen,
   FileQuestion,
   Target,
-  Loader2,
   Award,
   Trophy,
   AlertTriangle,
@@ -70,9 +70,7 @@ export default function AnalyticsPage() {
   if (authLoading || isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-7 w-7 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }

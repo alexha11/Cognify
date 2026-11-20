@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { EmptyState } from "@/components/ui";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useAuth } from "@/lib/auth";
 import { apiGet, apiPost, apiPut, apiDelete } from "@/lib/api";
 import { useToast } from "@/components/ui/toast";
@@ -16,7 +16,7 @@ import { Course, QuizProgress } from "@/types";
 import { formatDate } from "@/lib/utils";
 import { Plus, BookOpen, FileQuestion, Loader2, X, Play, Globe, Lock, RefreshCw, Pencil, Trash2 } from "lucide-react";
 import { useLanguage } from "@/lib/i18n";
-import { EditCourseModal } from "@/components/ui";
+import { EditCourseModal } from "@/components/ui/edit-course-modal";
 
 export default function CoursesPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -152,7 +152,7 @@ export default function CoursesPage() {
         {showCreate && (
           <Card className="border border-border">
             <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-xl">{c.createNewCourse}</CardTitle>
+              <CardTitle as="h2" className="text-xl">{c.createNewCourse}</CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
@@ -269,7 +269,7 @@ export default function CoursesPage() {
                 <CardHeader>
                   <div className="flex items-start justify-between gap-4">
                     <Link href={`/courses/${course.id}`} className="flex-1">
-                      <CardTitle className="text-xl font-semibold leading-tight group-hover:text-primary transition-colors">
+                      <CardTitle as="h2" className="text-xl font-semibold leading-tight group-hover:text-primary transition-colors">
                         {course.name}
                       </CardTitle>
                     </Link>
@@ -328,8 +328,8 @@ export default function CoursesPage() {
                   </div>
 
                   {/* Quiz Action Button */}
-                  <Link href={`/quiz/${course.id}`} className="block">
-                    <Button pill size="lg" className="w-full gap-2">
+                  <Button asChild pill size="lg" className="w-full gap-2">
+                    <Link href={`/quiz/${course.id}`} className="block">
                       {user && progressMap[course.id]?.isCompleted ? (
                         <>
                           <RefreshCw className="h-4 w-4 text-xs" />
@@ -348,8 +348,8 @@ export default function CoursesPage() {
                           {c.startQuiz}
                         </>
                       )}
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
 
                   <div className="pt-4 border-t border-border">
                     <p className="text-xs text-muted-foreground font-medium uppercase tracking-wide">

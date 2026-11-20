@@ -47,6 +47,7 @@ export const vi: TranslationKeys = {
   header: {
     loginButton: "Đăng nhập",
     signupButton: "Đăng ký",
+    accountMenu: "Menu tài khoản",
   },
 
   // ── Auth ─────────────────────────────────────────────────────────────────────
@@ -94,6 +95,8 @@ export const vi: TranslationKeys = {
       "Cognify tổng hợp các bài đánh giá cá nhân hóa, cung cấp lộ trình dựa trên dữ liệu cho học sinh và giáo viên.",
     getStartedFree: "Bắt đầu miễn phí",
     browseCourses: "Duyệt khóa học",
+    viewAll: "Xem tất cả",
+    noDescription: "Chưa có mô tả.",
   },
 
   // ── Courses ──────────────────────────────────────────────────────────────────
@@ -182,6 +185,7 @@ export const vi: TranslationKeys = {
     currentPassword: "Mật khẩu hiện tại",
     newPassword: "Mật khẩu mới",
     confirmPassword: "Xác nhận mật khẩu",
+    showPassword: "Hiện mật khẩu",
     firstName: "Tên",
     lastName: "Họ",
     emailAddress: "Địa chỉ email",

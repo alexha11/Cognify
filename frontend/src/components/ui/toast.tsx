@@ -80,7 +80,7 @@ function ToastContainer({
   return (
     // Full-width on phones so long messages don't wrap into a narrow column.
     <div
-      className="pointer-events-none fixed inset-x-4 bottom-4 z-[100] flex flex-col gap-2 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-full sm:max-w-sm"
+      className="pointer-events-none fixed inset-x-4 bottom-4 z-400 flex flex-col gap-2 sm:inset-x-auto sm:bottom-6 sm:right-6 sm:w-full sm:max-w-sm"
       aria-live="polite"
     >
       {toasts.map((toast) => (

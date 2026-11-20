@@ -51,8 +51,15 @@ export function Header({ variant = "public" }: HeaderProps) {
         setOpen(false);
       }
     }
+    function handleEscape(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    document.addEventListener("keydown", handleEscape);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleEscape);
+    };
   }, []);
 
   const handleLogout = () => {
@@ -61,7 +68,7 @@ export function Header({ variant = "public" }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-100 flex h-14 items-center justify-between border-b border-border/90 bg-background/90 px-8 backdrop-blur-md">
+    <header className="sticky top-0 z-100 flex h-14 items-center justify-between border-b border-border/90 bg-background/90 px-4 sm:px-8 backdrop-blur-md">
       <div className="flex w-full items-center justify-between">
         {/* Left: Logo */}
         <div className="flex items-center gap-8">
@@ -76,38 +83,44 @@ export function Header({ variant = "public" }: HeaderProps) {
             <>
               <ThemeToggle />
               <LanguageToggle />
-              <Link href="/login">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/5"
-                >
+              <Button
+                asChild
+                size="sm"
+                variant="ghost"
+                className="rounded-full text-muted-foreground hover:text-foreground hover:bg-foreground/5"
+              >
+                <Link href="/login">
                   {h.loginButton}
-                </Button>
-              </Link>
-              <Link href="/register">
-                <Button
-                  size="sm"
-                  className="rounded-full bg-primary text-primary-foreground shadow-sm transition-all hover:bg-primary/85 hover:shadow-[0_0_20px_rgba(139,92,246,0.2)]"
-                >
+                </Link>
+              </Button>
+              <Button
+                asChild
+                size="sm"
+                className="rounded-full shadow-sm"
+              >
+                <Link href="/register">
                   {h.signupButton}
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             </>
           ) : user ? (
             <div className="relative flex items-center gap-3" ref={ref}>
               <ThemeToggle />
               <LanguageToggle />
               <button
+                type="button"
                 onClick={() => setOpen((v) => !v)}
+                aria-label={h.accountMenu}
+                aria-haspopup="menu"
+                aria-expanded={open}
                 className={cn(
                   "flex items-center gap-3 rounded-xl bg-card px-3 py-2 transition-all duration-200",
-                  "hover:border-foreground/20 hover:shadow-sm",
-                  open && "border-foreground/20 shadow-sm",
+                  "hover:shadow-sm",
+                  open && "shadow-sm",
                 )}
               >
                 <Avatar className="h-7 w-7 shrink-0 border border-border/60">
-                  <AvatarFallback className="bg-background text-xs font-bold text-primary/70">
+                  <AvatarFallback className="bg-background text-xs font-bold text-primary">
                     {getInitials(user.firstName, user.lastName)}
                   </AvatarFallback>
                 </Avatar>

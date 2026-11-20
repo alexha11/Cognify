@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -140,9 +141,7 @@ export default function SettingsPage() {
   if (authLoading || isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-7 w-7 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }
@@ -244,7 +243,7 @@ export default function SettingsPage() {
                 disabled
                 className="h-9 rounded-xl text-sm bg-muted/40"
               />
-              <p className="text-xs text-muted-foreground/60">{s.emailCannotBeChanged}</p>
+              <p className="text-xs text-subtle-foreground">{s.emailCannotBeChanged}</p>
             </div>
 
             <div className="space-y-1.5">
@@ -267,7 +266,7 @@ export default function SettingsPage() {
                       : t.auth.student}
                 </span>
               </div>
-              <p className="text-xs text-muted-foreground/60">
+              <p className="text-xs text-subtle-foreground">
                 {s.roleDescriptions[user.role]}
               </p>
             </div>
@@ -403,14 +402,16 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setShowCurrentPw(!showCurrentPw)}
-                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                    aria-label={s.showPassword}
+                    aria-pressed={showCurrentPw}
+                    className="absolute right-1 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                   >
                     {showCurrentPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                   </button>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div className="space-y-1.5">
                   <Label htmlFor="newPw" className="text-xs font-medium text-muted-foreground">
                     {s.newPassword}
@@ -427,7 +428,9 @@ export default function SettingsPage() {
                     <button
                       type="button"
                       onClick={() => setShowNewPw(!showNewPw)}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                      aria-label={s.showPassword}
+                      aria-pressed={showNewPw}
+                      className="absolute right-1 top-1/2 -translate-y-1/2 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                     >
                       {showNewPw ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
                     </button>

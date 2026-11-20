@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "./button";
@@ -29,6 +30,10 @@ interface ModalProps {
  * The single modal shell. Previously each modal built its own overlay, which is
  * why z-index, backdrop colour, radius and shadow all disagreed — and why none
  * of them closed on Escape or locked body scroll.
+ *
+ * It renders into document.body, above the sticky header (z-100) and its menus
+ * (z-200). Rendered in place at z-50 it sat underneath the header, which stayed
+ * bright and clickable over the backdrop.
  */
 export function Modal({
   open,
@@ -45,11 +50,22 @@ export function Modal({
   const descriptionId = React.useId();
   const panelRef = React.useRef<HTMLDivElement>(null);
 
+  // Callers pass inline arrows, so onClose changes identity on every parent
+  // render. Reading it through a ref keeps the effect below tied to `open`
+  // alone; otherwise any re-render while open pulled focus back to the panel,
+  // out of whatever field the user was typing in.
+  const onCloseRef = React.useRef(onClose);
+  const dismissableRef = React.useRef(dismissable);
+  React.useEffect(() => {
+    onCloseRef.current = onClose;
+    dismissableRef.current = dismissable;
+  });
+
   React.useEffect(() => {
     if (!open) return;
 
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && dismissable) onClose();
+      if (e.key === "Escape" && dismissableRef.current) onCloseRef.current();
     };
     document.addEventListener("keydown", onKeyDown);
 
@@ -58,19 +74,25 @@ export function Modal({
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
 
-    // Move focus into the dialog so keyboard users don't start behind it.
+    // Move focus into the dialog so keyboard users don't start behind it, and
+    // hand it back to the control that opened it when the dialog closes.
+    const opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
     panelRef.current?.focus();
 
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
+      if (opener?.isConnected) opener.focus();
     };
-  }, [open, dismissable, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+  return createPortal(
+    <div className="fixed inset-0 z-300 flex items-center justify-center p-4">
       <div
         className="absolute inset-0 bg-foreground/40 backdrop-blur-sm animate-in fade-in duration-150"
         onClick={dismissable ? onClose : undefined}
@@ -133,6 +155,7 @@ export function Modal({
           </div>
         )}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

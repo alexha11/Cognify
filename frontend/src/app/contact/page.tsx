@@ -116,7 +116,7 @@ export default function ContactPage() {
             </div>
             <h1 className="text-4xl md:text-6xl font-semibold tracking-tight text-foreground">
               {co.title}{" "}
-              <span className="text-muted-foreground/60">{co.titleHighlight}</span>
+              <span className="text-subtle-foreground">{co.titleHighlight}</span>
             </h1>
             <p className="text-base md:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto font-normal">
               {co.subtitle}
@@ -306,19 +306,19 @@ export default function ContactPage() {
 
       <footer className="border-t border-border/30 z-10 relative">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-8 py-6 sm:flex-row">
-          <p className="text-xs text-muted-foreground/50">
+          <p className="text-xs text-subtle-foreground">
             {t.common.copyright}
           </p>
           <div className="flex items-center gap-6">
             <Link
               href="/"
-              className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
+              className="text-xs text-subtle-foreground hover:text-foreground transition-colors"
             >
               {co.home}
             </Link>
             <Link
               href="/courses"
-              className="text-xs text-muted-foreground/60 hover:text-foreground transition-colors"
+              className="text-xs text-subtle-foreground hover:text-foreground transition-colors"
             >
               {t.home.footerCourses}
             </Link>

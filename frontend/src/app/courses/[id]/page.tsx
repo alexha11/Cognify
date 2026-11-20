@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { DashboardLayout } from "@/components/layout";
+import { PageLoader } from "@/components/ui/page-loader";
 import {
   Card,
   CardContent,
@@ -34,14 +35,14 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { FeatureGate } from "@/components/ui/feature-gate";
+import { GenerateQuestionsModal } from "@/components/ui/generate-questions-modal";
 import {
-  FeatureGate,
-  GenerateQuestionsModal,
   DraftQuestionsModal,
-  EditCourseModal,
-  EditQuestionModal,
-} from "@/components/ui";
-import type { DraftQuestion } from "@/components/ui";
+  type DraftQuestion,
+} from "@/components/ui/draft-questions-modal";
+import { EditCourseModal } from "@/components/ui/edit-course-modal";
+import { EditQuestionModal } from "@/components/ui/edit-question-modal";
 import { toast } from "@/components/ui/toast";
 
 export default function CourseDetailPage() {
@@ -316,9 +317,7 @@ export default function CourseDetailPage() {
   if (isLoading) {
     return (
       <DashboardLayout>
-        <div className="flex justify-center items-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
+        <PageLoader />
       </DashboardLayout>
     );
   }
@@ -329,29 +328,37 @@ export default function CourseDetailPage() {
     <DashboardLayout>
       <div className="max-w-7xl mx-auto space-y-8">
         {/* ── Breadcrumb ── */}
-        <div className="flex items-center justify-between">
-          <nav className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <Link href="/" className="hover:text-foreground transition-colors">
+        {/* min-w-0 lets the course name truncate; without it the row kept its
+            full width and pushed the Back button ~100px off a phone screen. */}
+        <div className="flex items-center justify-between gap-3">
+          <nav
+            aria-label="Breadcrumb"
+            className="flex min-w-0 items-center gap-1.5 text-sm text-muted-foreground"
+          >
+            <Link href="/" className="shrink-0 hover:text-foreground transition-colors">
               Cognify
             </Link>
-            <span className="opacity-40">/</span>
+            <span className="opacity-40" aria-hidden="true">/</span>
             <Link
               href="/courses"
-              className="hover:text-foreground transition-colors"
+              className="shrink-0 hover:text-foreground transition-colors"
             >
               Courses
             </Link>
-            <span className="opacity-40">/</span>
-            <span className="text-foreground font-medium truncate max-w-[200px]">
+            <span className="opacity-40" aria-hidden="true">/</span>
+            <span
+              aria-current="page"
+              className="min-w-0 text-foreground font-medium truncate max-w-[200px]"
+            >
               {course.name}
             </span>
           </nav>
-          <Link href="/courses">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-sm">
+          <Button asChild variant="ghost" size="sm" className="shrink-0 gap-1.5 text-sm">
+            <Link href="/courses">
               <ArrowLeft className="h-3.5 w-3.5" />
               Back
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </div>
 
         {/* ── Course header card ── */}
@@ -359,7 +366,7 @@ export default function CourseDetailPage() {
           <CardContent className="p-0">
             <div className="flex flex-col lg:flex-row divide-y lg:divide-y-0 lg:divide-x divide-border/40">
               {/* Left: course info + CTAs */}
-              <div className="p-8 md:p-10 lg:max-w-xl w-full space-y-6">
+              <div className="p-6 sm:p-8 md:p-10 lg:max-w-xl w-full space-y-6">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3 flex-wrap">
                     <Badge
@@ -446,16 +453,17 @@ export default function CourseDetailPage() {
                     </Button>
                   )}
                   {approvedQuestions.length > 0 && (
-                    <Link href={`/ranking/${course.id}`}>
-                      <Button
-                        variant="outline"
-                        size="default"
-                        className="rounded-xl gap-2 px-5"
-                      >
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="default"
+                      className="rounded-xl gap-2 px-5"
+                    >
+                      <Link href={`/ranking/${course.id}`}>
                         <Trophy className="h-3.5 w-3.5 text-muted-foreground" />
                         Leaderboard
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
                   )}
                   {canEditCourse && (
                     <>
@@ -645,7 +653,7 @@ export default function CourseDetailPage() {
                       No approved questions yet.
                     </p>
                     {canEdit && (
-                      <p className="text-xs text-muted-foreground/60 mt-1">
+                      <p className="text-xs text-subtle-foreground mt-1">
                         Generate questions with AI or add them manually.
                       </p>
                     )}
@@ -837,7 +845,7 @@ export default function CourseDetailPage() {
                     <Sparkles className="h-4 w-4" />
                     Generate with AI
                   </Button>
-                  <p className="text-center text-xs text-muted-foreground/60">
+                  <p className="text-center text-xs text-subtle-foreground">
                     Creates questions from your PDF material
                   </p>
                 </div>

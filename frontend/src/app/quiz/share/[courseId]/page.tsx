@@ -10,7 +10,8 @@ import { GuestNameModal } from "@/components/ui/guest-name-modal";
 import { apiGet, apiPost } from "@/lib/api";
 import { Question, AttemptResult, CheckAnswerResult } from "@/types";
 import { toAttemptResult } from "@/lib/quiz";
-import { Loader2, X, Trophy, RefreshCw, Share2, Medal } from "lucide-react";
+import { X, Trophy, RefreshCw, Share2, Medal } from "lucide-react";
+import { PageLoader } from "@/components/ui/page-loader";
 
 interface PublicCourseData {
   course: { id: string; name: string; description: string | null };
@@ -165,14 +166,7 @@ export default function SharedQuizPage() {
 
   // ── Loading ───────────────────────────────────────────────────────────────
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Loading shared quiz…</p>
-        </div>
-      </div>
-    );
+    return <PageLoader fullScreen message="Loading shared quiz…" />;
   }
 
   // ── Empty ─────────────────────────────────────────────────────────────────
@@ -186,9 +180,9 @@ export default function SharedQuizPage() {
             <p className="text-muted-foreground">
               This quiz doesn&apos;t exist or has no questions yet.
             </p>
-            <Link href="/">
-              <Button variant="outline">Go to Cognify</Button>
-            </Link>
+            <Button asChild variant="outline">
+              <Link href="/">Go to Cognify</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
@@ -202,7 +196,7 @@ export default function SharedQuizPage() {
 
     return (
       <div className="min-h-screen bg-background">
-        <div className="max-w-2xl mx-auto px-6 py-16">
+        <main className="max-w-2xl mx-auto px-6 py-16">
           <div className="flex items-center gap-2.5 mb-3">
             <Share2 className="h-4 w-4 text-muted-foreground/60" />
             <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
@@ -257,12 +251,12 @@ export default function SharedQuizPage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-2 justify-center">
-                <Link href={`/ranking/${courseId}`}>
-                  <Button size="lg" className="rounded-xl w-full">
+                <Button asChild size="lg" className="rounded-xl w-full">
+                  <Link href={`/ranking/${courseId}`}>
                     <Medal className="h-4 w-4 mr-2" />
                     View Ranking
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
                 <Button
                   onClick={handleRetry}
                   variant="outline"
@@ -272,15 +266,16 @@ export default function SharedQuizPage() {
                   <RefreshCw className="h-4 w-4 mr-2" />
                   Try again
                 </Button>
-                <Link href="/">
-                  <Button
-                    size="lg"
-                    variant="ghost"
-                    className="rounded-xl w-full"
-                  >
+                <Button
+                  asChild
+                  size="lg"
+                  variant="ghost"
+                  className="rounded-xl w-full"
+                >
+                  <Link href="/">
                     Explore Cognify
-                  </Button>
-                </Link>
+                  </Link>
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -303,7 +298,7 @@ export default function SharedQuizPage() {
             </Link>{" "}
             · Create your own quizzes for free
           </p>
-        </div>
+        </main>
       </div>
     );
   }
@@ -311,7 +306,7 @@ export default function SharedQuizPage() {
   // ── Quiz screen ───────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-3xl mx-auto px-6 py-12 space-y-8">
+      <main className="max-w-3xl mx-auto px-6 py-12 space-y-8">
         {/* Header */}
         <div className="space-y-1.5">
           <div className="flex items-center gap-2.5">
@@ -387,7 +382,7 @@ export default function SharedQuizPage() {
             · Create your own quizzes for free
           </p>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
