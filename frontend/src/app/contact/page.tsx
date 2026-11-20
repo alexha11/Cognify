@@ -1,5 +1,6 @@
 "use client";
 
+import { getApiErrorMessage } from "@/lib/error-utils";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
@@ -47,15 +48,14 @@ export default function ContactPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      const fullName = [user.firstName, user.lastName]
-        .filter(Boolean)
-        .join(" ");
-      if (fullName && !name) setName(fullName);
-      if (user.email && !email) setEmail(user.email);
-    }
-  }, [user]);
+  // Prefill from the signed-in user once, without overwriting what was typed.
+  const [prefilledFor, setPrefilledFor] = useState<string | null>(null);
+  if (user && prefilledFor !== user.id) {
+    setPrefilledFor(user.id);
+    const fullName = [user.firstName, user.lastName].filter(Boolean).join(" ");
+    if (fullName && !name) setName(fullName);
+    if (user.email && !email) setEmail(user.email);
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,12 +76,10 @@ export default function ContactPage() {
       setIsSubmitting(false);
       setSubmitted(true);
       toast.success(co.messageSent);
-    } catch (err: any) {
+    } catch (err) {
       setIsSubmitting(false);
       toast.error(
-        err?.response?.data?.message ||
-          err?.message ||
-          "Failed to send message. Please try again.",
+        getApiErrorMessage(err, "Failed to send message. Please try again."),
       );
     }
   };

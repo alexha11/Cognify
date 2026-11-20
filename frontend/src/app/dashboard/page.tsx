@@ -42,21 +42,16 @@ export default function DashboardPage() {
       if (authLoading || !user) return;
 
       try {
-        const promises: Promise<any>[] = [apiGet<Course[]>("/courses")];
+        const [coursesData, statsData] = await Promise.all([
+          apiGet<Course[]>("/courses"),
+          user.role === "STUDENT"
+            ? apiGet<AttemptStats>("/attempts/stats")
+            : Promise.resolve(null),
+        ]);
 
-        if (user.role === "STUDENT") {
-          promises.push(apiGet<AttemptStats>("/attempts/stats"));
-        }
-
-        const results = await Promise.all(promises);
-
-        const coursesData = results[0];
-        setCourses(
-          Array.isArray(coursesData) ? coursesData : coursesData?.data || [],
-        );
-
-        if (user.role === "STUDENT" && results[1]) {
-          setStats(results[1]);
+        setCourses(Array.isArray(coursesData) ? coursesData : []);
+        if (statsData) {
+          setStats(statsData);
         }
       } catch (error) {
         console.error("Failed to fetch dashboard data", error);

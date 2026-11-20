@@ -3,9 +3,8 @@
 import {
   createContext,
   useContext,
-  useEffect,
-  useState,
   useCallback,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { en } from "./translations/en";
@@ -26,6 +25,31 @@ interface LanguageContextType {
 const translations: Record<Language, TranslationKeys> = { en, vi, fi };
 
 const STORAGE_KEY = "cognify-lang";
+const CHANGE_EVENT = "cognify-language-change";
+
+/** Used only when storage writes fail, so switching still works for the session. */
+let fallbackLanguage: Language | null = null;
+
+function readStoredLanguage(): Language {
+  if (fallbackLanguage) return fallbackLanguage;
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "en" || stored === "vi" || stored === "fi") return stored;
+  } catch {
+    // Storage blocked (private mode): fall back to the default.
+  }
+  return "en";
+}
+
+/** Re-render on changes from this tab (custom event) or another tab (storage). */
+function subscribe(onChange: () => void): () => void {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(CHANGE_EVENT, onChange);
+  return () => {
+    window.removeEventListener("storage", onChange);
+    window.removeEventListener(CHANGE_EVENT, onChange);
+  };
+}
 
 // ── Context ───────────────────────────────────────────────────────────────────
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -36,25 +60,22 @@ interface LanguageProviderProps {
 }
 
 export function LanguageProvider({ children }: LanguageProviderProps) {
-  const [language, setLanguageState] = useState<Language>("en");
-
-  // Hydrate from localStorage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY) as Language | null;
-      if (stored && (stored === "en" || stored === "vi" || stored === "fi")) {
-        setLanguageState(stored);
-      }
-    } catch {
-      // localStorage unavailable (SSR safety)
-    }
-  }, []);
+  // The server renders English; the browser then switches to the stored choice.
+  const language = useSyncExternalStore<Language>(
+    subscribe,
+    readStoredLanguage,
+    () => "en",
+  );
 
   const setLanguage = useCallback((lang: Language) => {
-    setLanguageState(lang);
     try {
       localStorage.setItem(STORAGE_KEY, lang);
-    } catch {}
+      fallbackLanguage = null;
+    } catch {
+      // Storage blocked: keep the choice in memory for this session.
+      fallbackLanguage = lang;
+    }
+    window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
   const t = translations[language];

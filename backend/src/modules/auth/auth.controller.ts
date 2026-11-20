@@ -3,6 +3,7 @@ import {
   Post,
   Put,
   Get,
+  Delete,
   Body,
   UseGuards,
   HttpCode,
@@ -19,10 +20,13 @@ import {
   ResendCodeDto,
   UpdateProfileDto,
   SessionResponseDto,
+  ChangePasswordDto,
+  DeleteAccountDto,
 } from './dto';
 import { JwtAuthGuard } from '../../common/guards';
 import { CurrentUser } from '../../common/decorators';
 import type { AuthenticatedUser } from '../auth/interfaces';
+import { GoogleConfiguredGuard } from './strategies';
 import type { GoogleProfilePayload } from './strategies';
 import { AuthGuard } from '@nestjs/passport';
 import { ConfigService } from '@nestjs/config';
@@ -74,6 +78,13 @@ export class AuthController {
 
   private setAuthCookie(res: Response, token: string): void {
     res.cookie(AUTH_COOKIE_NAME, token, this.authCookieOptions());
+  }
+
+  /** Options (minus maxAge) must match those used to set it, or the browser keeps it. */
+  private clearAuthCookie(res: Response): void {
+    const options = this.authCookieOptions();
+    delete options.maxAge;
+    res.clearCookie(AUTH_COOKIE_NAME, options);
   }
 
   /**
@@ -143,11 +154,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   logout(@Res({ passthrough: true }) res: Response): { message: string } {
-    // Options (minus maxAge) must match those used to set it or the browser
-    // will not remove the cookie.
-    const options = this.authCookieOptions();
-    delete options.maxAge;
-    res.clearCookie(AUTH_COOKIE_NAME, options);
+    this.clearAuthCookie(res);
     return { message: 'Signed out' };
   }
 
@@ -181,11 +188,42 @@ export class AuthController {
   }
 
   /**
+   * Change password
+   * PUT /auth/password
+   */
+  @Put('password')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  changePassword(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ChangePasswordDto,
+  ): Promise<{ message: string }> {
+    return this.authService.changePassword(user.userId, dto);
+  }
+
+  /**
+   * Delete the account and sign out
+   * DELETE /auth/account
+   */
+  @Delete('account')
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } })
+  async deleteAccount(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: DeleteAccountDto,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<{ message: string }> {
+    const result = await this.authService.deleteAccount(user.userId, dto);
+    this.clearAuthCookie(res);
+    return result;
+  }
+
+  /**
    * Initiate Google OAuth flow
    * GET /auth/google
    */
   @Get('google')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleConfiguredGuard, AuthGuard('google'))
   googleAuth(): void {
     // Passport redirects to Google automatically
   }
@@ -195,7 +233,7 @@ export class AuthController {
    * GET /auth/google/callback
    */
   @Get('google/callback')
-  @UseGuards(AuthGuard('google'))
+  @UseGuards(GoogleConfiguredGuard, AuthGuard('google'))
   async googleCallback(
     @Req() req: Request,
     @Res() res: Response,

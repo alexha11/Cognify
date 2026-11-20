@@ -2,10 +2,15 @@ import {
   IsNotEmpty,
   IsString,
   IsOptional,
-  IsNumber,
+  IsInt,
+  IsIn,
   Min,
   Max,
+  MaxLength,
 } from 'class-validator';
+import { Transform } from 'class-transformer';
+
+export const DIFFICULTIES = ['EASY', 'MEDIUM', 'HARD'] as const;
 
 export class GenerateQuestionsDto {
   @IsString()
@@ -14,19 +19,24 @@ export class GenerateQuestionsDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(500)
   topic: string;
 
-  @IsNumber()
+  @IsInt()
   @IsOptional()
   @Min(1)
   @Max(10)
   count?: number = 5;
 
+  /** Must belong to `courseId`. */
   @IsString()
   @IsOptional()
   materialId?: string;
 
-  @IsString()
   @IsOptional()
-  difficulty?: string;
+  @Transform(({ value }: { value: unknown }) =>
+    typeof value === 'string' ? value.toUpperCase() : value,
+  )
+  @IsIn(DIFFICULTIES)
+  difficulty?: (typeof DIFFICULTIES)[number];
 }

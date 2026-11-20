@@ -1,26 +1,36 @@
 import {
+  BadRequestException,
   Injectable,
+  Logger,
   NotFoundException,
-  ForbiddenException,
 } from '@nestjs/common';
+import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../prisma';
 import { CreateCourseDto, UpdateCourseDto } from './dto';
-import { Role } from '@prisma/client';
 import { USER_SUMMARY_SELECT } from '../../common/constants';
+import {
+  CourseAccessService,
+  stripAnswerKey,
+  type Viewer,
+} from '../../common/access';
+import { SupabaseStorageService } from '../storage';
 
 /** Reusable Prisma include for course responses with creator and counts. */
 const COURSE_WITH_CREATOR_AND_COUNTS = {
   createdBy: { select: USER_SUMMARY_SELECT },
   _count: { select: { materials: true, questions: true } },
-} as const;
+} satisfies Prisma.CourseInclude;
 
 @Injectable()
 export class CoursesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(CoursesService.name);
 
-  /**
-   * Create a new course
-   */
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: CourseAccessService,
+    private readonly storage: SupabaseStorageService,
+  ) {}
+
   async create(dto: CreateCourseDto, userId: string) {
     return this.prisma.course.create({
       data: {
@@ -34,227 +44,214 @@ export class CoursesService {
   }
 
   /**
-   * Get all courses
-   * Students only see published courses
+   * Courses the caller may see: public ones for everyone, plus their own for
+   * instructors, and every course for admins.
    */
-  async findAll(userRole?: Role, userId?: string) {
-    const publishedFilter =
-      userRole === Role.STUDENT || !userRole ? { isPublic: true } : {};
-
-    const whereClause = {
-      ...publishedFilter,
-      OR: [{ isPublic: true }, ...(userId ? [{ createdById: userId }] : [])],
-    };
+  async findAll(user?: Viewer) {
+    let where: Prisma.CourseWhereInput = { isPublic: true };
+    if (user?.role === Role.ADMIN) {
+      where = {};
+    } else if (user?.role === Role.INSTRUCTOR) {
+      where = { OR: [{ isPublic: true }, { createdById: user.userId }] };
+    }
 
     return this.prisma.course.findMany({
-      where: whereClause,
+      where,
       include: COURSE_WITH_CREATOR_AND_COUNTS,
       orderBy: { createdAt: 'desc' },
     });
   }
 
   /**
-   * Get single course by ID
+   * One course with its materials and questions. People who can manage the
+   * course get every question with its answer key; everyone else gets
+   * approved questions without `isCorrect`.
    */
-  async findOne(id: string, userRole?: Role) {
-    const course = await this.prisma.course.findFirst({
-      where: {
-        id,
-        ...(userRole === Role.STUDENT || !userRole ? { isPublic: true } : {}),
-      },
+  async findOne(id: string, user?: Viewer) {
+    const course = await this.prisma.course.findUnique({
+      where: { id },
       include: {
         createdBy: { select: USER_SUMMARY_SELECT },
-        materials: {
-          orderBy: { createdAt: 'desc' },
-        },
+        materials: { orderBy: { createdAt: 'desc' } },
         questions: {
-          where:
-            userRole === Role.STUDENT || !userRole ? { approved: true } : {},
-          include: {
-            answers: true,
-          },
+          include: { answers: true },
           orderBy: { createdAt: 'desc' },
         },
-      } as any,
+        prerequisites: {
+          include: { requiresCourse: { select: { id: true, name: true } } },
+        },
+      },
     });
 
-    if (!course) {
+    if (!course || !this.access.canView(course, user)) {
       throw new NotFoundException('Course not found');
     }
 
+    const canManage = this.access.canManage(course, user);
+    const prerequisites = course.prerequisites.map((p) => p.requiresCourse);
+
     return {
       ...course,
-      prerequisitesMet: true,
+      questions: canManage
+        ? course.questions
+        : course.questions.filter((q) => q.approved).map(stripAnswerKey),
+      prerequisites,
+      canManage,
+      prerequisitesMet: await this.prerequisitesMet(
+        prerequisites.map((p) => p.id),
+        user?.userId,
+      ),
     };
   }
 
-  /**
-   * Update course
-   * Only creator or admin can update
-   */
-  async update(
-    id: string,
-    dto: UpdateCourseDto,
-    userId: string,
-    userRole: Role,
-  ) {
-    await this.verifyCourseAccess(id, userId, userRole);
+  async update(id: string, dto: UpdateCourseDto, user: Viewer) {
+    await this.access.assertCanManage(id, user);
 
     return this.prisma.course.update({
       where: { id },
       data: dto,
-      include: {
-        createdBy: { select: USER_SUMMARY_SELECT },
-      },
+      include: COURSE_WITH_CREATOR_AND_COUNTS,
     });
   }
 
-  /**
-   * Toggle course visibility (public/private)
-   * Instructors can only change their own courses
-   */
   async updateVisibility(
     id: string,
     isPublic: boolean,
-    userId: string,
-    role: Role,
+    user: Viewer,
   ): Promise<{ id: string; name: string; isPublic: boolean }> {
-    await this.verifyCourseAccess(id, userId, role);
+    await this.access.assertCanManage(id, user);
 
     const updated = await this.prisma.course.update({
       where: { id },
       data: { isPublic },
     });
 
-    return {
-      id: updated.id,
-      name: updated.name,
-      isPublic: updated.isPublic,
-    };
+    return { id: updated.id, name: updated.name, isPublic: updated.isPublic };
   }
 
   /**
-   * Check if user has completed all prerequisites for a course.
+   * Deletes the course (the database cascades to everything under it) and
+   * then removes its stored files, which the cascade cannot reach.
    */
-  checkPrerequisites(): Promise<boolean> {
-    return Promise.resolve(true);
+  async remove(id: string, user: Viewer): Promise<{ message: string }> {
+    await this.access.assertCanManage(id, user);
+
+    const [materials, images] = await Promise.all([
+      this.prisma.material.findMany({
+        where: { courseId: id },
+        select: { fileUrl: true },
+      }),
+      this.prisma.question.findMany({
+        where: { courseId: id, imageUrl: { not: null } },
+        select: { imageUrl: true },
+      }),
+    ]);
+
+    await this.prisma.course.delete({ where: { id } });
+
+    const urls = [
+      ...materials.map((m) => m.fileUrl),
+      ...images.map((q) => q.imageUrl as string),
+    ];
+    for (const url of urls) {
+      await this.storage.deleteFile(url);
+    }
+    if (urls.length > 0) {
+      this.logger.log(`Removed ${urls.length} stored file(s) for course ${id}`);
+    }
+
+    return { message: 'Course deleted successfully' };
   }
 
-  /**
-   * Add a prerequisite to a course
-   */
+  /** True when the learner has completed every course in `requiredIds`. */
+  async prerequisitesMet(
+    requiredIds: string[],
+    userId?: string,
+  ): Promise<boolean> {
+    if (requiredIds.length === 0) return true;
+    if (!userId) return false;
+
+    const completed = await this.prisma.quizProgress.count({
+      where: { userId, courseId: { in: requiredIds }, isCompleted: true },
+    });
+    return completed === requiredIds.length;
+  }
+
   async addPrerequisite(
     courseId: string,
     prerequisiteId: string,
-    userId: string,
-    role: Role,
+    user: Viewer,
   ) {
-    // Verify course access
-    await this.verifyCourseAccess(courseId, userId, role);
-
-    // Verify prerequisite exists
-    const prerequisite = await this.prisma.course.findFirst({
-      where: { id: prerequisiteId },
-    });
-
-    if (!prerequisite) {
-      throw new NotFoundException('Prerequisite course not found');
-    }
+    await this.access.assertCanManage(courseId, user);
 
     if (courseId === prerequisiteId) {
-      throw new ForbiddenException(
+      throw new BadRequestException(
         'A course cannot be a prerequisite of itself',
       );
     }
 
-    return (this.prisma as any).coursePrerequisite.upsert({
+    // The required course must be one the owner can actually see.
+    await this.access.assertCanView(prerequisiteId, user);
+
+    if (await this.createsCycle(courseId, prerequisiteId)) {
+      throw new BadRequestException(
+        'This would create a circular chain of prerequisites',
+      );
+    }
+
+    return this.prisma.coursePrerequisite.upsert({
       where: {
         courseId_requiresCourseId: {
           courseId,
           requiresCourseId: prerequisiteId,
         },
       },
-      create: {
-        courseId,
-        requiresCourseId: prerequisiteId,
-      },
+      create: { courseId, requiresCourseId: prerequisiteId },
       update: {},
     });
   }
 
-  /**
-   * Remove a prerequisite from a course
-   */
   async removePrerequisite(
     courseId: string,
     prerequisiteId: string,
-    userId: string,
-    role: Role,
-  ) {
-    await this.verifyCourseAccess(courseId, userId, role);
+    user: Viewer,
+  ): Promise<{ message: string }> {
+    await this.access.assertCanManage(courseId, user);
 
-    await (this.prisma as any).coursePrerequisite.delete({
-      where: {
-        courseId_requiresCourseId: {
-          courseId,
-          requiresCourseId: prerequisiteId,
-        },
-      },
+    const { count } = await this.prisma.coursePrerequisite.deleteMany({
+      where: { courseId, requiresCourseId: prerequisiteId },
     });
+    if (count === 0) {
+      throw new NotFoundException('Prerequisite not found');
+    }
 
     return { message: 'Prerequisite removed' };
   }
 
   /**
-   * Verify if user can manage a course.
-   * @returns The course if access is granted.
-   * @throws NotFoundException if course doesn't exist.
-   * @throws ForbiddenException if user lacks permission.
+   * Adding "courseId requires prerequisiteId" closes a loop if courseId is
+   * already reachable from prerequisiteId by following "requires" edges.
    */
-  private async verifyCourseAccess(
+  private async createsCycle(
     courseId: string,
-    userId: string,
-    role: Role,
-  ) {
-    const course = await this.prisma.course.findFirst({
-      where: { id: courseId },
-    });
+    prerequisiteId: string,
+  ): Promise<boolean> {
+    const seen = new Set<string>();
+    let frontier = [prerequisiteId];
 
-    if (!course) {
-      throw new NotFoundException('Course not found');
+    while (frontier.length > 0) {
+      if (frontier.includes(courseId)) return true;
+      frontier.forEach((id) => seen.add(id));
+
+      const edges = await this.prisma.coursePrerequisite.findMany({
+        where: { courseId: { in: frontier } },
+        select: { requiresCourseId: true },
+      });
+      frontier = [...new Set(edges.map((e) => e.requiresCourseId))].filter(
+        (id) => !seen.has(id),
+      );
     }
 
-    if (role !== Role.ADMIN && course.createdById !== userId) {
-      throw new ForbiddenException('Not authorized to manage this course');
-    }
-
-    return course;
-  }
-
-  /**
-   * Delete course
-   */
-  async remove(
-    id: string,
-    userId?: string,
-    role?: Role,
-  ): Promise<{ message: string }> {
-    const course = await this.prisma.course.findFirst({
-      where: { id },
-    });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
-
-    if (role && role !== Role.ADMIN && course.createdById !== userId) {
-      throw new ForbiddenException('Not authorized to delete this course');
-    }
-
-    await this.prisma.course.delete({
-      where: { id },
-    });
-
-    return { message: 'Course deleted successfully' };
+    return false;
   }
 }

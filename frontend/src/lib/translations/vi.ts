@@ -204,6 +204,8 @@ export const vi: TranslationKeys = {
     profileFailed: "Lưu hồ sơ thất bại. Vui lòng thử lại.",
     passwordUpdated: "Đã cập nhật mật khẩu thành công.",
     passwordIncorrect: "Mật khẩu hiện tại không đúng hoặc cập nhật thất bại.",
+    googleNoPassword: "Bạn đăng nhập bằng Google nên không có mật khẩu để thay đổi.",
+    deleteFailed: "Không thể xóa tài khoản của bạn. Vui lòng thử lại.",
     passwordTooShort: "Mật khẩu phải có ít nhất 8 ký tự.",
     passwordsNoMatch: "Mật khẩu không khớp.",
     passwordStrong: "Mật khẩu mạnh",

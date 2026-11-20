@@ -23,10 +23,15 @@ export interface GoogleProfilePayload {
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(configService: ConfigService<Config>) {
+    // passport-oauth2 throws on an empty client id, which used to crash the
+    // whole API at boot. Placeholders let it start; GoogleConfiguredGuard
+    // keeps the routes closed until real credentials are set.
     const clientID =
-      configService.get('app.googleClientId', { infer: true }) || '';
+      configService.get('app.googleClientId', { infer: true }) ||
+      'google-oauth-not-configured';
     const clientSecret =
-      configService.get('app.googleClientSecret', { infer: true }) || '';
+      configService.get('app.googleClientSecret', { infer: true }) ||
+      'google-oauth-not-configured';
     const frontendUrl =
       configService.get('app.frontendUrl', { infer: true }) ||
       'http://localhost:3000';

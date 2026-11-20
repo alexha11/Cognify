@@ -1,8 +1,10 @@
 import {
+  Equals,
   IsEmail,
   IsNotEmpty,
   IsString,
   MinLength,
+  MaxLength,
   IsIn,
   IsOptional,
   Length,
@@ -58,6 +60,8 @@ export class UserResponseDto {
   firstName: string;
   lastName: string;
   role: Role;
+  /** False for Google-only accounts, which cannot change a password. */
+  hasPassword: boolean;
 }
 
 /**
@@ -107,4 +111,26 @@ export class UpdateProfileDto {
   // `role` is intentionally absent. Accepting it here let any authenticated
   // user promote themselves to ADMIN with a single request. Role changes go
   // through the access-control request/approval flow instead.
+}
+
+export class ChangePasswordDto {
+  @IsString()
+  @IsNotEmpty()
+  currentPassword: string;
+
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @MaxLength(128)
+  newPassword: string;
+}
+
+export class DeleteAccountDto {
+  /** The user types DELETE in the confirmation box. */
+  @Equals('DELETE', { message: 'Type DELETE to confirm' })
+  confirmation: string;
+
+  /** Required for accounts that have a password. */
+  @IsOptional()
+  @IsString()
+  password?: string;
 }

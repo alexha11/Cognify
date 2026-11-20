@@ -185,6 +185,8 @@ export interface TranslationKeys {
     profileFailed: string;
     passwordUpdated: string;
     passwordIncorrect: string;
+    googleNoPassword: string;
+    deleteFailed: string;
     passwordTooShort: string;
     passwordsNoMatch: string;
     passwordStrong: string;
@@ -512,6 +514,8 @@ export const en: TranslationKeys = {
     profileFailed: "Failed to save profile. Please try again.",
     passwordUpdated: "Password updated successfully.",
     passwordIncorrect: "Current password is incorrect or update failed.",
+    googleNoPassword: "You sign in with Google, so there is no password to change.",
+    deleteFailed: "Your account could not be deleted. Please try again.",
     passwordTooShort: "Password must be at least 8 characters.",
     passwordsNoMatch: "Passwords do not match.",
     passwordStrong: "Strong password",

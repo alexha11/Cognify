@@ -17,36 +17,30 @@ export class RagService {
   ) {}
 
   /**
-   * Find the most relevant chunks for a query using cosine similarity
+   * The `topK` chunks of one material closest to `query` by cosine distance
+   * (served by the HNSW index), returned in document order.
    */
   async similaritySearch(
     query: string,
     materialId: string,
     topK: number = 5,
   ): Promise<string[]> {
-    // Embed the query
     const queryEmbedding = await this.embeddingService.embedText(query);
     const embeddingStr = `[${queryEmbedding.join(',')}]`;
 
-    // Find most similar chunks via pgvector cosine distance
-    const chunks = await this.prisma.$queryRawUnsafe<ChunkResult[]>(
-      `SELECT content, "chunkIndex"
-       FROM "MaterialChunk"
-       WHERE "materialId" = $2 AND embedding IS NOT NULL
-       ORDER BY embedding <=> $1::vector ASC
-       LIMIT $3`,
-      embeddingStr,
-      materialId,
-      topK,
-    );
+    const chunks = await this.prisma.$queryRaw<ChunkResult[]>`
+      SELECT content, "chunkIndex"
+      FROM "MaterialChunk"
+      WHERE "materialId" = ${materialId} AND embedding IS NOT NULL
+      ORDER BY embedding <=> ${embeddingStr}::vector ASC
+      LIMIT ${topK}`;
 
     this.logger.log(
       `RAG: Retrieved ${chunks.length} context chunks for material ${materialId}`,
     );
 
-    // Sort by chunkIndex for natural reading order
-    chunks.sort((a, b) => a.chunkIndex - b.chunkIndex);
-
-    return chunks.map((c) => c.content);
+    return [...chunks]
+      .sort((a, b) => a.chunkIndex - b.chunkIndex)
+      .map((c) => c.content);
   }
 }

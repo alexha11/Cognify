@@ -1,19 +1,29 @@
-import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
+import {
+  IsNotEmpty,
+  IsString,
+  IsInt,
+  IsUrl,
+  MaxLength,
+  Min,
+} from 'class-validator';
 
 export class CreateMaterialDto {
   @IsString()
   @IsNotEmpty()
+  @MaxLength(255)
   fileName: string;
 
-  @IsString()
-  @IsNotEmpty()
+  /** Only web links; `javascript:` and other schemes are rejected. */
+  @IsUrl({ protocols: ['http', 'https'], require_protocol: true })
   fileUrl: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(100)
   fileType: string;
 
-  @IsNumber()
+  @IsInt()
+  @Min(0)
   fileSize: number;
 
   @IsString()

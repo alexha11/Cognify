@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui";
 import { useAuth } from "@/lib/auth";
 import { apiGet } from "@/lib/api";
-import { AttemptStats, Course, CourseProgress } from "@/types";
+import { CourseAnalytics } from "@/types";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/lib/i18n";
 import {
@@ -28,17 +28,18 @@ import {
   Minus,
 } from "lucide-react";
 
-type SortKey = "name" | "completion" | "accuracy" | "questions";
+type SortKey = "name" | "completion" | "accuracy" | "learners";
 type SortDir = "asc" | "desc";
 
+/**
+ * Instructor analytics: how every learner is doing in the caller's courses
+ * (all courses for admins). Data comes from GET /attempts/analytics; the
+ * per-user endpoints only ever describe the person asking.
+ */
 export default function AnalyticsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const router = useRouter();
-  const [stats, setStats] = useState<AttemptStats | null>(null);
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [courseProgress, setCourseProgress] = useState<
-    Record<string, CourseProgress>
-  >({});
+  const [rows, setRows] = useState<CourseAnalytics[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [sortKey, setSortKey] = useState<SortKey>("completion");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
@@ -51,32 +52,19 @@ export default function AnalyticsPage() {
   }, [user, authLoading, router]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (authLoading || !user) return;
-      try {
-        const [coursesData, statsData] = await Promise.all([
-          apiGet<Course[]>("/courses"),
-          apiGet<AttemptStats>("/attempts/stats").catch(() => null),
-        ]);
-        setCourses(coursesData || []);
-        if (statsData) setStats(statsData);
-
-        const progressMap: Record<string, CourseProgress> = {};
-        for (const course of coursesData || []) {
-          try {
-            progressMap[course.id] = await apiGet<CourseProgress>(
-              `/attempts/course/${course.id}`,
-            );
-          } catch {}
-        }
-        setCourseProgress(progressMap);
-      } catch (error) {
-        console.error("Failed to fetch analytics", error);
-      } finally {
-        setIsLoading(false);
-      }
+    if (authLoading || !user) return;
+    let cancelled = false;
+    apiGet<CourseAnalytics[]>("/attempts/analytics")
+      .then((data) => {
+        if (!cancelled) setRows(data || []);
+      })
+      .catch((error) => console.error("Failed to fetch analytics", error))
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
     };
-    fetchData();
   }, [user, authLoading]);
 
   if (authLoading || isLoading) {
@@ -92,65 +80,39 @@ export default function AnalyticsPage() {
   if (!user) return null;
 
   // ── Derived stats ──────────────────────────────────────────────────────────
-  const totalQuestions = courses.reduce(
-    (acc, c) => acc + (c._count?.questions || 0),
-    0,
-  );
-  const totalMaterials = courses.reduce(
-    (acc, c) => acc + (c._count?.materials || 0),
-    0,
-  );
-  const progressValues = Object.values(courseProgress);
+  const totalQuestions = rows.reduce((acc, r) => acc + r.totalQuestions, 0);
+  const totalAnswered = rows.reduce((acc, r) => acc + r.answered, 0);
+  const totalCorrect = rows.reduce((acc, r) => acc + r.correct, 0);
+  const overallAccuracy =
+    totalAnswered > 0 ? Math.round((totalCorrect / totalAnswered) * 100) : 0;
+  const withLearners = rows.filter((r) => r.learners > 0);
   const avgCompletion =
-    progressValues.length > 0
+    withLearners.length > 0
       ? Math.round(
-          progressValues.reduce((a, p) => a + p.percentage, 0) /
-            progressValues.length,
+          withLearners.reduce((a, r) => a + r.completionRate, 0) /
+            withLearners.length,
         )
       : 0;
 
-  // Per-course enriched data
-  const enriched = courses.map((c) => {
-    const p = courseProgress[c.id];
-    const completion = p?.percentage || 0;
-    const answered = p?.answered || 0;
-    const total = p?.totalQuestions || c._count?.questions || 0;
-    const correct = p?.correct || 0;
-    const accuracy = answered > 0 ? Math.round((correct / answered) * 100) : 0;
-    return {
-      ...c,
-      completion,
-      answered,
-      total,
-      correct,
-      accuracy,
-      progress: p,
-    };
-  });
+  const enriched = rows.map((r) => ({
+    id: r.courseId,
+    name: r.courseName,
+    learners: r.learners,
+    answered: r.answered,
+    total: r.totalQuestions,
+    completion: r.completionRate,
+    accuracy: r.accuracy,
+  }));
 
   const sortedCourses = [...enriched].sort((a, b) => {
-    let va: number | string = 0,
-      vb: number | string = 0;
     if (sortKey === "name") {
-      va = a.name;
-      vb = b.name;
-    } else if (sortKey === "completion") {
-      va = a.completion;
-      vb = b.completion;
-    } else if (sortKey === "accuracy") {
-      va = a.accuracy;
-      vb = b.accuracy;
-    } else if (sortKey === "questions") {
-      va = a.total;
-      vb = b.total;
-    }
-    if (typeof va === "string")
       return sortDir === "asc"
-        ? va.localeCompare(vb as string)
-        : (vb as string).localeCompare(va);
-    return sortDir === "asc"
-      ? (va as number) - (vb as number)
-      : (vb as number) - (va as number);
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name);
+    }
+    const va = a[sortKey];
+    const vb = b[sortKey];
+    return sortDir === "asc" ? va - vb : vb - va;
   });
 
   const handleSort = (key: SortKey) => {
@@ -171,13 +133,13 @@ export default function AnalyticsPage() {
     );
 
   // Highlights
-  const activeCourses = enriched.filter((c) => c.answered > 0);
+  const activeCourses = enriched.filter((c) => c.learners > 0);
   const bestCourse =
     activeCourses.length > 0
       ? activeCourses.reduce((b, c) => (c.completion > b.completion ? c : b))
       : null;
   const needsAttention = enriched.filter(
-    (c) => c.answered > 0 && (c.completion < 40 || c.accuracy < 50),
+    (c) => c.learners > 0 && (c.completion < 40 || c.accuracy < 50),
   );
 
   const masteryLabel = (pct: number) =>
@@ -203,7 +165,7 @@ export default function AnalyticsPage() {
               Analytics
             </h1>
             <p className="text-sm text-muted-foreground">
-              Platform performance metrics and learning progress.
+              How learners are doing in your courses.
             </p>
           </div>
         </div>
@@ -211,9 +173,9 @@ export default function AnalyticsPage() {
         {/* ── Overview stat grid ── */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {[
-            { label: "Courses", value: courses.length, icon: BookOpen },
+            { label: "Courses", value: rows.length, icon: BookOpen },
             { label: "Questions", value: totalQuestions, icon: FileQuestion },
-            { label: "Materials", value: totalMaterials, icon: BarChart3 },
+            { label: "Answers recorded", value: totalAnswered, icon: BarChart3 },
             {
               label: "Avg. completion",
               value: `${avgCompletion}%`,
@@ -234,7 +196,7 @@ export default function AnalyticsPage() {
         </div>
 
         {/* ── Assessment metrics ── */}
-        {stats && (
+        {totalAnswered > 0 && (
           <div className="space-y-4">
             <h2 className="text-base font-semibold text-foreground">
               Assessment metrics
@@ -242,21 +204,21 @@ export default function AnalyticsPage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {[
                 {
-                  label: "Total attempts",
-                  value: stats.overall.total,
-                  sub: "Assessments recorded",
-                  icon: BarChart3,
+                  label: "Learners",
+                  value: withLearners.reduce((a, r) => a + r.learners, 0),
+                  sub: "Counted once per course",
+                  icon: Users,
                 },
                 {
                   label: "Correct answers",
-                  value: stats.overall.correct,
-                  sub: "Validated responses",
+                  value: totalCorrect,
+                  sub: `of ${totalAnswered} answers`,
                   icon: Award,
                 },
                 {
                   label: "Accuracy rate",
-                  value: `${stats.overall.percentage}%`,
-                  sub: "Overall performance",
+                  value: `${overallAccuracy}%`,
+                  sub: "Across all learners",
                   icon: TrendingUp,
                 },
               ].map((m, i) => (
@@ -333,11 +295,11 @@ export default function AnalyticsPage() {
               Course performance
             </h2>
             <span className="text-xs text-muted-foreground">
-              {courses.length} courses
+              {rows.length} courses
             </span>
           </div>
 
-          {courses.length === 0 ? (
+          {rows.length === 0 ? (
             <Card className="border-border/50 shadow-sm">
               <CardContent className="p-12 text-center">
                 <BookOpen className="h-10 w-10 text-muted-foreground/20 mx-auto mb-4" />
@@ -357,8 +319,8 @@ export default function AnalyticsPage() {
                     col: "col-span-4",
                   },
                   {
-                    key: "questions" as SortKey,
-                    label: "Questions",
+                    key: "learners" as SortKey,
+                    label: "Learners",
                     col: "col-span-2 hidden sm:flex",
                   },
                   {
@@ -404,11 +366,11 @@ export default function AnalyticsPage() {
                       </span>
                     </div>
 
-                    {/* Question count */}
+                    {/* Learners */}
                     <div className="col-span-2 hidden sm:flex items-center gap-1.5">
-                      <FileQuestion className="h-3.5 w-3.5 text-muted-foreground/40" />
+                      <Users className="h-3.5 w-3.5 text-muted-foreground/40" />
                       <span className="text-sm text-muted-foreground">
-                        {course.answered}/{course.total}
+                        {course.learners}
                       </span>
                     </div>
 

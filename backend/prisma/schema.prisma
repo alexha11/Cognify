@@ -32,6 +32,7 @@ model User {
   subscriptions     Subscription[]
   leaderboardEntries LeaderboardEntry[]
   quizProgresses    QuizProgress[]
+  roleRequests      RoleRequest[]
 
   @@index([email])
 }
@@ -49,8 +50,45 @@ model Course {
   questions      Question[]
   leaderboardEntries LeaderboardEntry[]
   quizProgresses QuizProgress[]
+  /// Courses that must be completed before this one.
+  prerequisites  CoursePrerequisite[] @relation("CoursePrerequisites")
+  /// Courses that list this one as a prerequisite.
+  requiredBy     CoursePrerequisite[] @relation("CourseRequiredBy")
 
   @@index([createdById])
+}
+
+/// "courseId requires requiresCourseId". Completion is QuizProgress.isCompleted.
+model CoursePrerequisite {
+  id               String @id @default(uuid())
+  courseId         String
+  requiresCourseId String
+  course           Course @relation("CoursePrerequisites", fields: [courseId], references: [id], onDelete: Cascade)
+  requiresCourse   Course @relation("CourseRequiredBy", fields: [requiresCourseId], references: [id], onDelete: Cascade)
+
+  @@unique([courseId, requiresCourseId])
+  @@index([courseId])
+  @@index([requiresCourseId])
+}
+
+/// A student's request to be promoted to INSTRUCTOR, reviewed by an admin.
+model RoleRequest {
+  id        String        @id @default(uuid())
+  userId    String
+  reason    String
+  status    RequestStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 model Material {
@@ -85,10 +123,10 @@ model Material {
 ///
 /// CAVEAT: the HNSW index that makes similarity search fast cannot be declared
 /// here, because Prisma cannot index an Unsupported column. It therefore lives
-/// only in SQL, and `prisma db push` may drop it as an unknown object. If
-/// retrieval suddenly gets slow, re-apply the repair migration — it recreates
-/// the index idempotently:
-///   npx prisma db execute --file prisma/migrations/20260811160000_repair_missing_objects/migration.sql
+/// only in SQL (the baseline migration), and `prisma db push` may drop it as an
+/// unknown object. Use `prisma migrate deploy`, not `db push`. If retrieval
+/// suddenly gets slow, re-apply the baseline — it is idempotent:
+///   npx prisma db execute --file prisma/migrations/20261120000000_baseline/migration.sql
 model MaterialChunk {
   id         String                       @id @default(uuid())
   content    String

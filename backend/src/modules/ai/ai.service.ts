@@ -1,14 +1,26 @@
-import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadGatewayException,
+  NotFoundException,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { QuestionsService } from '../questions';
 import { RagService } from './rag.service';
 import { Config } from '../../config';
+import { PrismaService } from '../../prisma';
+import { CourseAccessService } from '../../common/access';
+import { AI_MAX_TOKENS, AI_TEMPERATURE } from '../../common/constants';
+import type { AuthenticatedUser } from '../auth/interfaces';
+import { GenerateQuestionsDto } from './dto';
+import { GeneratedQuestion, parseGeneratedQuestions } from './question-parser';
 
-interface GeneratedQuestion {
-  content: string;
-  hint: string;
-  answers: { content: string; isCorrect: boolean }[];
+/** Long enough for a full response, short enough not to hold a request forever. */
+const CHAT_TIMEOUT_MS = 90_000;
+
+interface ChatCompletionResponse {
+  choices?: { message?: { content?: string } }[];
 }
 
 @Injectable()
@@ -18,130 +30,142 @@ export class AiService {
 
   constructor(
     private readonly configService: ConfigService<Config>,
-    private readonly questionsService: QuestionsService,
     private readonly ragService: RagService,
+    private readonly prisma: PrismaService,
+    private readonly access: CourseAccessService,
   ) {}
 
   /**
-   * Generate AI questions using OpenRouter API
+   * Draft questions for a course the caller manages, optionally grounded in
+   * one of that course's materials. Nothing is saved: the instructor reviews
+   * the drafts and saves them through POST /questions/bulk.
    */
   async generateQuestions(
-    courseId: string,
-    topic: string,
-    count: number,
-    userId: string,
-    materialId?: string,
-    difficulty?: string,
-  ): Promise<{ message: string; questions: any[] }> {
+    dto: GenerateQuestionsDto,
+    user: AuthenticatedUser,
+  ): Promise<{ message: string; questions: GeneratedQuestion[] }> {
     const apiKey = this.configService.get('app.openRouterApiKey', {
       infer: true,
     });
-    const model = this.configService.get('app.openRouterModel', {
-      infer: true,
-    });
-
     if (!apiKey) {
-      throw new BadRequestException('OpenRouter API key not configured');
+      throw new ServiceUnavailableException(
+        'AI generation is not configured (OPENROUTER_API_KEY is missing).',
+      );
     }
 
-    // Retrieve RAG context if materialId is provided
+    await this.access.assertCanManage(dto.courseId, user);
+
     let context: string | undefined;
-    if (materialId) {
+    if (dto.materialId) {
+      const material = await this.prisma.material.findUnique({
+        where: { id: dto.materialId },
+        select: { courseId: true },
+      });
+      if (!material || material.courseId !== dto.courseId) {
+        throw new NotFoundException('Material not found in this course');
+      }
+
       const chunks = await this.ragService.similaritySearch(
-        topic,
-        materialId,
+        dto.topic,
+        dto.materialId,
         5,
       );
       if (chunks.length > 0) {
         context = chunks.join('\n\n');
-        this.logger.log(
-          `RAG: Using ${chunks.length} context chunks for generation`,
-        );
       }
     }
 
-    const prompt = this.buildPrompt(topic, count, context, difficulty);
+    const count = dto.count ?? 5;
+    const content = await this.complete(
+      this.buildSystemMessage(!!context),
+      this.buildPrompt(dto.topic, count, context, dto.difficulty),
+      apiKey,
+    );
+
+    const questions = parseGeneratedQuestions(content).slice(0, count);
+    if (questions.length === 0) {
+      this.logger.warn(`No questions parsed from AI response: ${content}`);
+    }
+
+    return {
+      message: `Successfully generated ${questions.length} questions. Please review them before saving.`,
+      questions,
+    };
+  }
+
+  private async complete(
+    system: string,
+    prompt: string,
+    apiKey: string,
+  ): Promise<string> {
+    const model = this.configService.get('app.openRouterModel', {
+      infer: true,
+    });
+    const frontendUrl = this.configService.get('app.frontendUrl', {
+      infer: true,
+    });
 
     try {
-      const systemMessage = context
-        ? `You are an expert exam question generator. Generate high-quality multiple choice questions based on the provided course material. Each question should have exactly 4 options with one correct answer. Base your questions strictly on the material provided — do not fabricate information beyond the source text.`
-        : `You are an expert exam question generator. Generate high-quality multiple choice questions for educational purposes. Each question should have exactly 4 options with one correct answer.`;
-
-      const response = await axios.post(
+      const response = await axios.post<ChatCompletionResponse>(
         this.apiUrl,
         {
-          model: model || 'google/gemini-3.5-flash',
+          model,
           messages: [
-            {
-              role: 'system',
-              content: systemMessage,
-            },
-            {
-              role: 'user',
-              content: prompt,
-            },
+            { role: 'system', content: system },
+            { role: 'user', content: prompt },
           ],
-          temperature: 0.7,
-          max_tokens: 4000,
+          temperature: AI_TEMPERATURE,
+          max_tokens: AI_MAX_TOKENS,
         },
         {
           headers: {
             Authorization: `Bearer ${apiKey}`,
             'Content-Type': 'application/json',
-            'HTTP-Referer': 'https://examai.app',
-            'X-Title': 'ExamAI Platform',
+            // OpenRouter attribution headers.
+            ...(frontendUrl && { 'HTTP-Referer': frontendUrl }),
+            'X-Title': 'Cognify',
           },
+          timeout: CHAT_TIMEOUT_MS,
         },
       );
 
-      const content = response.data.choices[0]?.message?.content;
+      const content = response.data.choices?.[0]?.message?.content;
       if (!content) {
-        throw new BadRequestException('No response from AI');
+        throw new BadGatewayException('The AI service returned no content');
       }
-
-      const questions = this.parseAiResponse(content);
-      this.logger.log(`Parsed ${questions.length} questions from response.`);
-      if (questions.length === 0) {
-        this.logger.log(`Failed to parse questions. Raw content: ${content}`);
-      }
-
-      return {
-        message: `Successfully generated ${questions.length} questions. Please review them before saving.`,
-        questions,
-      };
+      return content;
     } catch (error) {
-      this.logger.error('AI generation failed', error);
-      if (axios.isAxiosError(error)) {
-        throw new BadRequestException(
-          `AI generation failed: ${error.response?.data?.error?.message || error.message}`,
-        );
-      }
-      throw new BadRequestException('AI generation failed');
+      if (error instanceof BadGatewayException) throw error;
+      const reason = axios.isAxiosError<{ error?: { message?: string } }>(error)
+        ? (error.response?.data?.error?.message ?? error.message)
+        : String(error);
+      this.logger.error(`AI generation failed: ${reason}`);
+      throw new BadGatewayException(`AI generation failed: ${reason}`);
     }
   }
 
-  /**
-   * Build prompt for question generation, optionally with RAG context
-   */
+  private buildSystemMessage(hasContext: boolean): string {
+    return hasContext
+      ? 'You are an expert exam question generator. Generate high-quality multiple choice questions based on the provided course material. Each question should have exactly 4 options with one correct answer. Base your questions strictly on the material provided — do not fabricate information beyond the source text.'
+      : 'You are an expert exam question generator. Generate high-quality multiple choice questions for educational purposes. Each question should have exactly 4 options with one correct answer.';
+  }
+
   private buildPrompt(
     topic: string,
     count: number,
     context?: string,
     difficulty?: string,
   ): string {
-    let contextBlock = '';
-    if (context) {
-      contextBlock = `--- COURSE MATERIAL ---
+    const contextBlock = context
+      ? `--- COURSE MATERIAL ---
 ${context}
 --- END COURSE MATERIAL ---
 
-Using the course material above as your primary source, generate`;
-    } else {
-      contextBlock = `Generate`;
-    }
+Using the course material above as your primary source, generate`
+      : 'Generate';
 
     return `${contextBlock} ${count} multiple choice exam questions about: "${topic}"
-${difficulty ? `\nThe difficulty level of the questions must be strictly: ${difficulty.toUpperCase()}. Ensure the questions, distractors, and concepts align with this difficulty level.` : ''}
+${difficulty ? `\nThe difficulty level of the questions must be strictly: ${difficulty}. Ensure the questions, distractors, and concepts align with this difficulty level.` : ''}
 
 For each question, use this exact format:
 
@@ -168,59 +192,5 @@ Important:
 - Only one correct answer per question
 - Make questions challenging but fair
 - Include practical, real-world scenarios when relevant${context ? '\n- Base all questions on the provided course material' : ''}`;
-  }
-
-  /**
-   * Parse AI response into structured questions
-   */
-  private parseAiResponse(content: string): GeneratedQuestion[] {
-    const questions: GeneratedQuestion[] = [];
-    const questionRegex =
-      /(?:\*{0,2}#*\s*)?---QUESTION---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---OPTIONS---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---CORRECT---(?:\*{0,2}\s*)([\s\S]*?)(?:\*{0,2}#*\s*)?---HINT---(?:\*{0,2}\s*)([\s\S]*?)(?:(?:\*{0,2}#*\s*)?---END---|$)/gi;
-
-    let match;
-    while ((match = questionRegex.exec(content)) !== null) {
-      try {
-        const questionContent = match[1].trim();
-        const optionsText = match[2].trim();
-        const correctText = match[3].trim();
-        const hintText = match[4].trim();
-
-        const optionRegex = /([A-D])[.)]\s*(.+?)(?=\n[A-D][.)]|$)/gs;
-        const options: { letter: string; content: string }[] = [];
-        let optMatch;
-        const optionsTextNormalized = optionsText + '\n';
-        while ((optMatch = optionRegex.exec(optionsTextNormalized)) !== null) {
-          options.push({
-            letter: optMatch[1].toUpperCase(),
-            content: optMatch[2].trim(),
-          });
-        }
-
-        if (options.length < 2) continue;
-
-        const correctLetterMatch = correctText.match(/([A-D])/i);
-        if (!correctLetterMatch) continue;
-        const correctLetter = correctLetterMatch[1].toUpperCase();
-
-        const answers = options.map((opt) => ({
-          content: opt.content,
-          isCorrect: opt.letter === correctLetter,
-        }));
-
-        const correctCount = answers.filter((a) => a.isCorrect).length;
-        if (correctCount !== 1) continue;
-
-        questions.push({
-          content: questionContent,
-          hint: hintText || 'Review the course material for this topic.',
-          answers,
-        });
-      } catch (err) {
-        this.logger.warn(`Failed to parse question block: ${err}`);
-      }
-    }
-
-    return questions;
   }
 }

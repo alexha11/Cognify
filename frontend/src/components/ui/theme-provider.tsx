@@ -64,6 +64,9 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       targetTheme = "light";
     }
 
+    // Hydrating from localStorage, which the server render cannot read: this
+    // is the "synchronise with an external system" case effects exist for.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setThemeState(targetTheme);
 
     const resolved =

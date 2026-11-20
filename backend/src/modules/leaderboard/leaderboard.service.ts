@@ -1,10 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma';
 import { CreateLeaderboardEntryDto } from './dto';
+import { CourseAccessService, type Viewer } from '../../common/access';
+import { LEADERBOARD_TOP_N } from '../../common/constants';
 
-interface LeaderboardRow {
+export interface LeaderboardRow {
   id: string;
   displayName: string;
+  isGuest: boolean;
   score: number;
   totalQuestions: number;
   percentage: number;
@@ -12,144 +15,126 @@ interface LeaderboardRow {
   userId: string | null;
 }
 
+interface BestEntryRow {
+  id: string;
+  userId: string | null;
+  guestName: string | null;
+  score: number;
+  totalQuestions: number;
+  percentage: number;
+  completedAt: Date;
+  firstName: string | null;
+  lastName: string | null;
+}
+
 @Injectable()
 export class LeaderboardService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly access: CourseAccessService,
+  ) {}
 
   /**
-   * Get the leaderboard for a course (top 50, best score per player)
+   * Each player's best entry (highest percentage, then score, newest on a
+   * tie), ranked, top 50. The grouping runs in SQL so the course's whole
+   * history is never loaded into memory.
    */
-  async getLeaderboard(courseId: string): Promise<LeaderboardRow[]> {
-    // Verify course exists
-    const course = await this.prisma.course.findUnique({
-      where: { id: courseId },
-      select: { id: true, name: true },
-    });
+  async getLeaderboard(
+    courseId: string,
+    user?: Viewer,
+  ): Promise<{ courseName: string; entries: LeaderboardRow[] }> {
+    const course = await this.access.assertCanView(courseId, user);
 
-    if (!course) {
-      throw new NotFoundException('Course not found');
-    }
+    const rows = await this.prisma.$queryRaw<BestEntryRow[]>`
+      SELECT best.* FROM (
+        SELECT DISTINCT ON (COALESCE(e."userId", 'guest:' || COALESCE(e."guestName", 'Anonymous')))
+               e.id, e."userId", e."guestName", e.score, e."totalQuestions",
+               e.percentage, e."completedAt", u."firstName", u."lastName"
+        FROM "LeaderboardEntry" e
+        LEFT JOIN "User" u ON u.id = e."userId"
+        WHERE e."courseId" = ${courseId}
+        ORDER BY COALESCE(e."userId", 'guest:' || COALESCE(e."guestName", 'Anonymous')),
+                 e.percentage DESC, e.score DESC, e."completedAt" DESC
+      ) best
+      ORDER BY best.percentage DESC, best.score DESC, best."completedAt" ASC
+      LIMIT ${LEADERBOARD_TOP_N}`;
 
-    const entries = await this.prisma.leaderboardEntry.findMany({
-      where: { courseId },
-      orderBy: [
-        { percentage: 'desc' },
-        { score: 'desc' },
-        { completedAt: 'desc' },
-      ],
-      include: {
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-      },
-    });
-
-    // Group by player (userId or guestName) and keep best score (or newest score on tie)
-    const bestByPlayer = new Map<string, (typeof entries)[number]>();
-
-    for (const entry of entries) {
-      const key = entry.userId
-        ? `user:${entry.userId}`
-        : `guest:${entry.guestName || 'Anonymous'}`;
-      const existing = bestByPlayer.get(key);
-      if (
-        !existing ||
-        entry.percentage > existing.percentage ||
-        (entry.percentage === existing.percentage &&
-          entry.score > existing.score) ||
-        (entry.percentage === existing.percentage &&
-          entry.score === existing.score &&
-          entry.completedAt.getTime() > existing.completedAt.getTime())
-      ) {
-        bestByPlayer.set(key, entry);
-      }
-    }
-
-    const bestEntries = Array.from(bestByPlayer.values())
-      .sort((a, b) => {
-        if (b.percentage !== a.percentage) return b.percentage - a.percentage;
-        if (b.score !== a.score) return b.score - a.score;
-        return a.completedAt.getTime() - b.completedAt.getTime();
-      })
-      .slice(0, 50);
-
-    return bestEntries.map((entry) => ({
-      id: entry.id,
-      displayName: entry.user
-        ? `${entry.user.firstName} ${entry.user.lastName}`
-        : entry.guestName || 'Anonymous',
-      score: entry.score,
-      totalQuestions: entry.totalQuestions,
-      percentage: entry.percentage,
-      completedAt: entry.completedAt,
-      userId: entry.userId,
-    }));
+    return {
+      courseName: course.name,
+      entries: rows.map((row) => ({
+        id: row.id,
+        displayName: row.userId
+          ? `${row.firstName ?? ''} ${row.lastName ?? ''}`.trim()
+          : row.guestName || 'Anonymous',
+        isGuest: !row.userId,
+        score: row.score,
+        totalQuestions: row.totalQuestions,
+        percentage: row.percentage,
+        completedAt: row.completedAt,
+        userId: row.userId,
+      })),
+    };
   }
 
   /**
-   * Get course name for leaderboard header
-   */
-  async getCourseName(courseId: string): Promise<string> {
-    const course = await this.prisma.course.findUnique({
-      where: { id: courseId },
-      select: { name: true },
-    });
-    return course?.name || 'Unknown Course';
-  }
-
-  /**
-   * Submit a leaderboard entry
+   * Records a finished quiz. Signed-in players are scored from their saved
+   * attempts, so the number in the request is ignored. Guests have no server
+   * record, so their score is accepted but capped at the real question count.
    */
   async submitEntry(
     dto: CreateLeaderboardEntryDto,
-    userId?: string,
+    user?: Viewer,
   ): Promise<LeaderboardRow> {
-    // Verify course exists
-    const course = await this.prisma.course.findUnique({
-      where: { id: dto.courseId },
+    await this.access.assertCanView(dto.courseId, user);
+
+    const questions = await this.prisma.question.findMany({
+      where: { courseId: dto.courseId, approved: true },
       select: { id: true },
     });
-
-    if (!course) {
-      throw new NotFoundException('Course not found');
+    const totalQuestions = questions.length;
+    if (totalQuestions === 0) {
+      throw new BadRequestException('This course has no questions yet');
     }
 
-    const percentage =
-      dto.totalQuestions > 0
-        ? Math.round((dto.score / dto.totalQuestions) * 100)
-        : 0;
-
-    let displayName = dto.guestName || 'Anonymous';
-
-    // If logged in, fetch user name
-    if (userId) {
-      const user = await this.prisma.user.findUnique({
-        where: { id: userId },
-        select: { firstName: true, lastName: true },
+    let score: number;
+    if (user) {
+      const correct = await this.prisma.attempt.findMany({
+        where: {
+          userId: user.userId,
+          isCorrect: true,
+          questionId: { in: questions.map((q) => q.id) },
+        },
+        distinct: ['questionId'],
+        select: { questionId: true },
       });
-      if (user) {
-        displayName = `${user.firstName} ${user.lastName}`;
+      score = correct.length;
+    } else {
+      if (dto.score > totalQuestions) {
+        throw new BadRequestException(
+          `Score cannot be higher than the number of questions (${totalQuestions})`,
+        );
       }
+      score = dto.score;
     }
 
     const entry = await this.prisma.leaderboardEntry.create({
       data: {
         courseId: dto.courseId,
-        userId: userId || null,
-        guestName: userId ? null : dto.guestName || 'Anonymous',
-        score: dto.score,
-        totalQuestions: dto.totalQuestions,
-        percentage,
+        userId: user?.userId ?? null,
+        guestName: user ? null : dto.guestName || 'Anonymous',
+        score,
+        totalQuestions,
+        percentage: Math.round((score / totalQuestions) * 100),
       },
+      include: { user: { select: { firstName: true, lastName: true } } },
     });
 
     return {
       id: entry.id,
-      displayName,
+      displayName: entry.user
+        ? `${entry.user.firstName} ${entry.user.lastName}`.trim()
+        : entry.guestName || 'Anonymous',
+      isGuest: !entry.userId,
       score: entry.score,
       totalQuestions: entry.totalQuestions,
       percentage: entry.percentage,

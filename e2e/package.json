@@ -1,0 +1,14 @@
+{
+  "name": "cognify-e2e",
+  "private": true,
+  "description": "End-to-end browser tests across Postgres, the NestJS API and the Next.js app.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/node": "^22.10.7",
+    "@types/pg": "^8.16.0",
+    "pg": "^8.18.0"
+  }
+}
