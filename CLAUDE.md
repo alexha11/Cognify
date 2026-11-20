@@ -15,7 +15,7 @@ cd backend
 
 npm run start:dev        # Development server with watch mode (port 3001)
 npm run build            # Compile TypeScript (output: dist/src/main.js)
-npm run start:prod       # Production (requires build first)
+npm run start:prod       # Production: applies migrations, then starts (requires build first)
 
 npm run lint             # ESLint, check only (CI runs this)
 npm run lint:fix         # ESLint with auto-fix
@@ -26,9 +26,9 @@ npm run test:cov         # Unit tests with coverage
 npm run test:system      # System tests against a real database (see Testing)
 
 # Database
-npm run db:migrate       # prisma migrate deploy
+npm run db:migrate       # scripts/migrate.mjs: migrate deploy, baselining `db push` databases
 npm run db:seed          # demo accounts (admin/instructor/student @cognify.local, password123)
-npm run db:baseline      # one-time, for databases created with `prisma db push`
+npm run db:baseline      # manual baseline; db:migrate already does this when needed
 npx prisma migrate dev --name <name>   # Create a migration after editing schema.prisma
 npx prisma generate                    # Regenerate the client after schema changes
 ```
@@ -87,7 +87,7 @@ Responses are `{ success: true, data, message }`; errors are `{ success: false, 
 - `JwtStrategy.validate()` re-reads the user from the database on every request, so role changes and deactivations take effect immediately. Never trust the `role` claim in the token.
 - Google OAuth uses a signed-cookie `state` (`CookieStateStore`). The `callbackURL` points at the **frontend** origin (`<FRONTEND_URL>/api/auth/google/callback`). Linking Google to an existing **unverified** account discards that account's password, name and role (anyone can register any address); keep it that way.
 - Email codes: 6 digits from `crypto.randomInt`, 15-minute expiry, at most 5 submissions per code (spent atomically *before* comparing), and a 60-second resend cooldown per address.
-- Without `RESEND_API_KEY` (allowed outside production) codes are logged instead of emailed; without Google credentials the Google routes answer 404.
+- Without `RESEND_API_KEY`, development logs codes instead of emailing them; production starts anyway but answers 503 to sign-up and contact emails and never logs a code. Do not make the key required: that stopped the API from starting and failed the production deploy of #7. Without Google credentials the Google routes answer 404 (outside production).
 
 **Privilege rules:** `role` is not a self-editable field. `RegisterDto` accepts only `STUDENT | INSTRUCTOR` (instructor sign-up is self-service), and `UpdateProfileDto` accepts no role at all. Promotion of existing students goes through `access-control` (request → admin approval; approval only promotes students). Global `ValidationPipe` uses `forbidNonWhitelisted: true`, so sending an unexpected property returns 422 — adding a field to a request means adding it to a DTO class (never type a `@Body()` inline; inline types skip validation).
 
@@ -118,6 +118,7 @@ There is **no organization/multi-tenant layer**. Authorization is per course, de
 ### Database (`backend/prisma/schema.prisma`)
 
 - Change the schema with `prisma migrate dev`, never `prisma db push` (it drops the HNSW index on `MaterialChunk.embedding`, which Prisma cannot model and which lives only in the baseline migration). CI fails if `schema.prisma` and the migrations disagree.
+- Production applies migrations when it starts: the Docker image and `npm run start:prod` run `scripts/migrate.mjs` first, and exit if it fails (the deploy fails; the previous version stays live). Migrations must therefore be safe to run before the new code serves traffic.
 - `User.passwordHash` is nullable — Google-only accounts have no password (`hasPassword: false` in the profile).
 - `Course.isPublic` is the only visibility flag (there is no `isPublished`).
 - `Question.approved`: manual questions are approved on creation; AI drafts are reviewed in the UI and saved through `POST /questions/bulk` already approved.
@@ -154,7 +155,7 @@ Global `ThrottlerProxyGuard` (`APP_GUARD`, 120/min default; tighter `@Throttle` 
 - **Unit** (`backend/src/**/*.spec.ts`, `frontend/src/**/*.test.ts(x)`): no database. Backend tests use `src/testing/prisma.mock.ts`.
 - **System** (`backend/test/system/*.system-spec.ts`): the real `AppModule` over HTTP against PostgreSQL + pgvector, with email and embeddings faked. Needs `DATABASE_URL` set in the shell, pointing at a migrated database whose name contains `test` (the suite truncates every table).
 - **End-to-end** (`e2e/`): Playwright against both built apps and a migrated database.
-- **CI** (`.github/workflows/ci.yml`): all of the above on pull requests and pushes to `main`.
+- **CI** (`.github/workflows/ci.yml`): all of the above on pull requests and pushes to `main`, plus a job that builds `backend/Dockerfile` and starts it with `NODE_ENV=production` and no email key, as a minimal production deployment would.
 
 When fixing a bug, add a test at the lowest layer that can show it.
 
@@ -174,7 +175,7 @@ The `.agent/rules/` directory contains detailed pattern guides for AI assistance
 - `COOKIE_SECRET` — signs auth/OAuth-state cookies (≥32 chars, distinct from `JWT_SECRET`)
 - `FRONTEND_URL` — public frontend origin; the only allowed CORS origin and the OAuth redirect base
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — required when `NODE_ENV=production`
-- `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `SUPPORT_EMAIL` — email; the key is required in production
+- `RESEND_API_KEY` / `RESEND_FROM_EMAIL` / `SUPPORT_EMAIL` — email; without the key, production runs but email sign-up and the contact form answer 503
 - `TRUSTED_PROXY_HOPS` — proxies in front of the API (the Next.js proxy counts as one)
 - `OPENROUTER_API_KEY` / `OPENROUTER_MODEL` — AI generation and embeddings
 - `SUPABASE_URL` / `SUPABASE_SERVICE_KEY` — file storage (optional in development)

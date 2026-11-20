@@ -41,9 +41,11 @@ export const appConfigValidationSchema = Joi.object({
   // Must be the public https origin in production: it is both the OAuth
   // redirect target and the only allowed CORS origin.
   FRONTEND_URL: Joi.string().uri().default('http://localhost:3000'),
-  // Without it, verification codes cannot reach anyone. Outside production the
-  // API logs codes instead of sending them.
-  RESEND_API_KEY: requiredInProduction(Joi.string()),
+  // Optional, even in production. Making it required stopped the whole API from
+  // starting where it was not set, which took down sign-in, courses and quizzes
+  // to protect a single feature. Without it, production refuses to send email
+  // (503, logged at startup) and development logs codes instead.
+  RESEND_API_KEY: Joi.string().optional().allow(''),
   RESEND_FROM_EMAIL: Joi.string().default('onboarding@resend.dev'),
   // Where contact-form messages go. Defaults to RESEND_FROM_EMAIL.
   SUPPORT_EMAIL: Joi.string().email().optional().allow(''),

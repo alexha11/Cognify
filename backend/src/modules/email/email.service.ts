@@ -12,10 +12,12 @@ import { ContactDto } from './dto/contact.dto';
 /**
  * Transactional email through Resend.
  *
- * Without RESEND_API_KEY outside production, nothing is sent: verification
- * codes and contact requests are written to the log instead, so the API can
- * run locally and in tests without an email account. Production refuses to
- * start without the key (see config validation).
+ * Without RESEND_API_KEY nothing is sent:
+ * - outside production, verification codes and contact requests are written to
+ *   the log instead, so the API runs locally and in tests without an account;
+ * - in production, sending fails with 503 and nothing secret is logged. The
+ *   rest of the API keeps working; only email sign-up and the contact form
+ *   wait for the key.
  */
 @Injectable()
 export class EmailService {
@@ -23,9 +25,12 @@ export class EmailService {
   private readonly resend: Resend | null;
   private readonly fromEmail: string;
   private readonly supportEmail: string;
+  private readonly isProduction: boolean;
 
   constructor(configService: ConfigService<Config>) {
     const apiKey = configService.get('app.resendApiKey', { infer: true });
+    this.isProduction =
+      configService.get('app.nodeEnv', { infer: true }) === 'production';
     this.fromEmail =
       configService.get('app.resendFromEmail', { infer: true }) ||
       'onboarding@resend.dev';
@@ -34,6 +39,11 @@ export class EmailService {
 
     if (apiKey) {
       this.resend = new Resend(apiKey);
+    } else if (this.isProduction) {
+      this.resend = null;
+      this.logger.error(
+        'RESEND_API_KEY is not set: verification and contact emails cannot be sent, so email sign-up will fail until it is. Google sign-in and everything else work.',
+      );
     } else {
       this.resend = null;
       this.logger.warn(
@@ -44,6 +54,13 @@ export class EmailService {
 
   async sendVerificationEmail(to: string, code: string): Promise<void> {
     if (!this.resend) {
+      // Never put a code in a production log: anyone who can read the logs
+      // could verify any address with it.
+      if (this.isProduction) {
+        this.notConfigured(
+          'Email is not available right now, so we cannot send your code. Please try again later or sign in with Google.',
+        );
+      }
       this.logger.log(`[email disabled] Verification code for ${to}: ${code}`);
       return;
     }
@@ -63,6 +80,11 @@ export class EmailService {
   /** Forwards a support request to SUPPORT_EMAIL; the user can be answered with Reply. */
   async sendContactEmail(dto: ContactDto): Promise<void> {
     if (!this.resend) {
+      if (this.isProduction) {
+        this.notConfigured(
+          'Messages cannot be sent right now. Please try again later.',
+        );
+      }
       this.logger.log(
         `[email disabled] Contact request "${dto.category}" from ${dto.email} (${dto.message.length} characters)`,
       );
@@ -82,6 +104,11 @@ export class EmailService {
       'Your message could not be sent. Please try again later.',
     );
     this.logger.log(`Support request "${dto.category}" forwarded`);
+  }
+
+  private notConfigured(userMessage: string): never {
+    this.logger.error('Email not sent: RESEND_API_KEY is not set.');
+    throw new ServiceUnavailableException(userMessage);
   }
 
   private async send(

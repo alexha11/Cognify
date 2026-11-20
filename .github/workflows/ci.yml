@@ -103,6 +103,50 @@ jobs:
       - name: System tests
         run: npm run test:system -- --ci
 
+  production-image:
+    name: Backend · production image starts
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: cognify
+          POSTGRES_PASSWORD: cognify
+          POSTGRES_DB: cognify_prod
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U cognify -d cognify_prod"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the image
+        run: docker build -t cognify-api backend
+      # What a minimal production deployment sets. RESEND_API_KEY is left out
+      # on purpose: requiring it made the API exit at startup, which is what
+      # failed the production deploy of #7.
+      - name: Start it as production does, on an empty database
+        run: |
+          docker run -d --name api --network host \
+            -e NODE_ENV=production -e PORT=3001 \
+            -e DATABASE_URL=postgresql://cognify:cognify@localhost:5432/cognify_prod \
+            -e JWT_SECRET -e COOKIE_SECRET \
+            -e GOOGLE_CLIENT_ID=ci -e GOOGLE_CLIENT_SECRET=ci \
+            -e FRONTEND_URL=https://cognify.example -e TRUSTED_PROXY_HOPS=1 \
+            cognify-api
+      - name: Wait until it is healthy and the schema is migrated
+        run: bash .github/scripts/wait-for-api.sh
+      - name: Restart it (migrations are a no-op the second time)
+        run: docker restart api
+      - name: Wait until it is healthy again
+        run: bash .github/scripts/wait-for-api.sh
+      - name: Container log
+        if: always()
+        run: docker logs api || true
+
   frontend:
     name: Frontend · lint, type-check, unit tests, build
     runs-on: ubuntu-latest
