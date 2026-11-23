@@ -403,6 +403,53 @@ h1 {
   animation-delay: -4s;
 }
 
+/* Landing page: slow loops for the 3D feature scenes, and the fill of the
+   "How it works" step timer. All of them are decoration. */
+@keyframes landingLift {
+  0%, 100% { transform: translateZ(0); }
+  50% { transform: translateZ(14px); }
+}
+@keyframes landingFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes landingGrow {
+  0% { transform: scaleY(0.2); }
+  30%, 82% { transform: scaleY(1); }
+  100% { transform: scaleY(0.2); }
+}
+@keyframes landingPick {
+  0%, 35% { background-color: transparent; border-color: var(--border); }
+  45%, 90% { background-color: var(--success-subtle); border-color: var(--success-border); }
+  100% { background-color: transparent; border-color: var(--border); }
+}
+@keyframes landingRise {
+  from { transform: scaleY(0.1); }
+  to { transform: scaleY(1); }
+}
+@keyframes landingFill {
+  from { width: 8%; }
+  to { width: 72%; }
+}
+@keyframes landingStep {
+  from { width: 0; }
+  to { width: 100%; }
+}
+.animate-landing-lift { animation: landingLift 6s ease-in-out infinite; }
+.animate-landing-float { animation: landingFloat 6s ease-in-out infinite; }
+.animate-landing-grow {
+  transform-origin: bottom;
+  animation: landingGrow 6s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+.animate-landing-pick { animation: landingPick 6s ease-in-out infinite; }
+.animate-landing-rise {
+  transform-origin: bottom;
+  animation: landingRise 0.8s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+.animate-landing-fill { animation: landingFill 1.6s cubic-bezier(0.22, 1, 0.36, 1); }
+/* Duration comes from the element (it matches the auto-play interval). */
+.animate-landing-step { animation-name: landingStep; animation-timing-function: linear; animation-fill-mode: forwards; }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -411,6 +458,17 @@ h1 {
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Shortening these would freeze them part-way (bars at 20%), so the landing
+     loops are switched off and every element keeps its resting state. */
+  .animate-landing-lift,
+  .animate-landing-float,
+  .animate-landing-grow,
+  .animate-landing-pick,
+  .animate-landing-rise,
+  .animate-landing-fill {
+    animation: none !important;
   }
 }
 

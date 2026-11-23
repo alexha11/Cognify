@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useMemo, useEffect, useState, useSyncExternalStore } from "react";
+import { useRef, useMemo, useEffect, useState } from "react";
+import { useMediaQuery } from "@/lib/hooks/use-media-query";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -302,18 +303,6 @@ function StudioEnvironment({ intensity }: { intensity: number }) {
   useEffect(() => invalidate(), [texture, intensity, invalidate]);
 
   return <Environment map={texture} environmentIntensity={intensity} />;
-}
-
-function useMediaQuery(query: string): boolean {
-  return useSyncExternalStore(
-    (onChange) => {
-      const mql = window.matchMedia(query);
-      mql.addEventListener("change", onChange);
-      return () => mql.removeEventListener("change", onChange);
-    },
-    () => window.matchMedia(query).matches,
-    () => false,
-  );
 }
 
 /* ── Dark mode detection hook ── */
