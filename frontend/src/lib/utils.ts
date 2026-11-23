@@ -24,3 +24,13 @@ export function formatFileSize(bytes: number): string {
 export function getInitials(firstName: string, lastName: string): string {
   return `${firstName?.charAt(0)}${lastName?.charAt(0)}`.toUpperCase();
 }
+
+/** Fills `{name}` placeholders in a translated string: fill("Step {n} of 3", { n: 2 }). */
+export function fill(
+  template: string,
+  values: Record<string, string | number>,
+): string {
+  return template.replace(/\{(\w+)\}/g, (match, key: string) =>
+    key in values ? String(values[key]) : match,
+  );
+}

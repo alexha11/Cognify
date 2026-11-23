@@ -271,46 +271,62 @@ export interface TranslationKeys {
     heroSub2: string;
     heroSubHighlight2: string;
     getStarted: string;
-    featuresTitle: string;
-    featuresHighlight: string;
-    featuresSubtitle: string;
-    tabAll: string;
-    tabAi: string;
-    tabEngine: string;
-    tabDocs: string;
-    tabQuiz: string;
-    aiTitle: string;
-    aiDesc: string;
-    aiLink: string;
-    engineTitle: string;
-    engineDesc: string;
-    engineLink: string;
-    docsTitle: string;
-    docsDesc: string;
-    docsLink: string;
-    quizTitle: string;
-    quizDesc: string;
-    quizLink: string;
-    everythingTitle: string;
-    everythingHighlight: string;
-    everythingSubtitle: string;
-    cap1Title: string;
-    cap1Desc: string;
-    cap2Title: string;
-    cap2Desc: string;
-    cap3Title: string;
-    cap3Desc: string;
-    cap4Title: string;
-    cap4Desc: string;
-    cap5Title: string;
-    cap5Desc: string;
-    cap6Title: string;
-    cap6Desc: string;
-    ctaTitle: string;
-    ctaHighlight: string;
-    contactUs: string;
     footerCourses: string;
     footerContact: string;
+  };
+
+  landing: {
+    howEyebrow: string;
+    howTitle: string;
+    howHighlight: string;
+    steps: { title: string; desc: string }[];
+    stepOf: string;
+    uploadHeader: string;
+    uploadDrop: string;
+    uploadHint: string;
+    uploadReading: string;
+    uploadAnother: string;
+    uploadGenerate: string;
+    draftHeader: string;
+    draftLabel: string;
+    draftSource: string;
+    draftQuestion: string;
+    draftOptions: string[];
+    draftCorrect: string;
+    draftEdit: string;
+    draftApprove: string;
+    trackHeader: string;
+    trackCorrect: string;
+    trackStudentView: string;
+    trackChart: string;
+    trackWeek: string;
+    trackShare: string;
+    trackAnalytics: string;
+    featuresEyebrow: string;
+    featuresTitle: string;
+    featuresHighlight: string;
+    tileQuiz: string;
+    tileStuck: string;
+    tilePlay: string;
+    chartTitle: string;
+    questionShort: string;
+    tagShuffled: string;
+    tagHints: string;
+    tagLeaderboard: string;
+    tryEyebrow: string;
+    tryTitle: string;
+    tryHighlight: string;
+    tryBody: string;
+    tryCreate: string;
+    tryBrowse: string;
+    tryPick: string;
+    tryCheck: string;
+    tryNext: string;
+    tryAgain: string;
+    tryCorrect: string;
+    tryWrong: string;
+    tryProgress: string;
+    demo: { subject: string; text: string; options: string[]; correct: number }[];
   };
 }
 
@@ -337,6 +353,68 @@ export const en: TranslationKeys = {
     saving: "Saving...",
     error: "Something went wrong. Please try again.",
     copyright: "© 2026 Cognify. All rights reserved.",
+  },
+
+  landing: {
+    howEyebrow: "How it works",
+    howTitle: "Notes in.",
+    howHighlight: "Mastery out.",
+    steps: [
+      { title: "Upload your notes", desc: "PDFs, slides, lecture notes." },
+      { title: "Get a quiz in seconds", desc: "Questions written from your material. You review, then publish." },
+      { title: "Practise and see progress", desc: "Instant feedback for students. Clear results for you." },
+    ],
+    stepOf: "Step {n} of 3",
+    uploadHeader: "New material",
+    uploadDrop: "Drop a PDF here",
+    uploadHint: "Lecture notes, slides or a textbook chapter",
+    uploadReading: "Reading page 10 of 14",
+    uploadAnother: "Add another file",
+    uploadGenerate: "Generate questions",
+    draftHeader: "8 of 12 drafted",
+    draftLabel: "Question 4 · draft",
+    draftSource: "Source: page 3",
+    draftQuestion: "Which process turns light energy into chemical energy?",
+    draftOptions: ["Photosynthesis", "Cellular respiration", "Fermentation"],
+    draftCorrect: "Correct answer",
+    draftEdit: "Edit",
+    draftApprove: "Approve",
+    trackHeader: "This week",
+    trackCorrect: "Correct: photosynthesis",
+    trackStudentView: "What the student sees, straight after answering",
+    trackChart: "Class accuracy by week · what you see",
+    trackWeek: "W",
+    trackShare: "Share quiz",
+    trackAnalytics: "View analytics",
+    featuresEyebrow: "Features",
+    featuresTitle: "Built for the",
+    featuresHighlight: "whole classroom.",
+    tileQuiz: "Your notes become a quiz",
+    tileStuck: "See who is stuck, early",
+    tilePlay: "Play anywhere, no account needed",
+    chartTitle: "Accuracy by question",
+    questionShort: "Q",
+    tagShuffled: "Shuffled answers",
+    tagHints: "Hints",
+    tagLeaderboard: "Leaderboard",
+    tryEyebrow: "Try it",
+    tryTitle: "Answer one.",
+    tryHighlight: "No account needed.",
+    tryBody: "This is the same quiz your students see. When you are ready, build your own course in minutes.",
+    tryCreate: "Create your first course",
+    tryBrowse: "Browse courses",
+    tryPick: "Pick an answer",
+    tryCheck: "Check answer",
+    tryNext: "Next question",
+    tryAgain: "Play again",
+    tryCorrect: "Correct · +10 points",
+    tryWrong: "Not quite: the answer is {answer}",
+    tryProgress: "Question {n} of {total} · {score} pts",
+    demo: [
+      { subject: "Computer science", text: "Which data structure gives O(1) average lookup by key?", options: ["Array", "Hash map", "Linked list", "Binary heap"], correct: 1 },
+      { subject: "Biology", text: "Where does the Calvin cycle take place?", options: ["Thylakoid membrane", "Mitochondria", "Stroma", "Nucleus"], correct: 2 },
+      { subject: "Physics", text: "What is the SI unit of electrical resistance?", options: ["Ohm", "Volt", "Ampere", "Watt"], correct: 0 },
+    ],
   },
 
   // ── Navigation / Sidebar ─────────────────────────────────────────────────────
@@ -613,56 +691,6 @@ export const en: TranslationKeys = {
     heroSub2: ", giving students and instructors",
     heroSubHighlight2: "actionable insights",
     getStarted: "Get Started",
-    featuresTitle: "Elevate your learning,",
-    featuresHighlight: "the smart way.",
-    featuresSubtitle:
-      "Straightforward analytics, AI generation, and powerful management tools designed for educators and students.",
-    tabAll: "All",
-    tabAi: "AI Generation",
-    tabEngine: "Assessment Engine",
-    tabDocs: "Smart Processing",
-    tabQuiz: "Quiz Experience",
-    aiTitle: "Question generation",
-    aiDesc:
-      "Turn any course document into ready-to-use questions in seconds.",
-    aiLink: "Explore generation",
-    engineTitle: "Performance analytics",
-    engineDesc:
-      "See accuracy, attempts and progress across every course.",
-    engineLink: "View analytics",
-    docsTitle: "Document processing",
-    docsDesc:
-      "Uploads are parsed and indexed for the AI to draw on.",
-    docsLink: "Upload materials",
-    quizTitle: "Quiz experience",
-    quizDesc:
-      "Students answer and see what they got right straight away.",
-    quizLink: "Try a quiz",
-    everythingTitle: "Everything in",
-    everythingHighlight: "your control.",
-    everythingSubtitle:
-      "All the features you need to manage your quizzes, evaluate student mastery, and track progress — without friction.",
-    cap1Title: "Instant AI Generation",
-    cap1Desc:
-      "Transform raw lecture notes, PDFs, or slide decks into fully formatted multiple choice and open questions within seconds.",
-    cap2Title: "Real-time Mastery Analytics",
-    cap2Desc:
-      "Monitor student performance curves, spot knowledge gaps early, and track class accuracy across difficulty tiers.",
-    cap3Title: "Semantic Vector RAG",
-    cap3Desc:
-      "Automatic document chunking and vector embeddings guarantee that generated questions stay 100% faithful to course content.",
-    cap4Title: "Course Leaderboards",
-    cap4Desc:
-      "Drive healthy competition with live course rankings, accuracy breakdown stats, and attempt timestamp tracking.",
-    cap5Title: "Adaptive Question Controls",
-    cap5Desc:
-      "Customize difficulty levels, answer option counts, question categories, and step-by-step hints with full educator override.",
-    cap6Title: "Scrambled Answer Security",
-    cap6Desc:
-      "Fisher-Yates randomized answer positions on every attempt ensure students demonstrate true concept mastery.",
-    ctaTitle: "Assessment reimagined.",
-    ctaHighlight: "Available today.",
-    contactUs: "Contact us",
     footerCourses: "Courses",
     footerContact: "Contact Us",
   },
