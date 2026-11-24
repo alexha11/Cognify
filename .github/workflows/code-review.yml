@@ -1,111 +1,114 @@
 name: Code Review
 
+# Claude reviews each pull request into main and comments on it. The review is
+# advisory: it never fails the check because of what it finds.
+
 on:
   pull_request:
-    types: [opened, synchronize, reopened]
-    branches:
-      - main
+    types: [opened, synchronize, ready_for_review, reopened]
+    branches: [main]
 
 permissions:
-  pull-requests: write
   contents: read
+
+concurrency:
+  group: code-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
 
 jobs:
   review:
+    name: Claude review
+    # Drafts are reviewed once they are marked ready. Pull requests from forks
+    # receive no secrets, so they are skipped rather than failed.
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
-    name: Ultra Code Review
-    timeout-minutes: 60
-
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
-      - name: Checkout PR branch
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # Full history for proper diffing
-
-      - name: Checkout base branch for comparison
-        run: git fetch origin ${{ github.base_ref }}
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-
-      - name: Install Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code
-
-      - name: Run Code Review
-        id: review
+      - name: Check that the API key is configured
+        id: key
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          # Run ultra code review on the PR branch
-          # The review output goes to stdout and is captured
-          claude code-review ultra --output json > /tmp/review-output.json 2>&1 || true
-
-          # Save the exit code
-          echo "exit_code=$?" >> $GITHUB_OUTPUT
-
-      - name: Parse Review Results
-        id: parse
-        if: always()
-        run: |
-          if [ -f /tmp/review-output.json ]; then
-            cat /tmp/review-output.json > /tmp/review.json
+          if [ -n "$ANTHROPIC_API_KEY" ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
           else
-            echo '{"status":"error","message":"Review output not found"}' > /tmp/review.json
+            echo "::warning::The ANTHROPIC_API_KEY repository secret is not set, so the review was skipped."
+            echo "present=false" >> "$GITHUB_OUTPUT"
           fi
 
-          # Extract findings count for the summary
-          FINDINGS=$(cat /tmp/review.json | grep -o '"findings"' | wc -l)
-          echo "findings=$FINDINGS" >> $GITHUB_OUTPUT
-
-      - name: Post Review as PR Comment
-        if: always()
-        uses: actions/github-script@v7
+      - uses: actions/checkout@v4
+        if: steps.key.outputs.present == 'true'
         with:
-          script: |
-            const fs = require('fs');
-            const reviewPath = '/tmp/review.json';
+          fetch-depth: 1
 
-            let comment = '';
+      - name: Review with Claude
+        id: review
+        if: steps.key.outputs.present == 'true'
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          # Comments are posted with this workflow's token (as github-actions),
+          # so no GitHub App has to be installed. To post as claude[bot]
+          # instead, install the Claude GitHub App and delete this line.
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: |
+            REPO: ${{ github.repository }}
+            PR NUMBER: ${{ github.event.pull_request.number }}
 
-            if (fs.existsSync(reviewPath)) {
-              try {
-                const review = JSON.parse(fs.readFileSync(reviewPath, 'utf8'));
+            Review this pull request for problems that should be fixed before it merges.
 
-                if (review.findings && review.findings.length > 0) {
-                  comment += '## 🔍 Code Review Results\n\n';
-                  comment += `Found **${review.findings.length}** issue(s):\n\n`;
+            Read CLAUDE.md first: it explains the architecture and the rules the code
+            depends on. Then read the diff with `gh pr diff`, and open the surrounding
+            code whenever you need context.
 
-                  review.findings.forEach((finding, idx) => {
-                    comment += `### ${idx + 1}. ${finding.short_summary || finding.summary}\n`;
-                    comment += `- **File:** \`${finding.file}\`${finding.line ? `:${finding.line}` : ''}\n`;
-                    comment += `- **Severity:** ${finding.category}\n`;
-                    if (finding.failure_scenario) {
-                      comment += `- **Failure scenario:** ${finding.failure_scenario}\n`;
-                    }
-                    comment += '\n';
-                  });
-                } else {
-                  comment = '✅ **Code Review Passed** — No issues found!\n';
-                }
-              } catch (e) {
-                comment = `❌ Failed to parse review results:\n\`\`\`\n${e.message}\n\`\`\`\n`;
-              }
-            } else {
-              comment = '❌ Code review did not complete. Check the workflow logs.\n';
-            }
+            Look for:
+            - Bugs: wrong logic, unhandled errors or rejected promises, race conditions,
+              broken edge cases, React state that goes stale or re-renders in a loop.
+            - Access rules from CLAUDE.md: every course-scoped write calls
+              assertCanManage; private courses answer 404 on every read path;
+              Answer.isCorrect only reaches people who manage the course (everyone
+              else gets stripAnswerKey); no @Get() handler changes state; request
+              bodies are DTO classes, never inline types; role is never
+              self-editable; the session token never appears in a response body or
+              a URL.
+            - Database: a schema.prisma change without a migration, `prisma db push`,
+              `as any` on a Prisma call, raw SQL assembled from strings.
+            - Tests: a bug fix without a test at the lowest layer that can show it.
+            - Frontend: new UI text missing from any of the en, vi or fi translations.
 
-            // Post as PR comment
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: comment
-            });
+            Leave out style, formatting and naming; lint and CI cover those. Report
+            only problems you are confident are real, and say how each one fails.
 
-      - name: Fail if critical issues found
-        if: failure()
+            Before posting, read the comments already on the pull request
+            (`gh pr view --comments`) and do not repeat a finding that is already
+            there.
+
+            Post each problem as an inline comment on the line it concerns, using
+            mcp__github_inline_comment__create_inline_comment. Then post one summary
+            with `gh pr comment`: a one-line verdict, the problems from most to least
+            severe, and anything you could not check. If you found nothing, the
+            summary is a single line that says so.
+          claude_args: |
+            --allowedTools "mcp__github_inline_comment__create_inline_comment,Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*)"
+
+      # The action hides Claude's output, so a failed run (a rejected API key,
+      # no credit left, a model the key cannot use) only says "is_error:true".
+      # Print the final message, which carries the reason.
+      - name: Explain a failed review
+        if: failure() && steps.review.outcome == 'failure'
+        env:
+          EXECUTION_FILE: ${{ steps.review.outputs.execution_file || format('{0}/claude-execution-output.json', runner.temp) }}
         run: |
-          echo "Code review workflow encountered issues. Check PR comments for details."
-          exit 1
+          [ -f "$EXECUTION_FILE" ] || { echo "No execution log at $EXECUTION_FILE"; exit 0; }
+          reason=$(jq -rs 'flatten | map(select(.type == "result")) | last | .result // empty' "$EXECUTION_FILE" | head -c 1000)
+          if [ -n "$reason" ]; then
+            echo "Claude stopped with: $reason"
+            echo "::error title=Claude review failed::$(printf '%s' "$reason" | head -n 1)"
+          else
+            echo "The execution log has no result message."
+          fi
